@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+    Layout alias to replace the single-pane version of the layout with a
+    two-pane version on Large screens.
+
+    For more on layout aliases, see:
+    http://developer.android.com/training/multiscreen/screensizes.html#TaskUseAliasFilters
+    -->
+    <item name="fragment_teamsfranchises" type="layout">@layout/fragment_teamsfranchises_list</item>
+    <item name="fragment_teamsopponents" type="layout">@layout/fragment_teamsopponents_list</item>
+    <item name="fragment_teamsresults" type="layout">@layout/fragment_teamsresults_list</item>
+    <item name="fragment_teamsdrilldown" type="layout">@layout/fragment_teamsdrilldown_list</item>
+    <item name="fragment_playersyears" type="layout">@layout/fragment_playersyears_list</item>
+    <item name="fragment_playersteams" type="layout">@layout/fragment_playersteams_list</item>
+    <item name="fragment_playersbatters" type="layout">@layout/fragment_playersbatters_list</item>
+    <item name="fragment_playerspitchers" type="layout">@layout/fragment_playerspitchers_list</item>
+    <item name="fragment_playersresults" type="layout">@layout/fragment_playersresults_list</item>
+    <item name="fragment_playersdrilldown" type="layout">@layout/fragment_playersdrilldown_list</item>
+
+</resources>

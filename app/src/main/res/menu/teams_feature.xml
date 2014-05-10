@@ -1,0 +1,20 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.versus.baseball.app.TeamsFeatureActivity" >
+
+    <item android:id="@+id/action_home"
+        android:title="@string/action_home"
+        android:orderInCategory="5"
+        app:showAsAction="ifRoom" />
+
+    <item android:id="@+id/action_player"
+        android:title="@string/action_player"
+        android:orderInCategory="10"
+        app:showAsAction="ifRoom" />
+
+    <item android:id="@+id/action_settings"
+        android:title="@string/action_settings"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+</menu>
