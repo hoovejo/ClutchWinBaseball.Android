@@ -8,7 +8,7 @@
 
     <TableRow>
         <TextView android:id="@+id/textGameDate"
-            android:padding="10px"
+            android:padding="5dp"
             android:textSize="16sp"
             android:textStyle="bold"
             android:layout_width="fill_parent"
@@ -17,108 +17,117 @@
 
     <TableRow>
         <TextView android:text="At bats"
-            android:padding="10px"
+            android:padding="5dp"
+            android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <TextView android:id="@+id/textAtBat"
             android:textSize="14sp"
-            android:padding="10px"
+            android:padding="5dp"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>
     </TableRow>
 
     <TableRow>
         <TextView android:text="Hits"
-            android:padding="10px"
+            android:padding="5dp"
+            android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <TextView android:id="@+id/textHit"
             android:textSize="14sp"
-            android:padding="10px"
+            android:padding="5dp"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>
     </TableRow>
 
     <TableRow>
         <TextView android:text="Second bases"
-            android:padding="10px"
+            android:padding="5dp"
+            android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <TextView android:id="@+id/textSecondBase"
             android:textSize="14sp"
-            android:padding="10px"
+            android:padding="5dp"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>
     </TableRow>
 
     <TableRow>
         <TextView android:text="Third bases"
-            android:padding="10px"
+            android:padding="5dp"
+            android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <TextView android:id="@+id/textThirdBase"
             android:textSize="14sp"
-            android:padding="10px"
+            android:padding="5dp"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>
     </TableRow>
 
     <TableRow>
         <TextView android:text="Home run"
-            android:padding="10px"
+            android:padding="5dp"
+            android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <TextView android:id="@+id/textHomeRun"
             android:textSize="14sp"
-            android:padding="10px"
+            android:padding="5dp"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>
     </TableRow>
 
     <TableRow>
-        <TextView android:text="Run batted in"
-            android:padding="10px"
+        <TextView android:text="Runs batted in"
+            android:padding="5dp"
+            android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <TextView android:id="@+id/textRunBattedIn"
             android:textSize="14sp"
-            android:padding="10px"
+            android:padding="5dp"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>
     </TableRow>
 
     <TableRow>
         <TextView android:text="Strike outs"
-            android:padding="10px"
+            android:padding="5dp"
+            android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <TextView android:id="@+id/textStrikeOut"
             android:textSize="14sp"
-            android:padding="10px"
+            android:padding="5dp"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>
     </TableRow>
 
     <TableRow>
         <TextView android:text="Base balls"
-            android:padding="10px"
+            android:padding="5dp"
+            android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <TextView android:id="@+id/textBaseBall"
             android:textSize="14sp"
-            android:padding="10px"
+            android:padding="5dp"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>
     </TableRow>
 
     <TableRow>
         <TextView android:text="Average"
-            android:padding="10px"
+            android:padding="5dp"
+            android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <TextView android:id="@+id/textAverage"
             android:textSize="14sp"
-            android:padding="10px"
+            android:padding="5dp"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>
     </TableRow>

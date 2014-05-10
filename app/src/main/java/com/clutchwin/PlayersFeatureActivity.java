@@ -1,26 +1,24 @@
 package com.clutchwin;
 
-import java.util.Locale;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
-import com.clutchwin.viewmodels.PlayersBattersViewModel;
-import com.clutchwin.viewmodels.PlayersPitchersViewModel;
-import com.clutchwin.viewmodels.PlayersResultsViewModel;
+import com.clutchwin.viewmodels.PlayersContextViewModel;
+
+import java.util.Locale;
 
 public class PlayersFeatureActivity extends ActionBarActivity implements ActionBar.TabListener,
         PlayersBattersFragment.OnFragmentInteractionListener,
@@ -42,10 +40,12 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
      * The {@link ViewPager} that will host the section contents.
      */
     ViewPager mViewPager;
+    /**
+     * The view models for this activity
+     */
+    private PlayersContextViewModel playersContextViewModel;
 
-    PlayersBattersViewModel battersViewModel;
-    PlayersPitchersViewModel pitchersViewModel;
-    PlayersResultsViewModel resultsViewModel;
+    public static PlayersFeatureActivity Current;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +73,11 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
                 actionBar.setSelectedNavigationItem(position);
                 Fragment fragment = (Fragment) mSectionsPagerAdapter.instantiateItem(mViewPager, position);
                 if(fragment instanceof IOnShowFragment) {
-                    ((IOnShowFragment) fragment).onShowedFragment();
+                    if(Helpers.isNetworkAvailable(PlayersFeatureActivity.Current)) {
+                        ((IOnShowFragment) fragment).onShowedFragment();
+                    } else {
+                        showMessage(getString(R.string.no_internet));
+                    }
                 }
             }
         });
@@ -90,9 +94,31 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
                             .setTabListener(this));
         }
 
-        battersViewModel = PlayersBattersViewModel.Instance();
-        pitchersViewModel =  PlayersPitchersViewModel.Instance();
-        resultsViewModel =  PlayersResultsViewModel.Instance();
+        playersContextViewModel = PlayersContextViewModel.Instance();
+        Current = this;
+
+        //if(savedInstanceState != null && savedInstanceState.getSerializable("fragmentsKey") !=null){
+        //    PlayersFragments = (ArrayList<Fragment>)savedInstanceState.getSerializable("fragmentsKey");
+        //}
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        // Restore the previously serialized current dropdown position.
+        //if (savedInstanceState.containsKey(STATE_SELECTED_NAVIGATION_ITEM)) {
+        //    getSupportActionBar().setSelectedNavigationItem(
+        //            savedInstanceState.getInt(STATE_SELECTED_NAVIGATION_ITEM));
+        //}
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        // Serialize the current dropdown position.
+        //outState.putInt(STATE_SELECTED_NAVIGATION_ITEM,
+        //        getSupportActionBar().getSelectedNavigationIndex());
+
+        //outState.putSerializable("fragmentsKey", PlayersFragments);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -120,7 +146,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
     @Override
     public void onPlayersBattersInteraction(String id) {
         if(Helpers.isNetworkAvailable(this)) {
-            battersViewModel.setBatterId(id);
+            playersContextViewModel.setBatterId(id);
             getSupportActionBar().setSelectedNavigationItem(1);
         } else {
             showMessage(getString(R.string.no_internet));
@@ -135,7 +161,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
     @Override
     public void onPlayersPitchersInteraction(String id) {
         if(Helpers.isNetworkAvailable(this)) {
-            pitchersViewModel.setPitcherId(id);
+            playersContextViewModel.setPitcherId(id);
             getSupportActionBar().setSelectedNavigationItem(2);
         } else {
             showMessage(getString(R.string.no_internet));
@@ -150,8 +176,8 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
     @Override
     public void onPlayersResultsInteraction(String id, String type) {
         if(Helpers.isNetworkAvailable(this)) {
-            resultsViewModel.setYearId(id);
-            resultsViewModel.setGameType(type);
+            playersContextViewModel.setResultYearId(id);
+            playersContextViewModel.setGameType(type);
             getSupportActionBar().setSelectedNavigationItem(3);
         } else {
             showMessage(getString(R.string.no_internet));

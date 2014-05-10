@@ -13,11 +13,9 @@ import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-import com.clutchwin.interfaces.IDelayLoadFragment;
 import com.clutchwin.service.PlayersBattersAsyncTask;
 import com.clutchwin.viewmodels.PlayersBattersViewModel;
-import com.clutchwin.viewmodels.PlayersTeamsViewModel;
-import com.clutchwin.viewmodels.PlayersYearsViewModel;
+import com.clutchwin.viewmodels.PlayersContextViewModel;
 
 /**
  * A fragment representing a list of Items.
@@ -28,7 +26,7 @@ import com.clutchwin.viewmodels.PlayersYearsViewModel;
  * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
  * interface.
  */
-public class PlayersBattersFragment extends Fragment implements AbsListView.OnItemClickListener, IDelayLoadFragment {
+public class PlayersBattersFragment extends Fragment implements AbsListView.OnItemClickListener {
 
     private OnFragmentInteractionListener mListener;
     private ServiceCompleteImpl onServiceComplete;
@@ -46,9 +44,8 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
     /**
      * The view models for this fragment
      */
-    private PlayersYearsViewModel yearsViewModel;
-    private PlayersTeamsViewModel teamsViewModel;
-    private PlayersBattersViewModel battersViewModel;
+    private PlayersContextViewModel playersContextViewModel;
+    private PlayersBattersViewModel playersBattersViewModel;
 
     private static PlayersBattersFragment _instance;
     public static PlayersBattersFragment Instance() {
@@ -68,6 +65,7 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
      */
     private Button yearButton;
     private Button teamButton;
+
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -79,12 +77,19 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        yearsViewModel = PlayersYearsViewModel.Instance();
-        teamsViewModel = PlayersTeamsViewModel.Instance();
-        battersViewModel = PlayersBattersViewModel.Instance();
+        playersContextViewModel = PlayersContextViewModel.Instance();
+        playersBattersViewModel = playersContextViewModel.getPlayersBattersViewModel();
+
+        if(playersContextViewModel.shouldExecuteLoadBatters()) {
+            onServiceComplete = new ServiceCompleteImpl();
+            PlayersBattersAsyncTask task = new PlayersBattersAsyncTask(getActivity(), playersBattersViewModel,
+                    playersContextViewModel.getTeamId(), playersContextViewModel.getYearId());
+            task.setOnCompleteListener(onServiceComplete);
+            task.execute();
+        }
 
         mAdapter = new ArrayAdapter<PlayersBattersViewModel.Batter>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, battersViewModel.ITEMS);
+                android.R.layout.simple_list_item_1, android.R.id.text1, playersBattersViewModel.ITEMS);
     }
 
     @Override
@@ -100,7 +105,7 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
         mListView.setOnItemClickListener(this);
 
         yearButton = (Button) view.findViewById(R.id.btnYears);
-        String year = yearsViewModel.getYearId();
+        String year = playersContextViewModel.getYearId();
         if(year != null && year.length() >= 1){
             yearButton.setText(year + " >");
         }
@@ -111,15 +116,24 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
         });
 
         teamButton = (Button) view.findViewById(R.id.btnTeams);
-        String team = teamsViewModel.getTeamId();
+        String team = playersContextViewModel.getTeamId();
         if(team != null && team.length() >= 1){
             teamButton.setText(team + " >");
         }
-        teamButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                mListener.onGoToTeamsInteraction();
-            }
-        });
+
+        String yearId = playersContextViewModel.getYearId();
+        if(yearId != null && yearId.length() > 0) {
+            teamButton.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    mListener.onGoToTeamsInteraction();
+                }
+            });
+        }
+
+        TextView emptyText = (TextView) view.findViewById(android.R.id.empty);
+        emptyText.setText(getString(R.string.no_search_results));
+        mListView.setEmptyView(emptyText);
+        emptyText.setVisibility(TextView.INVISIBLE);
 
         return view;
     }
@@ -146,7 +160,7 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            mListener.onPlayersBattersInteraction(battersViewModel.ITEMS.get(position).getRetroPlayerId());
+            mListener.onPlayersBattersInteraction(playersBattersViewModel.ITEMS.get(position).getRetroPlayerId());
         }
     }
 
@@ -174,15 +188,6 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
         public void onPlayersBattersInteractionFail();
         public void onGoToYearsInteraction();
         public void onGoToTeamsInteraction();
-    }
-
-    public void onReadyToLoad(){
-        //TODO: only load if necessary
-        onServiceComplete = new ServiceCompleteImpl();
-        PlayersBattersAsyncTask task = new PlayersBattersAsyncTask(getActivity(), battersViewModel,
-                teamsViewModel.getTeamId(), yearsViewModel.getYearId());
-        task.setOnCompleteListener(onServiceComplete);
-        task.execute();
     }
 
     private class ServiceCompleteImpl implements PlayersBattersAsyncTask.OnLoadCompleteListener {

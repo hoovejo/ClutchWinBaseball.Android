@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class PlayersResultsViewModel {
@@ -16,14 +18,6 @@ public class PlayersResultsViewModel {
         return _instance;
     }
 
-    private String yearId;
-    public String getYearId() { return yearId; }
-    public void setYearId(String id) { yearId = id; }
-
-    private String gameType;
-    public String getGameType() { return gameType; }
-    public void setGameType(String type) { gameType = type; }
-
     public List<PlayersResultsViewModel.Row> ITEMS = new ArrayList<PlayersResultsViewModel.Row>();
 
     private void addItem(PlayersResultsViewModel.Row item) {
@@ -35,6 +29,12 @@ public class PlayersResultsViewModel {
         for (PlayersResultsViewModel.Row item : rows) {
             addItem(item);
         }
+
+        Collections.sort(ITEMS, new Comparator<PlayersResultsViewModel.Row>() {
+            public int compare(PlayersResultsViewModel.Row o1, PlayersResultsViewModel.Row o2) {
+                return o2.getYear().compareTo(o1.getYear());
+            }
+        });
     }
 
     /**

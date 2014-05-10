@@ -3,7 +3,11 @@ package com.clutchwin.viewmodels;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 public class PlayersDrillDownViewModel {
@@ -27,6 +31,12 @@ public class PlayersDrillDownViewModel {
         for (PlayersDrillDownViewModel.Row item : rows) {
             addItem(item);
         }
+
+        Collections.sort(ITEMS, new Comparator<PlayersDrillDownViewModel.Row>() {
+            public int compare(PlayersDrillDownViewModel.Row o1, PlayersDrillDownViewModel.Row o2) {
+                return o2.getGameDate().compareTo(o1.getGameDate());
+            }
+        });
     }
 
     /**
@@ -91,7 +101,19 @@ public class PlayersDrillDownViewModel {
         private Number baseBall;
         private String average;
 
-        public String getGameDate() { return this.gameDate; }
+        SimpleDateFormat input = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
+        SimpleDateFormat output = new SimpleDateFormat("yyyy-MM-dd");
+
+        public String getGameDate() {
+            String formattedTime = "";
+            try{
+                Date d = input.parse(this.gameDate);
+                formattedTime = output.format(d);
+            } catch (Exception e) {
+
+            }
+            return formattedTime;
+        }
 
         public Number getAtBat() { return this.atBat; }
 

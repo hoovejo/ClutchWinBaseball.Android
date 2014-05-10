@@ -14,12 +14,8 @@ import android.widget.TextView;
 import com.clutchwin.adapters.PlayersDrillDownAdapter;
 import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.service.PlayersDrillDownAsyncTask;
-import com.clutchwin.viewmodels.PlayersBattersViewModel;
+import com.clutchwin.viewmodels.PlayersContextViewModel;
 import com.clutchwin.viewmodels.PlayersDrillDownViewModel;
-import com.clutchwin.viewmodels.PlayersPitchersViewModel;
-import com.clutchwin.viewmodels.PlayersResultsViewModel;
-import com.clutchwin.viewmodels.PlayersTeamsViewModel;
-import com.clutchwin.viewmodels.PlayersYearsViewModel;
 
 /**
  * A fragment representing a list of Items.
@@ -48,12 +44,9 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
     /**
      * The view models for this fragment
      */
-    private PlayersBattersViewModel battersViewModel;
-    private PlayersPitchersViewModel pitchersViewModel;
-    private PlayersResultsViewModel resultsViewModel;
+    private PlayersContextViewModel playersContextViewModel;
     private PlayersDrillDownViewModel drillDownViewModel;
 
-    // TODO: Rename and change types of parameters
     public static PlayersDrillDownFragment newInstance() {
         PlayersDrillDownFragment fragment = new PlayersDrillDownFragment();
         return fragment;
@@ -70,10 +63,8 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        battersViewModel = PlayersBattersViewModel.Instance();
-        pitchersViewModel = PlayersPitchersViewModel.Instance();
-        resultsViewModel = PlayersResultsViewModel.Instance();
-        drillDownViewModel = PlayersDrillDownViewModel.Instance();
+        playersContextViewModel = PlayersContextViewModel.Instance();
+        drillDownViewModel = playersContextViewModel.getPlayersDrillDownViewModel();
 
         mAdapter = new PlayersDrillDownAdapter(getActivity(),
                 R.layout.listview_playersdrilldown_row, drillDownViewModel.ITEMS);
@@ -87,6 +78,11 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
         ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
+
+        TextView emptyText = (TextView) view.findViewById(android.R.id.empty);
+        emptyText.setText(getString(R.string.no_search_results));
+        mListView.setEmptyView(emptyText);
+        emptyText.setVisibility(TextView.INVISIBLE);
 
         return view;
     }
@@ -107,7 +103,6 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
         super.onDetach();
         mListener = null;
     }
-
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -143,13 +138,15 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
     }
 
     public void onShowedFragment(){
-        //TODO: only load if necessary
-        onServiceComplete = new ServiceCompleteImpl();
-        PlayersDrillDownAsyncTask task = new PlayersDrillDownAsyncTask(getActivity(), drillDownViewModel,
-                battersViewModel.getBatterId(), pitchersViewModel.getPitcherId(),
-                resultsViewModel.getYearId(), resultsViewModel.getGameType());
-        task.setOnCompleteListener(onServiceComplete);
-        task.execute();
+
+        if(playersContextViewModel.shouldExecutePlayersDrillDownSearch()) {
+            onServiceComplete = new ServiceCompleteImpl();
+            PlayersDrillDownAsyncTask task = new PlayersDrillDownAsyncTask(getActivity(), drillDownViewModel,
+                    playersContextViewModel.getBatterId(), playersContextViewModel.getPitcherId(),
+                    playersContextViewModel.getResultYearId(), playersContextViewModel.getGameType());
+            task.setOnCompleteListener(onServiceComplete);
+            task.execute();
+        }
     }
 
     private class ServiceCompleteImpl implements PlayersDrillDownAsyncTask.OnLoadCompleteListener {

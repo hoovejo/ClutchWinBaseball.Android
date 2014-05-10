@@ -12,11 +12,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-import com.clutchwin.interfaces.IDelayLoadFragment;
 import com.clutchwin.service.PlayersTeamsAsyncTask;
+import com.clutchwin.viewmodels.PlayersContextViewModel;
 import com.clutchwin.viewmodels.PlayersTeamsViewModel;
-import com.clutchwin.viewmodels.PlayersYearsViewModel;
-
 
 /**
  * A fragment representing a list of Items.
@@ -45,8 +43,8 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
     /**
      * The view models for this fragment
      */
-    private PlayersYearsViewModel yearsViewModel;
-    private PlayersTeamsViewModel teamsViewModel;
+    private PlayersContextViewModel playersContextViewModel;
+    private PlayersTeamsViewModel playersTeamsViewModel;
 
     public static PlayersTeamsFragment newInstance() {
         PlayersTeamsFragment fragment = new PlayersTeamsFragment();
@@ -64,17 +62,19 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        yearsViewModel = PlayersYearsViewModel.Instance();
-        teamsViewModel = PlayersTeamsViewModel.Instance();
+        playersContextViewModel = PlayersContextViewModel.Instance();
+        playersTeamsViewModel = playersContextViewModel.getPlayersTeamsViewModel();
 
-        onServiceComplete = new ServiceCompleteImpl();
-        PlayersTeamsAsyncTask task = new PlayersTeamsAsyncTask(getActivity(), teamsViewModel,
-                yearsViewModel.getYearId());
-        task.setOnCompleteListener(onServiceComplete);
-        task.execute();
+        if(playersContextViewModel.shouldExecuteLoadTeams()) {
+            onServiceComplete = new ServiceCompleteImpl();
+            PlayersTeamsAsyncTask task = new PlayersTeamsAsyncTask(getActivity(), playersTeamsViewModel,
+                    playersContextViewModel.getYearId());
+            task.setOnCompleteListener(onServiceComplete);
+            task.execute();
+        }
 
         mAdapter = new ArrayAdapter<PlayersTeamsViewModel.Team>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, teamsViewModel.ITEMS);
+                android.R.layout.simple_list_item_1, android.R.id.text1, playersTeamsViewModel.ITEMS);
     }
 
     @Override
@@ -88,6 +88,11 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
 
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
+
+        TextView emptyText = (TextView) view.findViewById(android.R.id.empty);
+        emptyText.setText(getString(R.string.no_search_results));
+        mListView.setEmptyView(emptyText);
+        emptyText.setVisibility(TextView.INVISIBLE);
 
         return view;
     }
@@ -109,13 +114,12 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
         mListener = null;
     }
 
-
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            mListener.onPlayersTeamsInteraction(teamsViewModel.ITEMS.get(position).getTeamId());
+            mListener.onPlayersTeamsInteraction(playersTeamsViewModel.ITEMS.get(position).getTeamId());
         }
     }
 

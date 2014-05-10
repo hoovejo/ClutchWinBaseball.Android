@@ -1,6 +1,8 @@
 package com.clutchwin.viewmodels;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class TeamsOpponentsViewModel {
@@ -12,10 +14,6 @@ public class TeamsOpponentsViewModel {
         }
         return _instance;
     }
-
-    private String opponentId;
-    public String getOpponentId() { return opponentId; }
-    public void setOpponentId(String id) { opponentId = id; }
 
     public List<TeamsFranchisesViewModel.Franchise> ITEMS = new ArrayList<TeamsFranchisesViewModel.Franchise>();
 
@@ -30,5 +28,11 @@ public class TeamsOpponentsViewModel {
                 addItem(franchise);
             }
         }
+
+        Collections.sort(ITEMS, new Comparator<TeamsFranchisesViewModel.Franchise>() {
+            public int compare(TeamsFranchisesViewModel.Franchise o1, TeamsFranchisesViewModel.Franchise o2) {
+                return o1.getLocation().compareTo(o2.getLocation());
+            }
+        });
     }
 }

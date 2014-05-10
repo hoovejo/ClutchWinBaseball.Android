@@ -1,8 +1,8 @@
 package com.clutchwin.viewmodels;
 
+import com.clutchwin.common.Config;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.clutchwin.common.Config;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +16,6 @@ public class PlayersTeamsViewModel {
         }
         return _instance;
     }
-
-    private String teamId;
-    public String getTeamId() { return teamId; }
-    public void setTeamId(String id) { teamId = id; }
 
     public List<PlayersTeamsViewModel.Team> ITEMS = new ArrayList<PlayersTeamsViewModel.Team>();
 

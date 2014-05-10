@@ -14,8 +14,7 @@ import android.widget.TextView;
 import com.clutchwin.adapters.TeamsResultsAdapter;
 import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.service.TeamsResultsAsyncTask;
-import com.clutchwin.viewmodels.TeamsFranchisesViewModel;
-import com.clutchwin.viewmodels.TeamsOpponentsViewModel;
+import com.clutchwin.viewmodels.TeamsContextViewModel;
 import com.clutchwin.viewmodels.TeamsResultsViewModel;
 
 /**
@@ -45,8 +44,7 @@ public class TeamsResultsFragment extends Fragment implements AbsListView.OnItem
     /**
      * The view models for this fragment
      */
-    private TeamsFranchisesViewModel franchiseViewModel;
-    private TeamsOpponentsViewModel opponentViewModel;
+    private TeamsContextViewModel teamsContextViewModel;
     private TeamsResultsViewModel resultsViewModel;
 
     public static TeamsResultsFragment newInstance() {
@@ -65,9 +63,8 @@ public class TeamsResultsFragment extends Fragment implements AbsListView.OnItem
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        franchiseViewModel = TeamsFranchisesViewModel.Instance();
-        opponentViewModel =  TeamsOpponentsViewModel.Instance();
-        resultsViewModel =  TeamsResultsViewModel.Instance();
+        teamsContextViewModel = TeamsContextViewModel.Instance();
+        resultsViewModel = teamsContextViewModel.getTeamsResultsViewModel();
 
         mAdapter = new TeamsResultsAdapter(getActivity(),
                 R.layout.listview_teamsresults_row, resultsViewModel.ITEMS);
@@ -84,6 +81,11 @@ public class TeamsResultsFragment extends Fragment implements AbsListView.OnItem
 
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
+
+        TextView emptyText = (TextView) view.findViewById(android.R.id.empty);
+        emptyText.setText(getString(R.string.no_search_results));
+        mListView.setEmptyView(emptyText);
+        emptyText.setVisibility(TextView.INVISIBLE);
 
         return view;
     }
@@ -140,12 +142,14 @@ public class TeamsResultsFragment extends Fragment implements AbsListView.OnItem
     }
 
     public void onShowedFragment(){
-        //TODO: only load if necessary
-        onServiceComplete = new ServiceCompleteImpl();
-        TeamsResultsAsyncTask task = new TeamsResultsAsyncTask(getActivity(), resultsViewModel,
-                franchiseViewModel.getFranchiseId(), opponentViewModel.getOpponentId());
-        task.setOnCompleteListener(onServiceComplete);
-        task.execute();
+
+        if(teamsContextViewModel.shouldExecuteTeamResultsSearch()) {
+            onServiceComplete = new ServiceCompleteImpl();
+            TeamsResultsAsyncTask task = new TeamsResultsAsyncTask(getActivity(), resultsViewModel,
+                    teamsContextViewModel.getFranchiseId(), teamsContextViewModel.getOpponentId());
+            task.setOnCompleteListener(onServiceComplete);
+            task.execute();
+        }
     }
 
     private class ServiceCompleteImpl implements TeamsResultsAsyncTask.OnLoadCompleteListener {

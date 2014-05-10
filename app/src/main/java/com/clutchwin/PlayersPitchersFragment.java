@@ -14,11 +14,8 @@ import android.widget.TextView;
 
 import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.service.PlayersPitchersAsyncTask;
-import com.clutchwin.viewmodels.PlayersBattersViewModel;
+import com.clutchwin.viewmodels.PlayersContextViewModel;
 import com.clutchwin.viewmodels.PlayersPitchersViewModel;
-import com.clutchwin.viewmodels.PlayersTeamsViewModel;
-import com.clutchwin.viewmodels.PlayersYearsViewModel;
-
 
 /**
  * A fragment representing a list of Items.
@@ -47,9 +44,8 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
     /**
      * The view models for this fragment
      */
-    private PlayersYearsViewModel yearsViewModel;
-    private PlayersBattersViewModel battersViewModel;
-    private PlayersPitchersViewModel pitchersViewModel;
+    private PlayersContextViewModel playersContextViewModel;
+    private PlayersPitchersViewModel playersPitchersViewModel;
 
     public static PlayersPitchersFragment newInstance() {
         PlayersPitchersFragment fragment = new PlayersPitchersFragment();
@@ -67,12 +63,11 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        yearsViewModel = PlayersYearsViewModel.Instance();
-        battersViewModel = PlayersBattersViewModel.Instance();
-        pitchersViewModel = PlayersPitchersViewModel.Instance();
+        playersContextViewModel = PlayersContextViewModel.Instance();
+        playersPitchersViewModel = playersContextViewModel.getPlayersPitchersViewModel();
 
         mAdapter = new ArrayAdapter<PlayersPitchersViewModel.Row>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, pitchersViewModel.ITEMS);
+                android.R.layout.simple_list_item_1, android.R.id.text1, playersPitchersViewModel.ITEMS);
     }
 
     @Override
@@ -86,6 +81,11 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
 
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
+
+        TextView emptyText = (TextView) view.findViewById(android.R.id.empty);
+        emptyText.setText(getString(R.string.no_search_results));
+        mListView.setEmptyView(emptyText);
+        emptyText.setVisibility(TextView.INVISIBLE);
 
         return view;
     }
@@ -107,13 +107,12 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
         mListener = null;
     }
 
-
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            mListener.onPlayersPitchersInteraction(pitchersViewModel.ITEMS.get(position).getRetroId());
+            mListener.onPlayersPitchersInteraction(playersPitchersViewModel.ITEMS.get(position).getRetroId());
         }
     }
 
@@ -142,12 +141,14 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
     }
 
     public void onShowedFragment(){
-        //TODO: only load if necessary
-        onServiceComplete = new ServiceCompleteImpl();
-        PlayersPitchersAsyncTask task = new PlayersPitchersAsyncTask(getActivity(), pitchersViewModel,
-                battersViewModel.getBatterId(), yearsViewModel.getYearId());
-        task.setOnCompleteListener(onServiceComplete);
-        task.execute();
+
+        if(playersContextViewModel.shouldExecuteLoadPitchers()) {
+            onServiceComplete = new ServiceCompleteImpl();
+            PlayersPitchersAsyncTask task = new PlayersPitchersAsyncTask(getActivity(), playersPitchersViewModel,
+                    playersContextViewModel.getBatterId(), playersContextViewModel.getYearId());
+            task.setOnCompleteListener(onServiceComplete);
+            task.execute();
+        }
     }
 
     private class ServiceCompleteImpl implements PlayersPitchersAsyncTask.OnLoadCompleteListener {

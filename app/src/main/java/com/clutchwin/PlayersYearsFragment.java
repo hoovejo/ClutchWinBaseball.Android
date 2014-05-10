@@ -12,8 +12,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-
 import com.clutchwin.service.PlayersYearsAsyncTask;
+import com.clutchwin.viewmodels.PlayersContextViewModel;
 import com.clutchwin.viewmodels.PlayersYearsViewModel;
 
 /**
@@ -43,7 +43,8 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
     /**
      * The view models for this fragment
      */
-    private PlayersYearsViewModel yearsViewModel;
+    private PlayersContextViewModel playersContextViewModel;
+    private PlayersYearsViewModel playersYearsViewModel;
 
     public static PlayersYearsFragment newInstance() {
         PlayersYearsFragment fragment = new PlayersYearsFragment();
@@ -61,15 +62,18 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        yearsViewModel = PlayersYearsViewModel.Instance();
+        playersContextViewModel = PlayersContextViewModel.Instance();
+        playersYearsViewModel = playersContextViewModel.getPlayersYearsViewModel();
 
-        onServiceComplete = new ServiceCompleteImpl();
-        PlayersYearsAsyncTask task = new PlayersYearsAsyncTask(getActivity(), yearsViewModel);
-        task.setOnCompleteListener(onServiceComplete);
-        task.execute();
+        if(playersYearsViewModel.ITEMS.isEmpty()) {
+            onServiceComplete = new ServiceCompleteImpl();
+            PlayersYearsAsyncTask task = new PlayersYearsAsyncTask(getActivity(), playersYearsViewModel);
+            task.setOnCompleteListener(onServiceComplete);
+            task.execute();
+        }
 
         mAdapter = new ArrayAdapter<PlayersYearsViewModel.Year>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, yearsViewModel.ITEMS);
+                android.R.layout.simple_list_item_1, android.R.id.text1, playersYearsViewModel.ITEMS);
     }
 
     @Override
@@ -83,6 +87,11 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
 
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
+
+        TextView emptyText = (TextView) view.findViewById(android.R.id.empty);
+        emptyText.setText(getString(R.string.no_search_results));
+        mListView.setEmptyView(emptyText);
+        emptyText.setVisibility(TextView.INVISIBLE);
 
         return view;
     }
@@ -104,13 +113,12 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
         mListener = null;
     }
 
-
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            mListener.onPlayersYearsInteraction(yearsViewModel.ITEMS.get(position).getId());
+            mListener.onPlayersYearsInteraction(playersYearsViewModel.ITEMS.get(position).getId());
         }
     }
 
@@ -152,5 +160,4 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
             }
         }
     }
-
 }

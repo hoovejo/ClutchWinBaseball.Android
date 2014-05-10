@@ -1,28 +1,24 @@
 package com.clutchwin;
 
-import java.util.Locale;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
-import com.clutchwin.viewmodels.TeamsDrillDownViewModel;
-import com.clutchwin.viewmodels.TeamsFranchisesViewModel;
-import com.clutchwin.viewmodels.TeamsOpponentsViewModel;
-import com.clutchwin.viewmodels.TeamsResultsViewModel;
+import com.clutchwin.viewmodels.TeamsContextViewModel;
 
+import java.util.Locale;
 
 public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar.TabListener,
         TeamsFranchisesFragment.OnFragmentInteractionListener,
@@ -48,10 +44,9 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
     /**
      * The view models for this activity
      */
-    TeamsFranchisesViewModel franchiseViewModel;
-    TeamsOpponentsViewModel opponentViewModel;
-    TeamsResultsViewModel teamResultsViewModel;
-    TeamsDrillDownViewModel teamDrillDownViewModel;
+    private TeamsContextViewModel teamsContextViewModel;
+
+    public static TeamsFeatureActivity Current;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +74,11 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
                 actionBar.setSelectedNavigationItem(position);
                 Fragment fragment = (Fragment) mSectionsPagerAdapter.instantiateItem(mViewPager, position);
                 if(fragment instanceof IOnShowFragment) {
-                    ((IOnShowFragment) fragment).onShowedFragment();
+                    if(Helpers.isNetworkAvailable(TeamsFeatureActivity.Current)) {
+                        ((IOnShowFragment) fragment).onShowedFragment();
+                    } else {
+                        showMessage(getString(R.string.no_internet));
+                    }
                 }
             }
         });
@@ -96,16 +95,33 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
                             .setTabListener(this));
         }
 
-        franchiseViewModel = TeamsFranchisesViewModel.Instance();
-        opponentViewModel =  TeamsOpponentsViewModel.Instance();
-        teamResultsViewModel = TeamsResultsViewModel.Instance();
-        teamDrillDownViewModel =  TeamsDrillDownViewModel.Instance();
+        teamsContextViewModel = TeamsContextViewModel.Instance();
+        Current = this;
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        // Restore the previously serialized current dropdown position.
+        //if (savedInstanceState.containsKey(STATE_SELECTED_NAVIGATION_ITEM)) {
+        //    getSupportActionBar().setSelectedNavigationItem(
+        //            savedInstanceState.getInt(STATE_SELECTED_NAVIGATION_ITEM));
+        //}
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        // Serialize the current dropdown position.
+        //outState.putInt(STATE_SELECTED_NAVIGATION_ITEM,
+        //        getSupportActionBar().getSelectedNavigationIndex());
+
+        //outState.putSerializable("fragmentsKey", PlayersFragments);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
     public void onTeamsFranchisesInteraction(String id) {
         if(Helpers.isNetworkAvailable(this)) {
-            franchiseViewModel.setFranchiseId(id);
+            teamsContextViewModel.setFranchiseId(id);
             getSupportActionBar().setSelectedNavigationItem(1);
         } else {
             showMessage(getString(R.string.no_internet));
@@ -120,7 +136,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
     @Override
     public void onTeamsOpponentsInteraction(String id) {
         if(Helpers.isNetworkAvailable(this)) {
-            opponentViewModel.setOpponentId(id);
+            teamsContextViewModel.setOpponentId(id);
             getSupportActionBar().setSelectedNavigationItem(2);
         } else {
             showMessage(getString(R.string.no_internet));
@@ -130,7 +146,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
     @Override
     public void onTeamsResultsInteraction(String id) {
         if(Helpers.isNetworkAvailable(this)) {
-            teamResultsViewModel.setYearId(id);
+            teamsContextViewModel.setYearId(id);
             getSupportActionBar().setSelectedNavigationItem(3);
         } else {
             showMessage(getString(R.string.no_internet));
@@ -205,6 +221,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
                 navigateToHome();
             }
         });
+        builder.show();
     }
 
     private boolean navigateToHome(){

@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.clutchwin.adapters.TeamsFranchisesAdapter;
 import com.clutchwin.interfaces.IOnShowFragment;
+import com.clutchwin.viewmodels.TeamsContextViewModel;
 import com.clutchwin.viewmodels.TeamsFranchisesViewModel;
 import com.clutchwin.viewmodels.TeamsOpponentsViewModel;
 
@@ -43,8 +44,9 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
     /**
      * The view models for this fragment
      */
-    private TeamsFranchisesViewModel franchiseViewModel;
-    private TeamsOpponentsViewModel opponentViewModel;
+    private TeamsContextViewModel teamsContextViewModel;
+    private TeamsFranchisesViewModel teamsFranchisesViewModel;
+    private TeamsOpponentsViewModel teamsOpponentsViewModel;
 
     public static TeamsOpponentsFragment newInstance() {
         TeamsOpponentsFragment fragment = new TeamsOpponentsFragment();
@@ -62,11 +64,13 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        franchiseViewModel = TeamsFranchisesViewModel.Instance();
-        opponentViewModel =  TeamsOpponentsViewModel.Instance();
+        teamsContextViewModel = TeamsContextViewModel.Instance();
+        teamsFranchisesViewModel = teamsContextViewModel.getTeamsFranchisesViewModel();
+        teamsOpponentsViewModel = teamsContextViewModel.getTeamsOpponentsViewModel();
+
 
         mAdapter = new TeamsFranchisesAdapter(getActivity(),
-                R.layout.listview_teamsfranchises_row, opponentViewModel.ITEMS);
+                R.layout.listview_teamsfranchises_row, teamsOpponentsViewModel.ITEMS);
     }
 
     @Override
@@ -80,6 +84,11 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
 
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
+
+        TextView emptyText = (TextView) view.findViewById(android.R.id.empty);
+        emptyText.setText(getString(R.string.no_search_results));
+        mListView.setEmptyView(emptyText);
+        emptyText.setVisibility(TextView.INVISIBLE);
 
         return view;
     }
@@ -107,7 +116,7 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            mListener.onTeamsOpponentsInteraction(opponentViewModel.ITEMS.get(position).getRetroId());
+            mListener.onTeamsOpponentsInteraction(teamsOpponentsViewModel.ITEMS.get(position).getRetroId());
         }
     }
 
@@ -135,8 +144,9 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
     }
 
     public void onShowedFragment(){
-        opponentViewModel.filterList(franchiseViewModel.ITEMS, franchiseViewModel.getFranchiseId());
-        mAdapter.notifyDataSetChanged();
+        if(teamsContextViewModel.shouldFilterOpponents()) {
+            teamsOpponentsViewModel.filterList(teamsFranchisesViewModel.ITEMS, teamsContextViewModel.getFranchiseId());
+            mAdapter.notifyDataSetChanged();
+        }
     }
-
 }

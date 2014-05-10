@@ -16,19 +16,15 @@ public class PlayersYearsViewModel {
         return _instance;
     }
 
-    private String yearId;
-    public String getYearId() { return yearId; }
-    public void setYearId(String id) { yearId = id; }
-
     public List<PlayersYearsViewModel.Year> ITEMS = new ArrayList<PlayersYearsViewModel.Year>();
 
     private void addItem(PlayersYearsViewModel.Year item) {
         ITEMS.add(item);
     }
 
-    public void updateList(List<PlayersYearsViewModel.Year> franchiseList) {
+    public void updateList(List<PlayersYearsViewModel.Year> yearList) {
         ITEMS.clear();
-        for (PlayersYearsViewModel.Year year : franchiseList) {
+        for (PlayersYearsViewModel.Year year : yearList) {
             addItem(year);
         }
     }

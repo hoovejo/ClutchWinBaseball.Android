@@ -46,7 +46,6 @@ public class TeamsFranchisesAsyncTask extends AsyncTask<Void, Void, Void> {
             List<TeamsFranchisesViewModel.Franchise> franchiseList;
             franchiseList = Arrays.asList(restTemplate.getForObject(url, TeamsFranchisesViewModel.Franchise[].class));
             viewModel.updateList(franchiseList);
-
         } catch (Exception e) {
             Log.e("TeamsFranchisesAsyncTask", e.getMessage(), e);
             if(onCompleteListener != null){

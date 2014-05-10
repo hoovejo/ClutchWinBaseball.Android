@@ -14,12 +14,8 @@ import android.widget.TextView;
 import com.clutchwin.adapters.PlayersResultsAdapter;
 import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.service.PlayersResultsAsyncTask;
-import com.clutchwin.viewmodels.PlayersBattersViewModel;
-import com.clutchwin.viewmodels.PlayersPitchersViewModel;
+import com.clutchwin.viewmodels.PlayersContextViewModel;
 import com.clutchwin.viewmodels.PlayersResultsViewModel;
-import com.clutchwin.viewmodels.PlayersTeamsViewModel;
-import com.clutchwin.viewmodels.PlayersYearsViewModel;
-
 
 /**
  * A fragment representing a list of Items.
@@ -48,8 +44,7 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
     /**
      * The view models for this fragment
      */
-    private PlayersBattersViewModel battersViewModel;
-    private PlayersPitchersViewModel pitchersViewModel;
+    private PlayersContextViewModel playersContextViewModel;
     private PlayersResultsViewModel resultsViewModel;
 
     public static PlayersResultsFragment newInstance() {
@@ -68,9 +63,8 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        battersViewModel = PlayersBattersViewModel.Instance();
-        pitchersViewModel = PlayersPitchersViewModel.Instance();
-        resultsViewModel = PlayersResultsViewModel.Instance();
+        playersContextViewModel = PlayersContextViewModel.Instance();
+        resultsViewModel = playersContextViewModel.getPlayersResultsViewModel();
 
         mAdapter = new PlayersResultsAdapter(getActivity(),
                 R.layout.listview_playersresults_row, resultsViewModel.ITEMS);
@@ -87,6 +81,11 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
 
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
+
+        TextView emptyText = (TextView) view.findViewById(android.R.id.empty);
+        emptyText.setText(getString(R.string.no_search_results));
+        mListView.setEmptyView(emptyText);
+        emptyText.setVisibility(TextView.INVISIBLE);
 
         return view;
     }
@@ -144,12 +143,14 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
     }
 
     public void onShowedFragment(){
-        //TODO: only load if necessary
-        onServiceComplete = new ServiceCompleteImpl();
-        PlayersResultsAsyncTask task = new PlayersResultsAsyncTask(getActivity(), resultsViewModel,
-                battersViewModel.getBatterId(), pitchersViewModel.getPitcherId());
-        task.setOnCompleteListener(onServiceComplete);
-        task.execute();
+
+        if(playersContextViewModel.shouldExecutePlayerResultsSearch()) {
+            onServiceComplete = new ServiceCompleteImpl();
+            PlayersResultsAsyncTask task = new PlayersResultsAsyncTask(getActivity(), resultsViewModel,
+                    playersContextViewModel.getBatterId(), playersContextViewModel.getPitcherId());
+            task.setOnCompleteListener(onServiceComplete);
+            task.execute();
+        }
     }
 
     private class ServiceCompleteImpl implements PlayersResultsAsyncTask.OnLoadCompleteListener {

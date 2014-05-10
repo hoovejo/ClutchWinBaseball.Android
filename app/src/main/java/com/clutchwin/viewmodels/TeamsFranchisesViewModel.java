@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class TeamsFranchisesViewModel {
@@ -16,10 +18,6 @@ public class TeamsFranchisesViewModel {
         return _instance;
     }
 
-    private String franchiseId;
-    public String getFranchiseId() { return franchiseId; }
-    public void setFranchiseId(String id) { franchiseId = id; }
-
     public List<Franchise> ITEMS = new ArrayList<Franchise>();
 
     private void addItem(Franchise item) {
@@ -31,16 +29,21 @@ public class TeamsFranchisesViewModel {
         for (Franchise franchise : franchiseList) {
             addItem(franchise);
         }
+
+        Collections.sort(ITEMS, new Comparator<Franchise>() {
+            public int compare(Franchise o1, Franchise o2) {
+                return o1.getLocation().compareTo(o2.getLocation());
+            }
+        });
     }
 
     /**
      * Franchise model
      */
     public static class Franchise {
-        private String id;
-        private String retroId;
-        private String leagueId;
-        private String divisionId;
+        private String franchiseAbbr;
+        private String league;
+        private String division;
         private String location;
         private String name;
         private String alternateName;
@@ -50,10 +53,9 @@ public class TeamsFranchisesViewModel {
         private String state;
 
         @JsonCreator
-        public Franchise(@JsonProperty("id") String id,
-                         @JsonProperty("retro_id") String retro_id,
-                         @JsonProperty("league_id") String league_id,
-                         @JsonProperty("division_id") String division_id,
+        public Franchise(@JsonProperty("franchise_abbr") String franchise_abbr,
+                         @JsonProperty("league") String league,
+                         @JsonProperty("division") String division,
                          @JsonProperty("location") String location,
                          @JsonProperty("name") String name,
                          @JsonProperty("alternate_name") String alternate_name,
@@ -62,10 +64,9 @@ public class TeamsFranchisesViewModel {
                          @JsonProperty("city") String city,
                          @JsonProperty("state") String state)
         {
-            this.id = id;
-            this.retroId = retro_id;
-            this.leagueId = league_id;
-            this.divisionId = division_id;
+            this.franchiseAbbr = franchise_abbr;
+            this.league = league;
+            this.division = division;
             this.location = location;
             this.name = name;
             this.alternateName = alternate_name;
@@ -77,8 +78,8 @@ public class TeamsFranchisesViewModel {
 
         public String getLocation() { return location; }
         public String getName() { return name; }
-        public String getLeagueId() { return leagueId; }
-        public String getRetroId() { return retroId; }
+        public String getLeagueId() { return league; }
+        public String getRetroId() { return franchiseAbbr; }
 
     }
 }

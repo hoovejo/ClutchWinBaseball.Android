@@ -6,18 +6,18 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 
-import com.clutchwin.viewmodels.PlayersYearsViewModel;
+import com.clutchwin.viewmodels.PlayersContextViewModel;
 
 public class PlayersYearsActivity extends FragmentActivity implements PlayersYearsFragment.OnFragmentInteractionListener {
 
-    private PlayersYearsViewModel yearsViewModel;
+    private PlayersContextViewModel playersContextViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playersyears);
 
-        yearsViewModel = PlayersYearsViewModel.Instance();
+        playersContextViewModel = PlayersContextViewModel.Instance();
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -28,7 +28,7 @@ public class PlayersYearsActivity extends FragmentActivity implements PlayersYea
 
     @Override
     public void onPlayersYearsInteraction(String id) {
-        yearsViewModel.setYearId(id);
+        playersContextViewModel.setYearId(id);
 
         Intent i = new Intent(this, PlayersFeatureActivity.class);
         startActivity(i);

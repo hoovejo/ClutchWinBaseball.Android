@@ -24,11 +24,11 @@
     <string name="title_activity_players_years">Seasons</string>
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_players_teams">Teams</string>
-    <string name="no_search_results">No results to display</string>
     <string name="must_implement"> must implement OnFragmentInteractionListener</string>
     <string name="cancel">Cancel</string>
     <string name="no_internet">No internet available</string>
     <string name="loading">Loading...</string>
     <string name="fatal_error">An error has occured.</string>
+    <string name="no_search_results">No results for this search</string>
 
 </resources>

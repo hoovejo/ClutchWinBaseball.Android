@@ -6,12 +6,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 
-import com.clutchwin.interfaces.IDelayLoadFragment;
-import com.clutchwin.viewmodels.PlayersTeamsViewModel;
+import com.clutchwin.viewmodels.PlayersContextViewModel;
 
 public class PlayersTeamsActivity extends FragmentActivity implements PlayersTeamsFragment.OnFragmentInteractionListener {
 
-    private PlayersTeamsViewModel teamsViewModel;
+    private PlayersContextViewModel playersContextViewModel;
     private PlayersTeamsFragment teamsFragment;
 
     @Override
@@ -19,7 +18,7 @@ public class PlayersTeamsActivity extends FragmentActivity implements PlayersTea
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playersteams);
 
-        teamsViewModel = PlayersTeamsViewModel.Instance();
+        playersContextViewModel = PlayersContextViewModel.Instance();
 
         if (savedInstanceState == null) {
             teamsFragment = PlayersTeamsFragment.newInstance();
@@ -31,12 +30,8 @@ public class PlayersTeamsActivity extends FragmentActivity implements PlayersTea
 
     @Override
     public void onPlayersTeamsInteraction(String id) {
-        teamsViewModel.setTeamId(id);
-
-        PlayersBattersFragment fragment = PlayersBattersFragment.Instance();
-        if(fragment instanceof IDelayLoadFragment) {
-            ((IDelayLoadFragment) fragment).onReadyToLoad();
-        }
+        playersContextViewModel.setTeamId(id);
+        playersContextViewModel.setVoteLoadBatters(true);
 
         Intent i = new Intent(this, PlayersFeatureActivity.class);
         startActivity(i);

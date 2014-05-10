@@ -16,10 +16,6 @@ public class TeamsResultsViewModel {
         return _instance;
     }
 
-    private String yearId;
-    public String getYearId() { return yearId; }
-    public void setYearId(String id) { yearId = id; }
-
     public List<TeamsResultsViewModel.Row> ITEMS = new ArrayList<TeamsResultsViewModel.Row>();
 
     private void addItem(TeamsResultsViewModel.Row item) {

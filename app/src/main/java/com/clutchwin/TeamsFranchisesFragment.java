@@ -11,9 +11,9 @@ import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-
 import com.clutchwin.adapters.TeamsFranchisesAdapter;
 import com.clutchwin.service.TeamsFranchisesAsyncTask;
+import com.clutchwin.viewmodels.TeamsContextViewModel;
 import com.clutchwin.viewmodels.TeamsFranchisesViewModel;
 
 /**
@@ -44,7 +44,8 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
     /**
      * The view models for this fragment
      */
-    private TeamsFranchisesViewModel franchiseViewModel;
+    private TeamsContextViewModel teamsContextViewModel;
+    private TeamsFranchisesViewModel teamsFranchisesViewModel;
 
     public static TeamsFranchisesFragment newInstance() {
         TeamsFranchisesFragment fragment = new TeamsFranchisesFragment();
@@ -62,15 +63,18 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        franchiseViewModel = TeamsFranchisesViewModel.Instance();
+        teamsContextViewModel = TeamsContextViewModel.Instance();
+        teamsFranchisesViewModel = teamsContextViewModel.getTeamsFranchisesViewModel();
 
-        onServiceComplete = new ServiceCompleteImpl();
-        TeamsFranchisesAsyncTask task = new TeamsFranchisesAsyncTask(getActivity(), franchiseViewModel);
-        task.setOnCompleteListener(onServiceComplete);
-        task.execute();
+        if(teamsFranchisesViewModel.ITEMS.isEmpty()) {
+            onServiceComplete = new ServiceCompleteImpl();
+            TeamsFranchisesAsyncTask task = new TeamsFranchisesAsyncTask(getActivity(), teamsFranchisesViewModel);
+            task.setOnCompleteListener(onServiceComplete);
+            task.execute();
+        }
 
         mAdapter = new TeamsFranchisesAdapter(getActivity(),
-                R.layout.listview_teamsfranchises_row, franchiseViewModel.ITEMS);
+                R.layout.listview_teamsfranchises_row, teamsFranchisesViewModel.ITEMS);
     }
 
     @Override
@@ -84,6 +88,11 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
 
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
+
+        TextView emptyText = (TextView) view.findViewById(android.R.id.empty);
+        emptyText.setText(getString(R.string.no_search_results));
+        mListView.setEmptyView(emptyText);
+        emptyText.setVisibility(TextView.INVISIBLE);
 
         return view;
     }
@@ -111,7 +120,7 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            mListener.onTeamsFranchisesInteraction(franchiseViewModel.ITEMS.get(position).getRetroId());
+            mListener.onTeamsFranchisesInteraction(teamsFranchisesViewModel.ITEMS.get(position).getRetroId());
         }
     }
 
@@ -141,9 +150,7 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
 
     private class ServiceCompleteImpl implements TeamsFranchisesAsyncTask.OnLoadCompleteListener {
         @Override
-        public void onComplete(){
-            mAdapter.notifyDataSetChanged();
-        }
+        public void onComplete(){ mAdapter.notifyDataSetChanged(); }
         @Override
         public void onFailure(){
             if (null != mListener) {

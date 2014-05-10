@@ -8,7 +8,8 @@
 
     <TableRow>
         <TextView android:id="@+id/textGameDate"
-            android:padding="10px"
+            android:padding="5dp"
+            android:layout_marginLeft="5dp"
             android:textSize="16sp"
             android:textStyle="bold"
             android:layout_width="fill_parent"
@@ -17,72 +18,78 @@
 
     <TableRow>
         <TextView android:text="Team"
-            android:padding="10px"
+            android:padding="5dp"
+            android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <TextView android:id="@+id/textTeam"
             android:textSize="14sp"
-            android:padding="10px"
+            android:padding="5dp"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>
     </TableRow>
 
     <TableRow>
         <TextView android:text="Opponent"
-            android:padding="10px"
+            android:padding="5dp"
+            android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <TextView android:id="@+id/textOpponent"
             android:textSize="14sp"
-            android:padding="10px"
+            android:padding="5dp"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>
     </TableRow>
 
     <TableRow>
         <TextView android:text="Win"
-            android:padding="10px"
+            android:padding="5dp"
+            android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <TextView android:id="@+id/textWin"
             android:textSize="14sp"
-            android:padding="10px"
+            android:padding="5dp"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>
     </TableRow>
 
     <TableRow>
         <TextView android:text="Loss"
-            android:padding="10px"
+            android:padding="5dp"
+            android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <TextView android:id="@+id/textLoss"
             android:textSize="14sp"
-            android:padding="10px"
+            android:padding="5dp"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>
     </TableRow>
 
     <TableRow>
         <TextView android:text="Runs for"
-            android:padding="10px"
+            android:padding="5dp"
+            android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <TextView android:id="@+id/textRunsFor"
             android:textSize="14sp"
-            android:padding="10px"
+            android:padding="5dp"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>
     </TableRow>
 
     <TableRow>
         <TextView android:text="Runs against"
-            android:padding="10px"
+            android:padding="5dp"
+            android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <TextView android:id="@+id/textRunsAgainst"
             android:textSize="14sp"
-            android:padding="10px"
+            android:padding="5dp"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>
     </TableRow>

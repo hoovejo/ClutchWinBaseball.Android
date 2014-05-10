@@ -4,8 +4,9 @@ public class Config {
 
     public static final String Space = " ";
     public static final String Slash = "/";
+    public static final String Ampersand = "&";
     public static final String JsonSuffix = ".json";
-    public static final String Franchise = "http://versus.skeenshare.com/franchises.json";
+    public static final String Franchise = "http://clutchwin.com/api/v1/franchises.json?access_token=joe";
     public static final String FranchiseSearch = "http://versus.skeenshare.com/search/franchise_vs_franchise/";
     public static final String FranchiseYearSearch = "http://versus.skeenshare.com/search/franchise_vs_franchise_by_year/";
     public static final String OpponentsForBatter = "http://versus.skeenshare.com/search/opponents_for_batter/";

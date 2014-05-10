@@ -1,10 +1,12 @@
 package com.clutchwin.viewmodels;
 
+import com.clutchwin.common.Config;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.clutchwin.common.Config;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class PlayersBattersViewModel {
@@ -17,10 +19,6 @@ public class PlayersBattersViewModel {
         return _instance;
     }
 
-    private String batterId;
-    public String getBatterId() { return batterId; }
-    public void setBatterId(String id) { batterId = id; }
-
     public List<PlayersBattersViewModel.Batter> ITEMS = new ArrayList<PlayersBattersViewModel.Batter>();
 
     private void addItem(PlayersBattersViewModel.Batter item) {
@@ -32,10 +30,16 @@ public class PlayersBattersViewModel {
         for (PlayersBattersViewModel.Batter batter : batterList) {
             addItem(batter);
         }
+
+        Collections.sort(ITEMS, new Comparator<Batter>() {
+            public int compare(Batter o1, Batter o2) {
+                return o1.getFirstName().compareTo(o2.getFirstName());
+            }
+        });
     }
 
     /**
-     * Team model
+     * Batter model
      */
     public static class Batter {
         private Number id;
@@ -70,6 +74,7 @@ public class PlayersBattersViewModel {
             this.yearId = yearId;
         }
 
+        public String getFirstName() { return firstName; }
         public String getRetroPlayerId() { return retroPlayerId; }
 
         @Override

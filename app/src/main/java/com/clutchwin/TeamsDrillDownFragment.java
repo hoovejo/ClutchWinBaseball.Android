@@ -11,14 +11,11 @@ import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-
 import com.clutchwin.adapters.TeamsDrillDownAdapter;
 import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.service.TeamsDrillDownAsyncTask;
+import com.clutchwin.viewmodels.TeamsContextViewModel;
 import com.clutchwin.viewmodels.TeamsDrillDownViewModel;
-import com.clutchwin.viewmodels.TeamsFranchisesViewModel;
-import com.clutchwin.viewmodels.TeamsOpponentsViewModel;
-import com.clutchwin.viewmodels.TeamsResultsViewModel;
 
 /**
  * A fragment representing a list of Items.
@@ -47,9 +44,7 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
     /**
      * The view models for this fragment
      */
-    private TeamsFranchisesViewModel franchiseViewModel;
-    private TeamsOpponentsViewModel opponentViewModel;
-    private TeamsResultsViewModel resultsViewModel;
+    private TeamsContextViewModel teamsContextViewModel;
     private TeamsDrillDownViewModel drillDownViewModel;
 
     public static TeamsDrillDownFragment newInstance() {
@@ -68,10 +63,8 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        franchiseViewModel = TeamsFranchisesViewModel.Instance();
-        opponentViewModel =  TeamsOpponentsViewModel.Instance();
-        resultsViewModel =  TeamsResultsViewModel.Instance();
-        drillDownViewModel =  TeamsDrillDownViewModel.Instance();
+        teamsContextViewModel = TeamsContextViewModel.Instance();
+        drillDownViewModel = teamsContextViewModel.getTeamsDrillDownViewModel();
 
         mAdapter = new TeamsDrillDownAdapter(getActivity(),
                 R.layout.listview_teamsdrilldown_row, drillDownViewModel.ITEMS);
@@ -85,6 +78,11 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
         ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
+
+        TextView emptyText = (TextView) view.findViewById(android.R.id.empty);
+        emptyText.setText(getString(R.string.no_search_results));
+        mListView.setEmptyView(emptyText);
+        emptyText.setVisibility(TextView.INVISIBLE);
 
         return view;
     }
@@ -141,12 +139,14 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
     }
 
     public void onShowedFragment(){
-        //TODO: only load if necessary
-        onServiceComplete = new ServiceCompleteImpl();
-        TeamsDrillDownAsyncTask task = new TeamsDrillDownAsyncTask(getActivity(), drillDownViewModel,
-                franchiseViewModel.getFranchiseId(), opponentViewModel.getOpponentId(), resultsViewModel.getYearId());
-        task.setOnCompleteListener(onServiceComplete);
-        task.execute();
+
+        if(teamsContextViewModel.shouldExecuteTeamDrillDownSearch()) {
+            onServiceComplete = new ServiceCompleteImpl();
+            TeamsDrillDownAsyncTask task = new TeamsDrillDownAsyncTask(getActivity(), drillDownViewModel,
+                    teamsContextViewModel.getFranchiseId(), teamsContextViewModel.getOpponentId(), teamsContextViewModel.getYearId());
+            task.setOnCompleteListener(onServiceComplete);
+            task.execute();
+        }
     }
 
     private class ServiceCompleteImpl implements TeamsDrillDownAsyncTask.OnLoadCompleteListener {
