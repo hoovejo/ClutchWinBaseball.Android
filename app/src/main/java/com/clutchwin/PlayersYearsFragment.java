@@ -1,6 +1,7 @@
 package com.clutchwin;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -12,6 +13,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.clutchwin.cachetasks.PlayersYearsCacheAsyncTask;
+import com.clutchwin.common.Helpers;
 import com.clutchwin.service.PlayersYearsAsyncTask;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
 import com.clutchwin.viewmodels.PlayersYearsViewModel;
@@ -29,6 +32,7 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
 
     private OnFragmentInteractionListener mListener;
     private ServiceCompleteImpl onServiceComplete;
+    private CacheCompleteImpl onCacheComplete;
     /**
      * The fragment's ListView/GridView.
      */
@@ -62,17 +66,24 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        playersContextViewModel = PlayersContextViewModel.Instance();
-        playersYearsViewModel = playersContextViewModel.getPlayersYearsViewModel();
+        Context activity = getActivity();
+        ClutchWinApplication app = (ClutchWinApplication)activity.getApplicationContext();
+        playersContextViewModel = app.getPlayersContextViewModel();
+        playersYearsViewModel = app.getPlayersYearsViewModel();
 
-        if(playersYearsViewModel.ITEMS.isEmpty()) {
-            onServiceComplete = new ServiceCompleteImpl();
-            PlayersYearsAsyncTask task = new PlayersYearsAsyncTask(getActivity(), playersYearsViewModel);
-            task.setOnCompleteListener(onServiceComplete);
-            task.execute();
+        if(playersYearsViewModel.ITEMS.isEmpty() && !playersYearsViewModel.getIsBusy()) {
+
+            if(Helpers.checkFileExists(activity, playersYearsViewModel.CacheFileKey)) {
+                onCacheComplete = new CacheCompleteImpl();
+                PlayersYearsCacheAsyncTask cacheAsyncTask = new PlayersYearsCacheAsyncTask(activity, playersYearsViewModel);
+                cacheAsyncTask.setOnCompleteListener(onCacheComplete);
+                cacheAsyncTask.execute();
+            } else {
+                initiateServiceCall();
+            }
         }
 
-        mAdapter = new ArrayAdapter<PlayersYearsViewModel.Year>(getActivity(),
+        mAdapter = new ArrayAdapter<PlayersYearsViewModel.Year>(activity,
                 android.R.layout.simple_list_item_1, android.R.id.text1, playersYearsViewModel.ITEMS);
     }
 
@@ -146,6 +157,13 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
         public void onPlayersYearsInteractionFail();
     }
 
+    private void initiateServiceCall(){
+        onServiceComplete = new ServiceCompleteImpl();
+        PlayersYearsAsyncTask task = new PlayersYearsAsyncTask(getActivity(), playersYearsViewModel);
+        task.setOnCompleteListener(onServiceComplete);
+        task.execute();
+    }
+
     private class ServiceCompleteImpl implements PlayersYearsAsyncTask.OnLoadCompleteListener {
         @Override
         public void onComplete(){
@@ -158,6 +176,16 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
                 // fragment is attached to one) that a failure has happened.
                 mListener.onPlayersYearsInteractionFail();
             }
+        }
+    }
+
+    private class CacheCompleteImpl implements PlayersYearsCacheAsyncTask.OnLoadCompleteListener {
+        @Override
+        public void onComplete(){ ((ArrayAdapter) mAdapter).notifyDataSetChanged(); }
+        @Override
+        public void onFailure(){
+            //if any failure occurs loading cache, just call the service for fresh seasons
+            initiateServiceCall();
         }
     }
 }

@@ -42,51 +42,12 @@
     </TableRow>
 
     <TableRow>
-        <TextView android:text="Second bases"
+        <TextView android:text="Walks"
             android:padding="5dp"
             android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
-        <TextView android:id="@+id/textSecondBase"
-            android:textSize="14sp"
-            android:padding="5dp"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"/>
-    </TableRow>
-
-    <TableRow>
-        <TextView android:text="Third bases"
-            android:padding="5dp"
-            android:layout_marginLeft="10dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <TextView android:id="@+id/textThirdBase"
-            android:textSize="14sp"
-            android:padding="5dp"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"/>
-    </TableRow>
-
-    <TableRow>
-        <TextView android:text="Home run"
-            android:padding="5dp"
-            android:layout_marginLeft="10dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <TextView android:id="@+id/textHomeRun"
-            android:textSize="14sp"
-            android:padding="5dp"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"/>
-    </TableRow>
-
-    <TableRow>
-        <TextView android:text="Runs batted in"
-            android:padding="5dp"
-            android:layout_marginLeft="10dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <TextView android:id="@+id/textRunBattedIn"
+        <TextView android:id="@+id/textWalk"
             android:textSize="14sp"
             android:padding="5dp"
             android:layout_width="fill_parent"
@@ -107,12 +68,51 @@
     </TableRow>
 
     <TableRow>
-        <TextView android:text="Base balls"
+        <TextView android:text="Second base hits"
             android:padding="5dp"
             android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
-        <TextView android:id="@+id/textBaseBall"
+        <TextView android:id="@+id/textSecondBase"
+            android:textSize="14sp"
+            android:padding="5dp"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"/>
+    </TableRow>
+
+    <TableRow>
+        <TextView android:text="Third base hits"
+            android:padding="5dp"
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <TextView android:id="@+id/textThirdBase"
+            android:textSize="14sp"
+            android:padding="5dp"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"/>
+    </TableRow>
+
+    <TableRow>
+        <TextView android:text="Home runs"
+            android:padding="5dp"
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <TextView android:id="@+id/textHomeRun"
+            android:textSize="14sp"
+            android:padding="5dp"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"/>
+    </TableRow>
+
+    <TableRow>
+        <TextView android:text="Runs batted in"
+            android:padding="5dp"
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <TextView android:id="@+id/textRunBattedIn"
             android:textSize="14sp"
             android:padding="5dp"
             android:layout_width="fill_parent"

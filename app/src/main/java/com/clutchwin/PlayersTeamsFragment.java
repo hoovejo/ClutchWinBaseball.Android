@@ -1,6 +1,7 @@
 package com.clutchwin;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -8,10 +9,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.clutchwin.adapters.PlayersTeamsAdapter;
+import com.clutchwin.cachetasks.PlayersTeamsCacheAsyncTask;
+import com.clutchwin.common.Helpers;
 import com.clutchwin.service.PlayersTeamsAsyncTask;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
 import com.clutchwin.viewmodels.PlayersTeamsViewModel;
@@ -29,6 +32,7 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
 
     private OnFragmentInteractionListener mListener;
     private ServiceCompleteImpl onServiceComplete;
+    private CacheCompleteImpl onCacheComplete;
     /**
      * The fragment's ListView/GridView.
      */
@@ -38,7 +42,7 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
      * The Adapter which will be used to populate the ListView/GridView with
      * Views.
      */
-    private ListAdapter mAdapter;
+    private PlayersTeamsAdapter mAdapter;
 
     /**
      * The view models for this fragment
@@ -62,19 +66,27 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        playersContextViewModel = PlayersContextViewModel.Instance();
-        playersTeamsViewModel = playersContextViewModel.getPlayersTeamsViewModel();
+        Context activity = getActivity();
+        ClutchWinApplication app = (ClutchWinApplication)activity.getApplicationContext();
+        playersContextViewModel = app.getPlayersContextViewModel();
+        playersTeamsViewModel = app.getPlayersTeamsViewModel();
 
-        if(playersContextViewModel.shouldExecuteLoadTeams()) {
-            onServiceComplete = new ServiceCompleteImpl();
-            PlayersTeamsAsyncTask task = new PlayersTeamsAsyncTask(getActivity(), playersTeamsViewModel,
-                    playersContextViewModel.getYearId());
-            task.setOnCompleteListener(onServiceComplete);
-            task.execute();
+        if(playersTeamsViewModel.ITEMS.isEmpty() && !playersTeamsViewModel.getIsBusy()) {
+
+            if(Helpers.checkFileExists(activity, playersTeamsViewModel.CacheFileKey)) {
+                onCacheComplete = new CacheCompleteImpl();
+                PlayersTeamsCacheAsyncTask cacheAsyncTask = new PlayersTeamsCacheAsyncTask(activity, playersTeamsViewModel);
+                cacheAsyncTask.setOnCompleteListener(onCacheComplete);
+                cacheAsyncTask.execute();
+            } else {
+                initiateServiceCall(false);
+            }
+        }else {
+            initiateServiceCall(false);
         }
 
-        mAdapter = new ArrayAdapter<PlayersTeamsViewModel.Team>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, playersTeamsViewModel.ITEMS);
+        mAdapter = new PlayersTeamsAdapter(activity,
+                R.layout.listview_teamsfranchises_row, playersTeamsViewModel.ITEMS);
     }
 
     @Override
@@ -147,10 +159,20 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
         public void onPlayersTeamsInteractionFail();
     }
 
+    private void initiateServiceCall(boolean force){
+        if(playersContextViewModel.shouldExecuteLoadTeams() || force) {
+            onServiceComplete = new ServiceCompleteImpl();
+            PlayersTeamsAsyncTask task = new PlayersTeamsAsyncTask(getActivity(), playersContextViewModel,
+                    playersTeamsViewModel);
+            task.setOnCompleteListener(onServiceComplete);
+            task.execute();
+        }
+    }
+
     private class ServiceCompleteImpl implements PlayersTeamsAsyncTask.OnLoadCompleteListener {
         @Override
         public void onComplete(){
-            ((ArrayAdapter) mAdapter).notifyDataSetChanged();
+            mAdapter.notifyDataSetChanged();
         }
         @Override
         public void onFailure(){
@@ -159,6 +181,16 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
                 // fragment is attached to one) that a failure has happened.
                 mListener.onPlayersTeamsInteractionFail();
             }
+        }
+    }
+
+    private class CacheCompleteImpl implements PlayersTeamsCacheAsyncTask.OnLoadCompleteListener {
+        @Override
+        public void onComplete(){ mAdapter.notifyDataSetChanged(); }
+        @Override
+        public void onFailure(){
+            //if any failure occurs loading cache, just call the service for fresh seasons
+            initiateServiceCall(true);
         }
     }
 }

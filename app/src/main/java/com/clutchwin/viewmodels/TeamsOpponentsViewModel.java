@@ -7,14 +7,6 @@ import java.util.List;
 
 public class TeamsOpponentsViewModel {
 
-    private static TeamsOpponentsViewModel _instance;
-    public static TeamsOpponentsViewModel Instance() {
-        if(_instance == null){
-            _instance = new TeamsOpponentsViewModel();
-        }
-        return _instance;
-    }
-
     private boolean _isBusy = false;
     public boolean getIsBusy() { return _isBusy; }
     public void setIsBusy(boolean b) { _isBusy = b; }

@@ -1,6 +1,7 @@
 package com.clutchwin;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -12,6 +13,8 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.clutchwin.adapters.PlayersResultsAdapter;
+import com.clutchwin.cachetasks.PlayersResultsCacheAsyncTask;
+import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.service.PlayersResultsAsyncTask;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
@@ -30,6 +33,7 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
 
     private OnFragmentInteractionListener mListener;
     private ServiceCompleteImpl onServiceComplete;
+    private CacheCompleteImpl onCacheComplete;
     /**
      * The fragment's ListView/GridView.
      */
@@ -63,10 +67,22 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        playersContextViewModel = PlayersContextViewModel.Instance();
-        resultsViewModel = playersContextViewModel.getPlayersResultsViewModel();
+        Context activity = getActivity();
+        ClutchWinApplication app = (ClutchWinApplication)activity.getApplicationContext();
+        playersContextViewModel = app.getPlayersContextViewModel();
+        resultsViewModel = app.getPlayersResultsViewModel();
 
-        mAdapter = new PlayersResultsAdapter(getActivity(),
+        if(resultsViewModel.ITEMS.isEmpty() && !resultsViewModel.getIsBusy()) {
+
+            if(Helpers.checkFileExists(activity, resultsViewModel.CacheFileKey)) {
+                onCacheComplete = new CacheCompleteImpl();
+                PlayersResultsCacheAsyncTask cacheAsyncTask = new PlayersResultsCacheAsyncTask(activity, resultsViewModel);
+                cacheAsyncTask.setOnCompleteListener(onCacheComplete);
+                cacheAsyncTask.execute();
+            }
+        }
+
+        mAdapter = new PlayersResultsAdapter(activity,
                 R.layout.listview_playersresults_row, resultsViewModel.ITEMS);
     }
 
@@ -113,8 +129,8 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            PlayersResultsViewModel.Row row = resultsViewModel.ITEMS.get(position);
-            mListener.onPlayersResultsInteraction(row.getYear(), row.getType());
+            PlayersResultsViewModel.PlayersResult row = resultsViewModel.ITEMS.get(position);
+            mListener.onPlayersResultsInteraction(row.getYear());
         }
     }
 
@@ -138,16 +154,16 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
     * activity.
     */
     public interface OnFragmentInteractionListener {
-        public void onPlayersResultsInteraction(String id, String type);
+        public void onPlayersResultsInteraction(String id);
         public void onPlayersResultsInteractionFail();
     }
 
     public void onShowedFragment(){
 
-        if(playersContextViewModel.shouldExecutePlayerResultsSearch()) {
+        if(playersContextViewModel.shouldExecutePlayerResultsSearch() && !resultsViewModel.getIsBusy()) {
             onServiceComplete = new ServiceCompleteImpl();
-            PlayersResultsAsyncTask task = new PlayersResultsAsyncTask(getActivity(), resultsViewModel,
-                    playersContextViewModel.getBatterId(), playersContextViewModel.getPitcherId());
+            PlayersResultsAsyncTask task = new PlayersResultsAsyncTask(getActivity(), playersContextViewModel,
+                    resultsViewModel);
             task.setOnCompleteListener(onServiceComplete);
             task.execute();
         }
@@ -158,6 +174,19 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
         public void onComplete(){
             mAdapter.notifyDataSetChanged();
         }
+        @Override
+        public void onFailure(){
+            if (null != mListener) {
+                // Notify the active callbacks interface (the activity, if the
+                // fragment is attached to one) that a failure has happened.
+                mListener.onPlayersResultsInteractionFail();
+            }
+        }
+    }
+
+    private class CacheCompleteImpl implements PlayersResultsCacheAsyncTask.OnLoadCompleteListener {
+        @Override
+        public void onComplete(){ mAdapter.notifyDataSetChanged(); }
         @Override
         public void onFailure(){
             if (null != mListener) {

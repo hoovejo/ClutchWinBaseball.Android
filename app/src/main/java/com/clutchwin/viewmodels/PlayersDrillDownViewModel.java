@@ -1,39 +1,36 @@
 package com.clutchwin.viewmodels;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 public class PlayersDrillDownViewModel {
 
-    private static PlayersDrillDownViewModel _instance;
-    public static PlayersDrillDownViewModel Instance() {
-        if(_instance == null){
-            _instance = new PlayersDrillDownViewModel();
-        }
-        return _instance;
-    }
+    private boolean _isBusy = false;
+    public boolean getIsBusy() { return _isBusy; }
+    public void setIsBusy(boolean b) { _isBusy = b; }
 
-    public List<PlayersDrillDownViewModel.Row> ITEMS = new ArrayList<PlayersDrillDownViewModel.Row>();
+    public static final String CacheFileKey = "playersDrillDown.json";
 
-    private void addItem(PlayersDrillDownViewModel.Row item) {
+    public List<PlayersDrillDownViewModel.PlayersDrillDown> ITEMS = new ArrayList<PlayersDrillDownViewModel.PlayersDrillDown>();
+
+    private void addItem(PlayersDrillDownViewModel.PlayersDrillDown item) {
         ITEMS.add(item);
     }
 
-    public void updateList(List<PlayersDrillDownViewModel.Row> rows) {
+    public void updateList(List<PlayersDrillDownViewModel.PlayersDrillDown> rows) {
         ITEMS.clear();
-        for (PlayersDrillDownViewModel.Row item : rows) {
+        for (PlayersDrillDownViewModel.PlayersDrillDown item : rows) {
             addItem(item);
         }
 
-        Collections.sort(ITEMS, new Comparator<PlayersDrillDownViewModel.Row>() {
-            public int compare(PlayersDrillDownViewModel.Row o1, PlayersDrillDownViewModel.Row o2) {
+        Collections.sort(ITEMS, new Comparator<PlayersDrillDownViewModel.PlayersDrillDown>() {
+            public int compare(PlayersDrillDownViewModel.PlayersDrillDown o1, PlayersDrillDownViewModel.PlayersDrillDown o2) {
                 return o2.getGameDate().compareTo(o1.getGameDate());
             }
         });
@@ -42,82 +39,49 @@ public class PlayersDrillDownViewModel {
     /**
      * PlayersDrillDown model
      */
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class PlayersDrillDown {
-        @JsonCreator
-        public PlayersDrillDown(@JsonProperty("fieldnames") List<FieldNames> fieldNames, @JsonProperty("rows") List<Row> rows)
-        {
-            this.fieldNames = fieldNames;
-            this.rows = rows;
-        }
-        public List<FieldNames> fieldNames;
-        public List<Row> rows;
-    }
-
-    public static class FieldNames {
-        @JsonCreator
-        public FieldNames(@JsonProperty("name") String name)
-        {
-            this.name = name;
-        }
-
-        private String name;
-        public String getName() { return this.name; }
-        public void setName(String name) { this.name = name; }
-    }
-
-    public static class Row {
-        @JsonCreator
-        public Row(@JsonProperty("Game Date") String gameDate,
-                   @JsonProperty("AB") Number atBat,
-                   @JsonProperty("H") Number hit,
-                   @JsonProperty("2B") Number secondBase,
-                   @JsonProperty("3B") Number thirdBase,
-                   @JsonProperty("HR") Number homeRun,
-                   @JsonProperty("RBI") Number runBattedIn,
-                   @JsonProperty("SO") Number strikeOut,
-                   @JsonProperty("BB") Number baseBall,
-                   @JsonProperty("AVG") String average)
-        {
-            this.gameDate = gameDate;
-            this.atBat = atBat;
-            this.hit = hit;
-            this.secondBase = secondBase;
-            this.thirdBase = thirdBase;
-            this.homeRun = homeRun;
-            this.runBattedIn = runBattedIn;
-            this.strikeOut = strikeOut;
-            this.baseBall = baseBall;
-            this.average = average;
-        }
-
         private String gameDate;
         private Number atBat;
         private Number hit;
+        private Number walks;
+        private Number strikeOut;
         private Number secondBase;
         private Number thirdBase;
         private Number homeRun;
         private Number runBattedIn;
-        private Number strikeOut;
-        private Number baseBall;
-        private String average;
 
-        SimpleDateFormat input = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
-        SimpleDateFormat output = new SimpleDateFormat("yyyy-MM-dd");
-
-        public String getGameDate() {
-            String formattedTime = "";
-            try{
-                Date d = input.parse(this.gameDate);
-                formattedTime = output.format(d);
-            } catch (Exception e) {
-
-            }
-            return formattedTime;
+        @JsonCreator
+        public PlayersDrillDown(@JsonProperty("game_date") String game_date,
+                             @JsonProperty("ab") Number atBat,
+                             @JsonProperty("h") Number hit,
+                             @JsonProperty("bb") Number walks,
+                             @JsonProperty("k") Number strikeOut,
+                             @JsonProperty("h_2b") Number secondBase,
+                             @JsonProperty("h_3b") Number thirdBase,
+                             @JsonProperty("hr") Number homeRun,
+                             @JsonProperty("rbi_ct") Number runBattedIn)
+        {
+            this.gameDate = (game_date==null)? "":game_date;
+            this.atBat = (atBat==null)? 0:atBat;
+            this.hit = (hit==null)? 0:hit;
+            this.walks = (walks==null)? 0:walks;
+            this.strikeOut = (strikeOut==null)? 0:strikeOut;
+            this.secondBase = (secondBase==null)? 0:secondBase;
+            this.thirdBase = (thirdBase==null)? 0:thirdBase;
+            this.homeRun = (homeRun==null)? 0:homeRun;
+            this.runBattedIn = (runBattedIn==null)? 0:runBattedIn;
         }
+
+        public String getGameDate() { return this.gameDate; }
 
         public Number getAtBat() { return this.atBat; }
 
         public Number getHit() { return this.hit; }
+
+        public Number getWalks() { return this.walks; }
+
+        public Number getStrikeOut() { return this.strikeOut;  }
 
         public Number getSecondBase() { return this.secondBase; }
 
@@ -127,11 +91,7 @@ public class PlayersDrillDownViewModel {
 
         public Number getRunBattedIn() { return this.runBattedIn; }
 
-        public Number getStrikeOut() { return this.strikeOut;  }
-
-        public Number getBaseBall() { return this.baseBall; }
-
-        public String getAverage() { return this.average;  }
+        public Number getAverage() { return (this.hit.floatValue() / this.atBat.floatValue());  }
 
     }
 }

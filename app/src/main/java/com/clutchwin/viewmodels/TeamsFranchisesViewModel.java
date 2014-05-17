@@ -11,14 +11,6 @@ import java.util.List;
 
 public class TeamsFranchisesViewModel {
 
-    private static TeamsFranchisesViewModel _instance;
-    public static TeamsFranchisesViewModel Instance() {
-        if(_instance == null){
-            _instance = new TeamsFranchisesViewModel();
-        }
-        return _instance;
-    }
-
     private boolean _isBusy = false;
     public boolean getIsBusy() { return _isBusy; }
     public void setIsBusy(boolean b) { _isBusy = b; }
@@ -60,10 +52,10 @@ public class TeamsFranchisesViewModel {
                          @JsonProperty("location") String location,
                          @JsonProperty("name") String name)
         {
-            this.franchiseAbbr = franchise_abbr;
-            this.league = league;
-            this.location = location;
-            this.name = name;
+            this.franchiseAbbr = (franchise_abbr==null)? "":franchise_abbr;
+            this.league = (league==null)? "":league;
+            this.location = (location==null)? "":location;
+            this.name = (name==null)? "":name;
         }
 
         public String getLocation() { return location; }

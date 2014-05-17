@@ -5,8 +5,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 
+import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
+
+import java.io.IOException;
 
 public class PlayersTeamsActivity extends FragmentActivity implements PlayersTeamsFragment.OnFragmentInteractionListener {
 
@@ -18,7 +22,8 @@ public class PlayersTeamsActivity extends FragmentActivity implements PlayersTea
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playersteams);
 
-        playersContextViewModel = PlayersContextViewModel.Instance();
+        ClutchWinApplication app = (ClutchWinApplication)getApplicationContext();
+        playersContextViewModel = app.getPlayersContextViewModel();
 
         if (savedInstanceState == null) {
             teamsFragment = PlayersTeamsFragment.newInstance();
@@ -32,6 +37,12 @@ public class PlayersTeamsActivity extends FragmentActivity implements PlayersTea
     public void onPlayersTeamsInteraction(String id) {
         playersContextViewModel.setTeamId(id);
         playersContextViewModel.setVoteLoadBatters(true);
+
+        try {
+            Helpers.updateFileState(playersContextViewModel, this, playersContextViewModel.CacheFileKey);
+        } catch (IOException e) {
+            Log.e("PlayersTeamsActivity::onPlayersTeamsInteraction", e.getMessage(), e);
+        }
 
         Intent i = new Intent(this, PlayersFeatureActivity.class);
         startActivity(i);

@@ -11,14 +11,6 @@ import java.util.List;
 
 public class TeamsResultsViewModel {
 
-    private static TeamsResultsViewModel _instance;
-    public static TeamsResultsViewModel Instance() {
-        if(_instance == null){
-            _instance = new TeamsResultsViewModel();
-        }
-        return _instance;
-    }
-
     private boolean _isBusy = false;
     public boolean getIsBusy() { return _isBusy; }
     public void setIsBusy(boolean b) { _isBusy = b; }
@@ -49,6 +41,13 @@ public class TeamsResultsViewModel {
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class TeamsResult {
+        private String year;
+        private String team;
+        private String opponent;
+        private Number wins;
+        private Number losses;
+        private Number runsFor;
+        private Number runsAgainst;
 
         @JsonCreator
         public TeamsResult(@JsonProperty("season") String season,
@@ -59,22 +58,14 @@ public class TeamsResultsViewModel {
                          @JsonProperty("score") Number score,
                          @JsonProperty("opp_score") Number opp_score)
         {
-            this.year = season;
-            this.team = team_abbr;
-            this.opponent = opp_abbr;
-            this.wins = win;
-            this.losses = loss;
-            this.runsFor = score;
-            this.runsAgainst = opp_score;
+            this.year = (season==null)? "":season;
+            this.team = (team_abbr==null)? "":team_abbr;
+            this.opponent = (opp_abbr==null)? "":opp_abbr;
+            this.wins = (win==null)? 0:win;
+            this.losses = (loss==null)? 0:loss;
+            this.runsFor = (score==null)? 0:score;
+            this.runsAgainst = (opp_score==null)? 0:opp_score;
         }
-
-        private String year;
-        private String team;
-        private String opponent;
-        private Number wins;
-        private Number losses;
-        private Number runsFor;
-        private Number runsAgainst;
 
         public Number getGames() {
             return wins.intValue() + losses.intValue();

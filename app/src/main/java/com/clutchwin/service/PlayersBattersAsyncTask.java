@@ -7,11 +7,14 @@ import android.util.Log;
 
 import com.clutchwin.R;
 import com.clutchwin.common.Config;
+import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.PlayersBattersViewModel;
+import com.clutchwin.viewmodels.PlayersContextViewModel;
 
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,16 +23,14 @@ public class PlayersBattersAsyncTask extends AsyncTask<Void, Void, Void> {
     private ProgressDialog progressDialog;
     private Context context;
     private OnLoadCompleteListener onCompleteListener;
-    private PlayersBattersViewModel viewModel;
-    private String teamId;
-    private String yearId;
+    private PlayersContextViewModel playersContextViewModel;
+    private PlayersBattersViewModel playersBattersViewModel;
 
-    public PlayersBattersAsyncTask(Context inContext, PlayersBattersViewModel inViewModel,
-                                   String inTeamId, String inYearId){
+    public PlayersBattersAsyncTask(Context inContext, PlayersContextViewModel inContextViewModel,
+                                   PlayersBattersViewModel inViewModel){
         context = inContext;
-        viewModel = inViewModel;
-        teamId = inTeamId;
-        yearId = inYearId;
+        playersContextViewModel = inContextViewModel;
+        playersBattersViewModel = inViewModel;
     }
 
     @Override
@@ -44,19 +45,30 @@ public class PlayersBattersAsyncTask extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... params) {
         try {
-            //"http://versus.skeenshare.com/roster_for_team_and_year/ATL/2012.json";
+
+            playersBattersViewModel.setIsBusy(true);
+            //http://clutchwin.com/api/v1/players.json?
             final String baseUrl = Config.RosterSearch;
             StringBuffer finalUrl = new StringBuffer(baseUrl);
-            finalUrl.append(Config.Slash).append(teamId)
-                    .append(Config.Slash).append(yearId)
-                    .append(Config.JsonSuffix);
+            finalUrl.append(Config.AccessTokenKey).append(Config.AccessTokenValue)
+                    .append(Config.TeamIdKey).append(playersContextViewModel.getTeamId())
+                    .append(Config.SeasonIdKey).append(playersContextViewModel.getYearId());
+
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
             List<PlayersBattersViewModel.Batter> batterList;
             batterList = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), PlayersBattersViewModel.Batter[].class));
-            viewModel.updateList(batterList);
+
+            try {
+                Helpers.writeListToInternalStorage(batterList, context, playersBattersViewModel.CacheFileKey);
+            } catch (IOException e) {
+                Log.e("PlayersBattersAsyncTask::writeListToInternalStorage", e.getMessage(), e);
+            }
+
+            playersBattersViewModel.updateList(batterList);
+
         } catch (Exception e) {
-            Log.e("PlayersBattersAsyncTask", e.getMessage(), e);
+            Log.e("PlayersBattersAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
                 onCompleteListener.onFailure();
             }
@@ -74,6 +86,8 @@ public class PlayersBattersAsyncTask extends AsyncTask<Void, Void, Void> {
         if(onCompleteListener != null){
             onCompleteListener.onComplete();
         }
+
+        playersBattersViewModel.setIsBusy(false);
     }
 
     public void setOnCompleteListener(OnLoadCompleteListener inOnCompleteListener){

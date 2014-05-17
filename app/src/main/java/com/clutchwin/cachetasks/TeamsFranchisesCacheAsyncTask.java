@@ -1,4 +1,4 @@
-package com.clutchwin.service;
+package com.clutchwin.cachetasks;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -6,25 +6,25 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.clutchwin.R;
-import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.TeamsFranchisesViewModel;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
+import org.json.JSONArray;
 
-import java.io.IOException;
-import java.util.Arrays;
+import java.lang.reflect.Type;
 import java.util.List;
 
-public class TeamsFranchisesAsyncTask extends AsyncTask<Void, Void, Void> {
+public class TeamsFranchisesCacheAsyncTask extends AsyncTask<Void, Void, Void> {
 
     private ProgressDialog progressDialog;
     private Context context;
     private OnLoadCompleteListener onCompleteListener;
     private TeamsFranchisesViewModel teamsFranchisesViewModel;
 
-    public TeamsFranchisesAsyncTask(Context inContext, TeamsFranchisesViewModel inViewModel){
+    public TeamsFranchisesCacheAsyncTask(Context inContext, TeamsFranchisesViewModel inViewModel){
         context = inContext;
         teamsFranchisesViewModel = inViewModel;
     }
@@ -40,29 +40,20 @@ public class TeamsFranchisesAsyncTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected Void doInBackground(Void... params) {
+        Object outObject;
         try {
 
             teamsFranchisesViewModel.setIsBusy(true);
-            //http://clutchwin.com/api/v1/franchises.json?
-            final String baseUrl = Config.Franchise;
-            StringBuffer finalUrl = new StringBuffer(baseUrl);
-            finalUrl.append(Config.AccessTokenKey).append(Config.AccessTokenValue);
 
-            RestTemplate restTemplate = new RestTemplate();
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            List<TeamsFranchisesViewModel.Franchise> franchiseList;
-            franchiseList = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), TeamsFranchisesViewModel.Franchise[].class));
-
-            try {
-                Helpers.writeListToInternalStorage(franchiseList, context, teamsFranchisesViewModel.CacheFileKey);
-            } catch (IOException e) {
-                Log.e("TeamsFranchisesAsyncTask::writeListToInternalStorage", e.getMessage(), e);
-            }
-
-            teamsFranchisesViewModel.updateList(franchiseList);
+            outObject = Helpers.readObjectFromInternalStorage(context, teamsFranchisesViewModel.CacheFileKey);
+            Gson gson = new GsonBuilder().create();
+            JSONArray jsonArray = new JSONArray(outObject.toString());
+            Type listType = new TypeToken<List<TeamsFranchisesViewModel.Franchise>>(){}.getType();
+            List<TeamsFranchisesViewModel.Franchise> list = gson.fromJson(jsonArray.toString(), listType);
+            teamsFranchisesViewModel.updateList(list);
 
         } catch (Exception e) {
-            Log.e("TeamsFranchisesAsyncTask::doInBackground", e.getMessage(), e);
+            Log.e("TeamsFranchisesCacheAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
                 onCompleteListener.onFailure();
             }
@@ -92,3 +83,4 @@ public class TeamsFranchisesAsyncTask extends AsyncTask<Void, Void, Void> {
         public void onFailure();
     }
 }
+

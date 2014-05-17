@@ -1,6 +1,7 @@
 package com.clutchwin;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -12,6 +13,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.clutchwin.cachetasks.PlayersPitchersCacheAsyncTask;
+import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.service.PlayersPitchersAsyncTask;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
@@ -30,6 +33,7 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
 
     private OnFragmentInteractionListener mListener;
     private ServiceCompleteImpl onServiceComplete;
+    private CacheCompleteImpl onCacheComplete;
     /**
      * The fragment's ListView/GridView.
      */
@@ -63,10 +67,22 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        playersContextViewModel = PlayersContextViewModel.Instance();
-        playersPitchersViewModel = playersContextViewModel.getPlayersPitchersViewModel();
+        Context activity = getActivity();
+        ClutchWinApplication app = (ClutchWinApplication)activity.getApplicationContext();
+        playersContextViewModel = app.getPlayersContextViewModel();
+        playersPitchersViewModel = app.getPlayersPitchersViewModel();
 
-        mAdapter = new ArrayAdapter<PlayersPitchersViewModel.Row>(getActivity(),
+        if(playersPitchersViewModel.ITEMS.isEmpty() && !playersPitchersViewModel.getIsBusy()) {
+
+            if(Helpers.checkFileExists(activity, playersPitchersViewModel.CacheFileKey)) {
+                onCacheComplete = new CacheCompleteImpl();
+                PlayersPitchersCacheAsyncTask cacheAsyncTask = new PlayersPitchersCacheAsyncTask(activity, playersPitchersViewModel);
+                cacheAsyncTask.setOnCompleteListener(onCacheComplete);
+                cacheAsyncTask.execute();
+            }
+        }
+
+        mAdapter = new ArrayAdapter<PlayersPitchersViewModel.Row>(activity,
                 android.R.layout.simple_list_item_1, android.R.id.text1, playersPitchersViewModel.ITEMS);
     }
 
@@ -142,10 +158,10 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
 
     public void onShowedFragment(){
 
-        if(playersContextViewModel.shouldExecuteLoadPitchers()) {
+        if(playersContextViewModel.shouldExecuteLoadPitchers() && !playersPitchersViewModel.getIsBusy()) {
             onServiceComplete = new ServiceCompleteImpl();
-            PlayersPitchersAsyncTask task = new PlayersPitchersAsyncTask(getActivity(), playersPitchersViewModel,
-                    playersContextViewModel.getBatterId(), playersContextViewModel.getYearId());
+            PlayersPitchersAsyncTask task = new PlayersPitchersAsyncTask(getActivity(), playersContextViewModel,
+                    playersPitchersViewModel);
             task.setOnCompleteListener(onServiceComplete);
             task.execute();
         }
@@ -156,6 +172,19 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
         public void onComplete(){
             ((ArrayAdapter) mAdapter).notifyDataSetChanged();
         }
+        @Override
+        public void onFailure(){
+            if (null != mListener) {
+                // Notify the active callbacks interface (the activity, if the
+                // fragment is attached to one) that a failure has happened.
+                mListener.onPlayersPitchersInteractionFail();
+            }
+        }
+    }
+
+    private class CacheCompleteImpl implements PlayersPitchersCacheAsyncTask.OnLoadCompleteListener {
+        @Override
+        public void onComplete(){ ((ArrayAdapter) mAdapter).notifyDataSetChanged(); }
         @Override
         public void onFailure(){
             if (null != mListener) {

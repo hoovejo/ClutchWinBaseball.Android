@@ -2,6 +2,7 @@ package com.clutchwin.viewmodels;
 
 import com.clutchwin.common.Config;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
@@ -11,13 +12,11 @@ import java.util.List;
 
 public class PlayersBattersViewModel {
 
-    private static PlayersBattersViewModel _instance;
-    public static PlayersBattersViewModel Instance() {
-        if(_instance == null){
-            _instance = new PlayersBattersViewModel();
-        }
-        return _instance;
-    }
+    private boolean _isBusy = false;
+    public boolean getIsBusy() { return _isBusy; }
+    public void setIsBusy(boolean b) { _isBusy = b; }
+
+    public static final String CacheFileKey = "playersBatters.json";
 
     public List<PlayersBattersViewModel.Batter> ITEMS = new ArrayList<PlayersBattersViewModel.Batter>();
 
@@ -41,37 +40,20 @@ public class PlayersBattersViewModel {
     /**
      * Batter model
      */
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Batter {
-        private Number id;
-        private String batHand;
         private String firstName;
         private String lastName;
-        private String gameType;
-        private String pitHand;
-        private String posTx;
-        private String repTeamId;
         private String retroPlayerId;
-        private String retroTeamId;
-        private Number yearId;
 
         @JsonCreator
-        public Batter(@JsonProperty("id") Number id, @JsonProperty("bat_hand") String batHand, @JsonProperty("first_name") String firstName,
-                    @JsonProperty("game_type") String gameType, @JsonProperty("last_name") String lastName,
-                    @JsonProperty("pit_hand") String pitHand, @JsonProperty("pos_tx") String posTx,
-                    @JsonProperty("rep_team_id") String repTeamId, @JsonProperty("retro_player_id") String retroPlayerId,
-                    @JsonProperty("retro_team_id") String retroTeamId, @JsonProperty("year_id") Number yearId)
+        public Batter(@JsonProperty("first_name") String first_name,
+                    @JsonProperty("last_name") String last_name,
+                    @JsonProperty("player_retro_id") String player_retro_id)
         {
-            this.id = id;
-            this.batHand = batHand;
-            this.firstName = firstName;
-            this.lastName = lastName;
-            this.gameType = gameType;
-            this.pitHand = pitHand;
-            this.posTx = posTx;
-            this.repTeamId = repTeamId;
-            this.retroPlayerId = retroPlayerId;
-            this.retroTeamId = retroTeamId;
-            this.yearId = yearId;
+            this.firstName =  (first_name==null)? "":first_name;
+            this.lastName = (last_name==null)? "":last_name;
+            this.retroPlayerId = (player_retro_id==null)? "":player_retro_id;
         }
 
         public String getFirstName() { return firstName; }

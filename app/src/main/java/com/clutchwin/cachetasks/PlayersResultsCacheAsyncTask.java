@@ -7,9 +7,7 @@ import android.util.Log;
 
 import com.clutchwin.R;
 import com.clutchwin.common.Helpers;
-import com.clutchwin.viewmodels.TeamsContextViewModel;
-import com.clutchwin.viewmodels.TeamsFranchisesViewModel;
-import com.clutchwin.viewmodels.TeamsOpponentsViewModel;
+import com.clutchwin.viewmodels.PlayersResultsViewModel;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -19,22 +17,16 @@ import org.json.JSONArray;
 import java.lang.reflect.Type;
 import java.util.List;
 
-public class OpponentsCacheAsyncTask extends AsyncTask<Void, Void, Void> {
+public class PlayersResultsCacheAsyncTask extends AsyncTask<Void, Void, Void> {
 
     private ProgressDialog progressDialog;
     private Context context;
     private OnLoadCompleteListener onCompleteListener;
-    private TeamsContextViewModel teamsContextViewModel;
-    private TeamsOpponentsViewModel teamsOpponentsViewModel;
-    private TeamsFranchisesViewModel teamsFranchisesViewModel;
+    private PlayersResultsViewModel playersResultsViewModel;
 
-    public OpponentsCacheAsyncTask(Context inContext, TeamsContextViewModel inContextViewModel,
-                                   TeamsOpponentsViewModel inOpponentsViewModel,
-                                   TeamsFranchisesViewModel inFranchisesViewModel){
+    public PlayersResultsCacheAsyncTask(Context inContext, PlayersResultsViewModel inViewModel){
         context = inContext;
-        teamsContextViewModel = inContextViewModel;
-        teamsOpponentsViewModel = inOpponentsViewModel;
-        teamsFranchisesViewModel = inFranchisesViewModel;
+        playersResultsViewModel = inViewModel;
     }
 
     @Override
@@ -51,18 +43,18 @@ public class OpponentsCacheAsyncTask extends AsyncTask<Void, Void, Void> {
         Object outObject;
         try {
 
-            teamsOpponentsViewModel.setIsBusy(true);
+            playersResultsViewModel.setIsBusy(true);
 
-            outObject = Helpers.readObjectFromInternalStorage(context, teamsFranchisesViewModel.CacheFileKey);
+            outObject = Helpers.readObjectFromInternalStorage(context, playersResultsViewModel.CacheFileKey);
             Gson gson = new GsonBuilder().create();
             JSONArray jsonArray = new JSONArray(outObject.toString());
-            Type listType = new TypeToken<List<TeamsFranchisesViewModel.Franchise>>(){}.getType();
-            List<TeamsFranchisesViewModel.Franchise> list = gson.fromJson(jsonArray.toString(), listType);
-            teamsOpponentsViewModel.filterList(list, teamsContextViewModel.getFranchiseId());
+            Type listType = new TypeToken<List<PlayersResultsViewModel.PlayersResult>>(){}.getType();
+            List<PlayersResultsViewModel.PlayersResult> list = gson.fromJson(jsonArray.toString(), listType);
+            playersResultsViewModel.updateList(list);
 
         } catch (Exception e) {
-            Log.e("OpponentsCacheAsyncTask::doInBackground", e.getMessage(), e);
-            if (onCompleteListener != null) {
+            Log.e("PlayersResultsCacheAsyncTask::doInBackground", e.getMessage(), e);
+            if(onCompleteListener != null){
                 onCompleteListener.onFailure();
             }
         }
@@ -79,7 +71,7 @@ public class OpponentsCacheAsyncTask extends AsyncTask<Void, Void, Void> {
         if(onCompleteListener != null){
             onCompleteListener.onComplete();
         }
-        teamsOpponentsViewModel.setIsBusy(false);
+        playersResultsViewModel.setIsBusy(false);
     }
 
     public void setOnCompleteListener(OnLoadCompleteListener inOnCompleteListener){
@@ -91,4 +83,3 @@ public class OpponentsCacheAsyncTask extends AsyncTask<Void, Void, Void> {
         public void onFailure();
     }
 }
-

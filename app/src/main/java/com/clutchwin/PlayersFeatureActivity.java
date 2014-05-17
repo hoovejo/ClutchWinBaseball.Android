@@ -11,13 +11,17 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
+import java.io.IOException;
 import java.util.Locale;
 
 public class PlayersFeatureActivity extends ActionBarActivity implements ActionBar.TabListener,
@@ -51,6 +55,25 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playersfeature);
+
+        ClutchWinApplication app = (ClutchWinApplication)getApplicationContext();
+        playersContextViewModel = app.getPlayersContextViewModel();
+
+        //if cache file exists and we have a new instance, then rehydrate from cache
+        if(Helpers.checkFileExists(this, playersContextViewModel.CacheFileKey) && !playersContextViewModel.getIsHydratedObject()){
+            Object outObject;
+            try {
+                outObject = Helpers.readObjectFromInternalStorage(this, playersContextViewModel.CacheFileKey);
+                Gson gson = new GsonBuilder().create();
+                playersContextViewModel = gson.fromJson(outObject.toString(), PlayersContextViewModel.class);
+                playersContextViewModel.setIsHydratedObject(true);
+                app.setHydratedPlayersContextViewModel(playersContextViewModel);
+            } catch (IOException e) {
+                Log.e("PlayersFeatureActivity::onCreate", e.getMessage(), e);
+            } catch (ClassNotFoundException e) {
+                Log.e("PlayersFeatureActivity::onCreate", e.getMessage(), e);
+            }
+        }
 
         // Set up the action bar.
         final ActionBar actionBar = getSupportActionBar();
@@ -94,31 +117,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
                             .setTabListener(this));
         }
 
-        playersContextViewModel = PlayersContextViewModel.Instance();
         Current = this;
-
-        //if(savedInstanceState != null && savedInstanceState.getSerializable("fragmentsKey") !=null){
-        //    PlayersFragments = (ArrayList<Fragment>)savedInstanceState.getSerializable("fragmentsKey");
-        //}
-    }
-
-    @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-        // Restore the previously serialized current dropdown position.
-        //if (savedInstanceState.containsKey(STATE_SELECTED_NAVIGATION_ITEM)) {
-        //    getSupportActionBar().setSelectedNavigationItem(
-        //            savedInstanceState.getInt(STATE_SELECTED_NAVIGATION_ITEM));
-        //}
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        // Serialize the current dropdown position.
-        //outState.putInt(STATE_SELECTED_NAVIGATION_ITEM,
-        //        getSupportActionBar().getSelectedNavigationIndex());
-
-        //outState.putSerializable("fragmentsKey", PlayersFragments);
-        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -147,6 +146,13 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
     public void onPlayersBattersInteraction(String id) {
         if(Helpers.isNetworkAvailable(this)) {
             playersContextViewModel.setBatterId(id);
+
+            try {
+                Helpers.updateFileState(playersContextViewModel, this, playersContextViewModel.CacheFileKey);
+            } catch (IOException e) {
+                Log.e("PlayersFeatureActivity::onPlayersBattersInteraction", e.getMessage(), e);
+            }
+
             getSupportActionBar().setSelectedNavigationItem(1);
         } else {
             showMessage(getString(R.string.no_internet));
@@ -162,6 +168,13 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
     public void onPlayersPitchersInteraction(String id) {
         if(Helpers.isNetworkAvailable(this)) {
             playersContextViewModel.setPitcherId(id);
+
+            try {
+                Helpers.updateFileState(playersContextViewModel, this, playersContextViewModel.CacheFileKey);
+            } catch (IOException e) {
+                Log.e("PlayersFeatureActivity::onPlayersPitchersInteraction", e.getMessage(), e);
+            }
+
             getSupportActionBar().setSelectedNavigationItem(2);
         } else {
             showMessage(getString(R.string.no_internet));
@@ -174,10 +187,16 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
     }
 
     @Override
-    public void onPlayersResultsInteraction(String id, String type) {
+    public void onPlayersResultsInteraction(String id) {
         if(Helpers.isNetworkAvailable(this)) {
             playersContextViewModel.setResultYearId(id);
-            playersContextViewModel.setGameType(type);
+
+            try {
+                Helpers.updateFileState(playersContextViewModel, this, playersContextViewModel.CacheFileKey);
+            } catch (IOException e) {
+                Log.e("PlayersFeatureActivity::onPlayersResultsInteraction", e.getMessage(), e);
+            }
+
             getSupportActionBar().setSelectedNavigationItem(3);
         } else {
             showMessage(getString(R.string.no_internet));
@@ -191,6 +210,11 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
 
     @Override
     public void onPlayersDrillDownInteraction(String id) {
+        try {
+            Helpers.updateFileState(playersContextViewModel, this, playersContextViewModel.CacheFileKey);
+        } catch (IOException e) {
+            Log.e("PlayersFeatureActivity::onPlayersDrillDownInteraction", e.getMessage(), e);
+        }
     }
 
     @Override

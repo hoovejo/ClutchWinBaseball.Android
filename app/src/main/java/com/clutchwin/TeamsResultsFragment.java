@@ -67,10 +67,10 @@ public class TeamsResultsFragment extends Fragment implements AbsListView.OnItem
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        teamsContextViewModel = TeamsContextViewModel.Instance();
-        resultsViewModel = teamsContextViewModel.getTeamsResultsViewModel();
-
         Context activity = getActivity();
+        ClutchWinApplication app = (ClutchWinApplication)activity.getApplicationContext();
+        teamsContextViewModel = app.getTeamsContextViewModel();
+        resultsViewModel = app.getTeamsResultsViewModel();
 
         if(resultsViewModel.ITEMS.isEmpty() && !resultsViewModel.getIsBusy()) {
 
@@ -161,8 +161,8 @@ public class TeamsResultsFragment extends Fragment implements AbsListView.OnItem
 
         if(teamsContextViewModel.shouldExecuteTeamResultsSearch() && !resultsViewModel.getIsBusy()) {
             onServiceComplete = new ServiceCompleteImpl();
-            TeamsResultsAsyncTask task = new TeamsResultsAsyncTask(getActivity(), resultsViewModel,
-                    teamsContextViewModel.getFranchiseId(), teamsContextViewModel.getOpponentId());
+            TeamsResultsAsyncTask task = new TeamsResultsAsyncTask(getActivity(), teamsContextViewModel,
+                    resultsViewModel);
             task.setOnCompleteListener(onServiceComplete);
             task.execute();
         }

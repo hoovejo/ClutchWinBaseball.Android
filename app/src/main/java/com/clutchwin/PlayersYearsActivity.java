@@ -5,8 +5,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 
+import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
+
+import java.io.IOException;
 
 public class PlayersYearsActivity extends FragmentActivity implements PlayersYearsFragment.OnFragmentInteractionListener {
 
@@ -17,7 +21,8 @@ public class PlayersYearsActivity extends FragmentActivity implements PlayersYea
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playersyears);
 
-        playersContextViewModel = PlayersContextViewModel.Instance();
+        ClutchWinApplication app = (ClutchWinApplication)getApplicationContext();
+        playersContextViewModel = app.getPlayersContextViewModel();
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -29,6 +34,12 @@ public class PlayersYearsActivity extends FragmentActivity implements PlayersYea
     @Override
     public void onPlayersYearsInteraction(String id) {
         playersContextViewModel.setYearId(id);
+
+        try {
+            Helpers.updateFileState(playersContextViewModel, this, playersContextViewModel.CacheFileKey);
+        } catch (IOException e) {
+            Log.e("PlayersYearsActivity::onPlayersYearsInteraction", e.getMessage(), e);
+        }
 
         Intent i = new Intent(this, PlayersFeatureActivity.class);
         startActivity(i);

@@ -13,7 +13,7 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.clutchwin.adapters.TeamsFranchisesAdapter;
-import com.clutchwin.cachetasks.FranchisesCacheAsyncTask;
+import com.clutchwin.cachetasks.TeamsFranchisesCacheAsyncTask;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.service.TeamsFranchisesAsyncTask;
 import com.clutchwin.viewmodels.TeamsContextViewModel;
@@ -68,16 +68,16 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        teamsContextViewModel = TeamsContextViewModel.Instance();
-        teamsFranchisesViewModel = teamsContextViewModel.getTeamsFranchisesViewModel();
-
         Context activity = getActivity();
+        ClutchWinApplication app = (ClutchWinApplication)activity.getApplicationContext();
+        teamsContextViewModel = app.getTeamsContextViewModel();
+        teamsFranchisesViewModel = app.getTeamsFranchisesViewModel();
 
         if(teamsFranchisesViewModel.ITEMS.isEmpty() && !teamsFranchisesViewModel.getIsBusy()) {
 
             if(Helpers.checkFileExists(activity, teamsFranchisesViewModel.CacheFileKey)) {
                 onCacheComplete = new CacheCompleteImpl();
-                FranchisesCacheAsyncTask cacheAsyncTask = new FranchisesCacheAsyncTask(activity, teamsFranchisesViewModel);
+                TeamsFranchisesCacheAsyncTask cacheAsyncTask = new TeamsFranchisesCacheAsyncTask(activity, teamsFranchisesViewModel);
                 cacheAsyncTask.setOnCompleteListener(onCacheComplete);
                 cacheAsyncTask.execute();
             } else {
@@ -180,7 +180,7 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
         }
     }
 
-    private class CacheCompleteImpl implements FranchisesCacheAsyncTask.OnLoadCompleteListener {
+    private class CacheCompleteImpl implements TeamsFranchisesCacheAsyncTask.OnLoadCompleteListener {
         @Override
         public void onComplete(){ mAdapter.notifyDataSetChanged(); }
         @Override

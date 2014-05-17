@@ -2,42 +2,13 @@ package com.clutchwin.viewmodels;
 
 public class TeamsContextViewModel {
 
-    private static TeamsContextViewModel _instance;
-    public static TeamsContextViewModel Instance() {
-        if(_instance == null){
-            _instance = new TeamsContextViewModel();
-        }
-        return _instance;
-    }
-
     public static final String CacheFileKey = "teamsContextViewModel.json";
 
     public TeamsContextViewModel(){}
 
-    private transient TeamsFranchisesViewModel teamsFranchisesViewModel;
-    public TeamsFranchisesViewModel getTeamsFranchisesViewModel() { return teamsFranchisesViewModel; };
-
-    private transient TeamsOpponentsViewModel teamsOpponentsViewModel;
-    public TeamsOpponentsViewModel getTeamsOpponentsViewModel() { return teamsOpponentsViewModel; };
-
-    private transient TeamsResultsViewModel teamsResultsViewModel;
-    public TeamsResultsViewModel getTeamsResultsViewModel() { return teamsResultsViewModel; };
-
-    private transient TeamsDrillDownViewModel teamsDrillDownViewModel;
-    public TeamsDrillDownViewModel getTeamsDrillDownViewModel() { return teamsDrillDownViewModel; };
-
-    public boolean needsInnerRehydrate(){
-        return (teamsFranchisesViewModel == null || teamsOpponentsViewModel == null ||
-                teamsResultsViewModel == null || teamsDrillDownViewModel == null);
-    }
-
-    public void rehydrateSecondaries(){
-        teamsFranchisesViewModel = TeamsFranchisesViewModel.Instance();
-        teamsOpponentsViewModel = TeamsOpponentsViewModel.Instance();
-        teamsResultsViewModel = TeamsResultsViewModel.Instance();
-        teamsDrillDownViewModel = TeamsDrillDownViewModel.Instance();
-        _instance = this;
-    }
+    private transient boolean isHydratedObject = false;
+    public boolean getIsHydratedObject() { return isHydratedObject; }
+    public void setIsHydratedObject(boolean b) { isHydratedObject = b; }
 
     private String franchiseId;
     public String getFranchiseId() { return franchiseId; }

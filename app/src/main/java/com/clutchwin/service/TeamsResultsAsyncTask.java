@@ -8,6 +8,7 @@ import android.util.Log;
 import com.clutchwin.R;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
+import com.clutchwin.viewmodels.TeamsContextViewModel;
 import com.clutchwin.viewmodels.TeamsResultsViewModel;
 
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -22,16 +23,14 @@ public class TeamsResultsAsyncTask extends AsyncTask<Void, Void, Void> {
     private ProgressDialog progressDialog;
     private Context context;
     private OnLoadCompleteListener onCompleteListener;
-    private TeamsResultsViewModel viewModel;
-    private String franchiseId;
-    private String opponentId;
+    private TeamsContextViewModel teamsContextViewModel;
+    private TeamsResultsViewModel teamsResultsViewModel;
 
-    public TeamsResultsAsyncTask(Context inContext, TeamsResultsViewModel inViewModel,
-                                 String inFranchiseId, String inOpponentId){
+    public TeamsResultsAsyncTask(Context inContext, TeamsContextViewModel inContextViewModel,
+                                 TeamsResultsViewModel inViewModel){
         context = inContext;
-        viewModel = inViewModel;
-        franchiseId = inFranchiseId;
-        opponentId = inOpponentId;
+        teamsContextViewModel = inContextViewModel;
+        teamsResultsViewModel = inViewModel;
     }
 
     @Override
@@ -46,26 +45,28 @@ public class TeamsResultsAsyncTask extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... params) {
         try {
+
+            teamsResultsViewModel.setIsBusy(true);
             //http://clutchwin.com/api/v1/games/for_team/summary.json?
             //&access_token=joe&franchise_abbr=TOR&opp_franchise_abbr=BAL&group=season,team_abbr,opp_abbr&fieldset=basic
             final String baseUrl = Config.FranchiseSearch;
             StringBuffer finalUrl = new StringBuffer(baseUrl);
             finalUrl.append(Config.AccessTokenKey).append(Config.AccessTokenValue)
-                    .append(Config.FranchiseIdKey).append(franchiseId)
-                    .append(Config.OpponentIdKey).append(opponentId)
+                    .append(Config.FranchiseIdKey).append(teamsContextViewModel.getFranchiseId())
+                    .append(Config.OpponentIdKey).append(teamsContextViewModel.getOpponentId())
                     .append(Config.FranchiseSearchKeyValue);
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
             List<TeamsResultsViewModel.TeamsResult> resultsList;
             resultsList = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), TeamsResultsViewModel.TeamsResult[].class));
 
-            viewModel.updateList(resultsList);
-
             try {
-                Helpers.writeListToInternalStorage(resultsList, context, viewModel.CacheFileKey);
+                Helpers.writeListToInternalStorage(resultsList, context, teamsResultsViewModel.CacheFileKey);
             } catch (IOException e) {
                 Log.e("TeamsResultsAsyncTask::writeListToInternalStorage", e.getMessage(), e);
             }
+
+            teamsResultsViewModel.updateList(resultsList);
 
         } catch (Exception e) {
             Log.e("TeamsResultsAsyncTask::doInBackground", e.getMessage(), e);
@@ -86,6 +87,8 @@ public class TeamsResultsAsyncTask extends AsyncTask<Void, Void, Void> {
         if(onCompleteListener != null){
             onCompleteListener.onComplete();
         }
+
+        teamsResultsViewModel.setIsBusy(false);
     }
 
     public void setOnCompleteListener(OnLoadCompleteListener inOnCompleteListener){

@@ -1,4 +1,4 @@
-package com.clutchwin.service;
+package com.clutchwin.cachetasks;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -6,30 +6,26 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.clutchwin.R;
-import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
-import com.clutchwin.viewmodels.PlayersContextViewModel;
 import com.clutchwin.viewmodels.PlayersTeamsViewModel;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
+import org.json.JSONArray;
 
-import java.io.IOException;
-import java.util.Arrays;
+import java.lang.reflect.Type;
 import java.util.List;
 
-public class PlayersTeamsAsyncTask extends AsyncTask<Void, Void, Void> {
+public class PlayersTeamsCacheAsyncTask extends AsyncTask<Void, Void, Void> {
 
     private ProgressDialog progressDialog;
     private Context context;
     private OnLoadCompleteListener onCompleteListener;
-    private PlayersContextViewModel playersContextViewModel;
     private PlayersTeamsViewModel playersTeamsViewModel;
 
-    public PlayersTeamsAsyncTask(Context inContext, PlayersContextViewModel inContextViewModel,
-                                 PlayersTeamsViewModel inViewModel){
+    public PlayersTeamsCacheAsyncTask(Context inContext, PlayersTeamsViewModel inViewModel){
         context = inContext;
-        playersContextViewModel = inContextViewModel;
         playersTeamsViewModel = inViewModel;
     }
 
@@ -44,30 +40,20 @@ public class PlayersTeamsAsyncTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected Void doInBackground(Void... params) {
+        Object outObject;
         try {
 
             playersTeamsViewModel.setIsBusy(true);
-            //http://clutchwin.com/api/v1/teams.json?
-            final String baseUrl = Config.Teams;
-            StringBuffer finalUrl = new StringBuffer(baseUrl);
-            finalUrl.append(Config.AccessTokenKey).append(Config.AccessTokenValue)
-                    .append(Config.SeasonIdKey).append(playersContextViewModel.getYearId());
 
-            RestTemplate restTemplate = new RestTemplate();
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            List<PlayersTeamsViewModel.Team> teamList;
-            teamList = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), PlayersTeamsViewModel.Team[].class));
-
-            try {
-                Helpers.writeListToInternalStorage(teamList, context, playersTeamsViewModel.CacheFileKey);
-            } catch (IOException e) {
-                Log.e("PlayersTeamsAsyncTask::writeListToInternalStorage", e.getMessage(), e);
-            }
-
-            playersTeamsViewModel.updateList(teamList);
+            outObject = Helpers.readObjectFromInternalStorage(context, playersTeamsViewModel.CacheFileKey);
+            Gson gson = new GsonBuilder().create();
+            JSONArray jsonArray = new JSONArray(outObject.toString());
+            Type listType = new TypeToken<List<PlayersTeamsViewModel.Team>>(){}.getType();
+            List<PlayersTeamsViewModel.Team> list = gson.fromJson(jsonArray.toString(), listType);
+            playersTeamsViewModel.updateList(list);
 
         } catch (Exception e) {
-            Log.e("PlayersTeamsAsyncTask::doInBackground", e.getMessage(), e);
+            Log.e("PlayersTeamsCacheAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
                 onCompleteListener.onFailure();
             }
@@ -85,7 +71,6 @@ public class PlayersTeamsAsyncTask extends AsyncTask<Void, Void, Void> {
         if(onCompleteListener != null){
             onCompleteListener.onComplete();
         }
-
         playersTeamsViewModel.setIsBusy(false);
     }
 
@@ -98,3 +83,4 @@ public class PlayersTeamsAsyncTask extends AsyncTask<Void, Void, Void> {
         public void onFailure();
     }
 }
+

@@ -8,6 +8,7 @@ import android.util.Log;
 import com.clutchwin.R;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
+import com.clutchwin.viewmodels.TeamsContextViewModel;
 import com.clutchwin.viewmodels.TeamsDrillDownViewModel;
 
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -22,18 +23,14 @@ public class TeamsDrillDownAsyncTask extends AsyncTask<Void, Void, Void> {
     private ProgressDialog progressDialog;
     private Context context;
     private OnLoadCompleteListener onCompleteListener;
-    private TeamsDrillDownViewModel viewModel;
-    private String franchiseId;
-    private String opponentId;
-    private String yearId;
+    private TeamsContextViewModel teamsContextViewModel;
+    private TeamsDrillDownViewModel teamsDrillDownViewModel;
 
-    public TeamsDrillDownAsyncTask(Context inContext, TeamsDrillDownViewModel inViewModel,
-                                 String inFranchiseId, String inOpponentId, String inYearId){
+    public TeamsDrillDownAsyncTask(Context inContext, TeamsContextViewModel inContextViewModel,
+                                   TeamsDrillDownViewModel inViewModel){
         context = inContext;
-        viewModel = inViewModel;
-        franchiseId = inFranchiseId;
-        opponentId = inOpponentId;
-        yearId = inYearId;
+        teamsContextViewModel = inContextViewModel;
+        teamsDrillDownViewModel = inViewModel;
     }
 
     @Override
@@ -48,14 +45,16 @@ public class TeamsDrillDownAsyncTask extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... params) {
         try {
+
+            teamsDrillDownViewModel.setIsBusy(true);
             //http://clutchwin.com/api/v1/games/for_team.json?
             //&access_token=abc&franchise_abbr=TOR&opp_franchise_abbr=BAL&season=2013&fieldset=basic
             final String baseUrl = Config.FranchiseYearSearch;
             StringBuffer finalUrl = new StringBuffer(baseUrl);
             finalUrl.append(Config.AccessTokenKey).append(Config.AccessTokenValue)
-                    .append(Config.FranchiseIdKey).append(franchiseId)
-                    .append(Config.OpponentIdKey).append(opponentId)
-                    .append(Config.SeasonIdKey).append(yearId)
+                    .append(Config.FranchiseIdKey).append(teamsContextViewModel.getFranchiseId())
+                    .append(Config.OpponentIdKey).append(teamsContextViewModel.getOpponentId())
+                    .append(Config.SeasonIdKey).append(teamsContextViewModel.getYearId())
                     .append(Config.FranchiseYearSearchKeyValue);
 
             RestTemplate restTemplate = new RestTemplate();
@@ -63,13 +62,13 @@ public class TeamsDrillDownAsyncTask extends AsyncTask<Void, Void, Void> {
             List<TeamsDrillDownViewModel.TeamsDrillDown> resultsList;
             resultsList = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), TeamsDrillDownViewModel.TeamsDrillDown[].class));
 
-            viewModel.updateList(resultsList);
-
             try {
-                Helpers.writeListToInternalStorage(resultsList, context, viewModel.CacheFileKey);
+                Helpers.writeListToInternalStorage(resultsList, context, teamsDrillDownViewModel.CacheFileKey);
             } catch (IOException e) {
                 Log.e("TeamsDrillDownAsyncTask::writeListToInternalStorage", e.getMessage(), e);
             }
+
+            teamsDrillDownViewModel.updateList(resultsList);
 
         } catch (Exception e) {
             Log.e("TeamsDrillDownAsyncTask::doInBackground", e.getMessage(), e);
@@ -90,6 +89,8 @@ public class TeamsDrillDownAsyncTask extends AsyncTask<Void, Void, Void> {
         if(onCompleteListener != null){
             onCompleteListener.onComplete();
         }
+
+        teamsDrillDownViewModel.setIsBusy(false);
     }
 
     public void setOnCompleteListener(OnLoadCompleteListener inOnCompleteListener){

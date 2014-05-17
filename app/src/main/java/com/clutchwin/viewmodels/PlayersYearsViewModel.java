@@ -1,6 +1,7 @@
 package com.clutchwin.viewmodels;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
@@ -8,13 +9,11 @@ import java.util.List;
 
 public class PlayersYearsViewModel {
 
-    private static PlayersYearsViewModel _instance;
-    public static PlayersYearsViewModel Instance() {
-        if(_instance == null){
-            _instance = new PlayersYearsViewModel();
-        }
-        return _instance;
-    }
+    private boolean _isBusy = false;
+    public boolean getIsBusy() { return _isBusy; }
+    public void setIsBusy(boolean b) { _isBusy = b; }
+
+    public static final String CacheFileKey = "playersYears.json";
 
     public List<PlayersYearsViewModel.Year> ITEMS = new ArrayList<PlayersYearsViewModel.Year>();
 
@@ -32,20 +31,20 @@ public class PlayersYearsViewModel {
     /**
      * Year model
      */
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Year {
-        private Number id;
+        private String season;
 
         @JsonCreator
-        public Year(@JsonProperty("id") Number id)
-        {
-            this.id = id;
+        public Year(@JsonProperty("season") String season){
+            this.season = (season==null)? "":season;
         }
 
-        public String getId() { return id.toString(); }
+        public String getId() { return season; }
 
         @Override
         public String toString() {
-            return id.toString();
+            return season;
         }
     }
 }

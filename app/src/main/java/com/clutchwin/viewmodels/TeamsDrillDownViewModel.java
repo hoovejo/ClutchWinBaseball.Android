@@ -11,14 +11,6 @@ import java.util.List;
 
 public class TeamsDrillDownViewModel {
 
-    private static TeamsDrillDownViewModel _instance;
-    public static TeamsDrillDownViewModel Instance() {
-        if(_instance == null){
-            _instance = new TeamsDrillDownViewModel();
-        }
-        return _instance;
-    }
-
     private boolean _isBusy = false;
     public boolean getIsBusy() { return _isBusy; }
     public void setIsBusy(boolean b) { _isBusy = b; }
@@ -49,6 +41,13 @@ public class TeamsDrillDownViewModel {
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class TeamsDrillDown {
+        private String gameDate;
+        private String team;
+        private String opponent;
+        private Number win;
+        private Number loss;
+        private Number runsFor;
+        private Number runsAgainst;
 
         @JsonCreator
         public TeamsDrillDown(@JsonProperty("game_date") String game_date,
@@ -59,22 +58,14 @@ public class TeamsDrillDownViewModel {
                            @JsonProperty("score") Number score,
                            @JsonProperty("opp_score") Number opp_score)
         {
-            this.gameDate = game_date;
-            this.team = team_abbr;
-            this.opponent = opp_abbr;
-            this.win = win;
-            this.loss = loss;
-            this.runsFor = score;
-            this.runsAgainst = opp_score;
+            this.gameDate = (game_date==null)? "":game_date;
+            this.team = (team_abbr==null)? "":team_abbr;
+            this.opponent = (opp_abbr==null)? "":opp_abbr;
+            this.win = (win==null)? 0:win;
+            this.loss = (loss==null)? 0:loss;
+            this.runsFor = (score==null)? 0:score;
+            this.runsAgainst = (opp_score==null)? 0:opp_score;
         }
-
-        private String gameDate;
-        private String team;
-        private String opponent;
-        private Number win;
-        private Number loss;
-        private Number runsFor;
-        private Number runsAgainst;
 
         public String getGameDate() {
             return gameDate;

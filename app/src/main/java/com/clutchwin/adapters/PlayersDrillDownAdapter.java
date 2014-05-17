@@ -10,15 +10,16 @@ import android.widget.TextView;
 import com.clutchwin.R;
 import com.clutchwin.viewmodels.PlayersDrillDownViewModel;
 
+import java.text.NumberFormat;
 import java.util.List;
 
 public class PlayersDrillDownAdapter extends BaseAdapter {
 
     private final Context context;
     private int layoutResourceId;
-    private List<PlayersDrillDownViewModel.Row> values;
+    private List<PlayersDrillDownViewModel.PlayersDrillDown> values;
 
-    public PlayersDrillDownAdapter(Context context, int layoutResourceId, List<PlayersDrillDownViewModel.Row> values) {
+    public PlayersDrillDownAdapter(Context context, int layoutResourceId, List<PlayersDrillDownViewModel.PlayersDrillDown> values) {
         this.layoutResourceId = layoutResourceId;
         this.context = context;
         this.values = values;
@@ -36,12 +37,12 @@ public class PlayersDrillDownAdapter extends BaseAdapter {
             holder.elementOne = (TextView)convertView.findViewById(R.id.textGameDate);
             holder.elementTwo = (TextView)convertView.findViewById(R.id.textAtBat);
             holder.elementThree = (TextView)convertView.findViewById(R.id.textHit);
-            holder.elementFour = (TextView)convertView.findViewById(R.id.textSecondBase);
-            holder.elementFive = (TextView)convertView.findViewById(R.id.textThirdBase);
-            holder.elementSix = (TextView)convertView.findViewById(R.id.textHomeRun);
-            holder.elementSeven = (TextView)convertView.findViewById(R.id.textRunBattedIn);
-            holder.elementEight = (TextView)convertView.findViewById(R.id.textStrikeOut);
-            holder.elementNine = (TextView)convertView.findViewById(R.id.textBaseBall);
+            holder.elementFour = (TextView)convertView.findViewById(R.id.textWalk);
+            holder.elementFive = (TextView)convertView.findViewById(R.id.textStrikeOut);
+            holder.elementSix = (TextView)convertView.findViewById(R.id.textSecondBase);
+            holder.elementSeven = (TextView)convertView.findViewById(R.id.textThirdBase);
+            holder.elementEight = (TextView)convertView.findViewById(R.id.textHomeRun);
+            holder.elementNine = (TextView)convertView.findViewById(R.id.textRunBattedIn);
             holder.elementTen = (TextView)convertView.findViewById(R.id.textAverage);
 
             convertView.setTag(holder);
@@ -51,17 +52,23 @@ public class PlayersDrillDownAdapter extends BaseAdapter {
             holder = (PerformanceViewElementHolder)convertView.getTag();
         }
 
-        PlayersDrillDownViewModel.Row resultRow = values.get(position);
+        PlayersDrillDownViewModel.PlayersDrillDown resultRow = values.get(position);
         holder.elementOne.setText(resultRow.getGameDate());
         holder.elementTwo.setText(resultRow.getAtBat().toString());
         holder.elementThree.setText(resultRow.getHit().toString());
-        holder.elementFour.setText(resultRow.getSecondBase().toString());
-        holder.elementFive.setText(resultRow.getThirdBase().toString());
-        holder.elementSix.setText(resultRow.getHomeRun().toString());
-        holder.elementSeven.setText(resultRow.getRunBattedIn().toString());
-        holder.elementEight.setText(resultRow.getStrikeOut().toString());
-        holder.elementNine.setText(resultRow.getBaseBall().toString());
-        holder.elementTen.setText(resultRow.getAverage());
+        holder.elementFour.setText(resultRow.getWalks().toString());
+        holder.elementFive.setText(resultRow.getStrikeOut().toString());
+        holder.elementSix.setText(resultRow.getSecondBase().toString());
+        holder.elementSeven.setText(resultRow.getThirdBase().toString());
+        holder.elementEight.setText(resultRow.getHomeRun().toString());
+        holder.elementNine.setText(resultRow.getRunBattedIn().toString());
+
+        NumberFormat numberFormat = NumberFormat.getNumberInstance();
+        numberFormat.setMaximumFractionDigits(3);
+        numberFormat.setMinimumFractionDigits(3);
+        String averageAsString = numberFormat.format(resultRow.getAverage().doubleValue());
+
+        holder.elementTen.setText(averageAsString);
 
         return convertView;
     }

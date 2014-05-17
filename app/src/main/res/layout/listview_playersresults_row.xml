@@ -16,19 +16,6 @@
     </TableRow>
 
     <TableRow>
-        <TextView android:text="Game type"
-            android:padding="5dp"
-            android:layout_marginLeft="10dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <TextView android:id="@+id/textType"
-            android:textSize="14sp"
-            android:padding="5dp"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"/>
-    </TableRow>
-
-    <TableRow>
         <TextView android:text="Games"
             android:padding="5dp"
             android:layout_marginLeft="10dp"
@@ -68,7 +55,33 @@
     </TableRow>
 
     <TableRow>
-        <TextView android:text="Second Bases"
+        <TextView android:text="Walks"
+            android:padding="5dp"
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <TextView android:id="@+id/textWalk"
+            android:textSize="14sp"
+            android:padding="5dp"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"/>
+    </TableRow>
+
+    <TableRow>
+        <TextView android:text="Strike outs"
+            android:padding="5dp"
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <TextView android:id="@+id/textStrikeOut"
+            android:textSize="14sp"
+            android:padding="5dp"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"/>
+    </TableRow>
+
+    <TableRow>
+        <TextView android:text="Second base hits"
             android:padding="5dp"
             android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
@@ -81,7 +94,7 @@
     </TableRow>
 
     <TableRow>
-        <TextView android:text="Third Bases"
+        <TextView android:text="Third base hits"
             android:padding="5dp"
             android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
@@ -113,32 +126,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         <TextView android:id="@+id/textRunBattedIn"
-            android:textSize="14sp"
-            android:padding="5dp"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"/>
-    </TableRow>
-
-    <TableRow>
-        <TextView android:text="Strike outs"
-            android:padding="5dp"
-            android:layout_marginLeft="10dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <TextView android:id="@+id/textStrikeOut"
-            android:textSize="14sp"
-            android:padding="5dp"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"/>
-    </TableRow>
-
-    <TableRow>
-        <TextView android:text="Base balls"
-            android:padding="5dp"
-            android:layout_marginLeft="10dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <TextView android:id="@+id/textBaseBall"
             android:textSize="14sp"
             android:padding="5dp"
             android:layout_width="fill_parent"

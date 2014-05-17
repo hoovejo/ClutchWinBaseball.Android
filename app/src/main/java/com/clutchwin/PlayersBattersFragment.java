@@ -1,6 +1,7 @@
 package com.clutchwin;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -13,6 +14,8 @@ import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.clutchwin.cachetasks.PlayersBattersCacheAsyncTask;
+import com.clutchwin.common.Helpers;
 import com.clutchwin.service.PlayersBattersAsyncTask;
 import com.clutchwin.viewmodels.PlayersBattersViewModel;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
@@ -30,6 +33,7 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
 
     private OnFragmentInteractionListener mListener;
     private ServiceCompleteImpl onServiceComplete;
+    private CacheCompleteImpl onCacheComplete;
     /**
      * The fragment's ListView/GridView.
      */
@@ -77,18 +81,26 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        playersContextViewModel = PlayersContextViewModel.Instance();
-        playersBattersViewModel = playersContextViewModel.getPlayersBattersViewModel();
+        Context activity = getActivity();
+        ClutchWinApplication app = (ClutchWinApplication)activity.getApplicationContext();
+        playersContextViewModel = app.getPlayersContextViewModel();
+        playersBattersViewModel = app.getPlayersBattersViewModel();
 
-        if(playersContextViewModel.shouldExecuteLoadBatters()) {
-            onServiceComplete = new ServiceCompleteImpl();
-            PlayersBattersAsyncTask task = new PlayersBattersAsyncTask(getActivity(), playersBattersViewModel,
-                    playersContextViewModel.getTeamId(), playersContextViewModel.getYearId());
-            task.setOnCompleteListener(onServiceComplete);
-            task.execute();
+        if(playersBattersViewModel.ITEMS.isEmpty() && !playersBattersViewModel.getIsBusy()) {
+
+            if(Helpers.checkFileExists(activity, playersBattersViewModel.CacheFileKey)) {
+                onCacheComplete = new CacheCompleteImpl();
+                PlayersBattersCacheAsyncTask cacheAsyncTask = new PlayersBattersCacheAsyncTask(activity, playersBattersViewModel);
+                cacheAsyncTask.setOnCompleteListener(onCacheComplete);
+                cacheAsyncTask.execute();
+            } else {
+                initiateServiceCall(false);
+            }
+        }else {
+            initiateServiceCall(false);
         }
 
-        mAdapter = new ArrayAdapter<PlayersBattersViewModel.Batter>(getActivity(),
+        mAdapter = new ArrayAdapter<PlayersBattersViewModel.Batter>(activity,
                 android.R.layout.simple_list_item_1, android.R.id.text1, playersBattersViewModel.ITEMS);
     }
 
@@ -190,6 +202,16 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
         public void onGoToTeamsInteraction();
     }
 
+    private void initiateServiceCall(boolean force){
+        if(playersContextViewModel.shouldExecuteLoadBatters() || force) {
+            onServiceComplete = new ServiceCompleteImpl();
+            PlayersBattersAsyncTask task = new PlayersBattersAsyncTask(getActivity(), playersContextViewModel,
+                    playersBattersViewModel);
+            task.setOnCompleteListener(onServiceComplete);
+            task.execute();
+        }
+    }
+
     private class ServiceCompleteImpl implements PlayersBattersAsyncTask.OnLoadCompleteListener {
         @Override
         public void onComplete(){
@@ -202,6 +224,16 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
                 // fragment is attached to one) that a failure has happened.
                 mListener.onPlayersBattersInteractionFail();
             }
+        }
+    }
+
+    private class CacheCompleteImpl implements PlayersBattersCacheAsyncTask.OnLoadCompleteListener {
+        @Override
+        public void onComplete(){ ((ArrayAdapter) mAdapter).notifyDataSetChanged(); }
+        @Override
+        public void onFailure(){
+            //if any failure occurs loading cache, just call the service for fresh seasons
+            initiateServiceCall(true);
         }
     }
 }

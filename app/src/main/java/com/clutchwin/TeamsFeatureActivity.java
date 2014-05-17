@@ -57,27 +57,24 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_teamsfeature);
 
-        teamsContextViewModel = TeamsContextViewModel.Instance();
+        ClutchWinApplication app = (ClutchWinApplication)getApplicationContext();
+        teamsContextViewModel = app.getTeamsContextViewModel();
 
         //if cache file exists and we have a new instance, then rehydrate from cache
-        if(Helpers.checkFileExists(this, teamsContextViewModel.CacheFileKey) && teamsContextViewModel.needsInnerRehydrate()){
+        if(Helpers.checkFileExists(this, teamsContextViewModel.CacheFileKey) && !teamsContextViewModel.getIsHydratedObject()){
             Object outObject;
             try {
                 outObject = Helpers.readObjectFromInternalStorage(this, teamsContextViewModel.CacheFileKey);
                 Gson gson = new GsonBuilder().create();
                 teamsContextViewModel = gson.fromJson(outObject.toString(), TeamsContextViewModel.class);
+                teamsContextViewModel.setIsHydratedObject(true);
+                app.setHydratedTeamsContextViewModel(teamsContextViewModel);
             } catch (IOException e) {
                 Log.e("TeamsFeatureActivity::onCreate", e.getMessage(), e);
             } catch (ClassNotFoundException e) {
                 Log.e("TeamsFeatureActivity::onCreate", e.getMessage(), e);
             }
         }
-
-        if(teamsContextViewModel.needsInnerRehydrate()){
-            teamsContextViewModel.rehydrateSecondaries();
-        }
-
-        Current = this;
 
         // Set up the action bar.
         final ActionBar actionBar = getSupportActionBar();
@@ -120,6 +117,8 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
                             .setText(mSectionsPagerAdapter.getPageTitle(i))
                             .setTabListener(this));
         }
+
+        Current = this;
     }
 
     @Override

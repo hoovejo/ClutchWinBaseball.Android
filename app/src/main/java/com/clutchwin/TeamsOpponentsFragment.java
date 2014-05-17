@@ -13,7 +13,7 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.clutchwin.adapters.TeamsFranchisesAdapter;
-import com.clutchwin.cachetasks.OpponentsCacheAsyncTask;
+import com.clutchwin.cachetasks.TeamsOpponentsCacheAsyncTask;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.service.TeamsOpponentsAsyncTask;
@@ -70,17 +70,17 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        teamsContextViewModel = TeamsContextViewModel.Instance();
-        teamsFranchisesViewModel = teamsContextViewModel.getTeamsFranchisesViewModel();
-        teamsOpponentsViewModel = teamsContextViewModel.getTeamsOpponentsViewModel();
-
         Context activity = getActivity();
+        ClutchWinApplication app = (ClutchWinApplication)activity.getApplicationContext();
+        teamsContextViewModel = app.getTeamsContextViewModel();
+        teamsFranchisesViewModel = app.getTeamsFranchisesViewModel();
+        teamsOpponentsViewModel = app.getTeamsOpponentsViewModel();
 
         if(teamsOpponentsViewModel.ITEMS.isEmpty() && !teamsOpponentsViewModel.getIsBusy()) {
 
             if(Helpers.checkFileExists(activity, teamsFranchisesViewModel.CacheFileKey)) {
                 onCacheComplete = new CacheCompleteImpl();
-                OpponentsCacheAsyncTask cacheAsyncTask = new OpponentsCacheAsyncTask(activity, teamsContextViewModel,
+                TeamsOpponentsCacheAsyncTask cacheAsyncTask = new TeamsOpponentsCacheAsyncTask(activity, teamsContextViewModel,
                         teamsOpponentsViewModel, teamsFranchisesViewModel);
                 cacheAsyncTask.setOnCompleteListener(onCacheComplete);
                 cacheAsyncTask.execute();
@@ -187,7 +187,7 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
         }
     }
 
-    private class CacheCompleteImpl implements OpponentsCacheAsyncTask.OnLoadCompleteListener {
+    private class CacheCompleteImpl implements TeamsOpponentsCacheAsyncTask.OnLoadCompleteListener {
         @Override
         public void onComplete(){ mAdapter.notifyDataSetChanged(); }
         @Override

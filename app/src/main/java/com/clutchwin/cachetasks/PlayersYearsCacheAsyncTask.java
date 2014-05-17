@@ -1,4 +1,4 @@
-package com.clutchwin.service;
+package com.clutchwin.cachetasks;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -6,25 +6,25 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.clutchwin.R;
-import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.PlayersYearsViewModel;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
+import org.json.JSONArray;
 
-import java.io.IOException;
-import java.util.Arrays;
+import java.lang.reflect.Type;
 import java.util.List;
 
-public class PlayersYearsAsyncTask extends AsyncTask<Void, Void, Void> {
+public class PlayersYearsCacheAsyncTask extends AsyncTask<Void, Void, Void> {
 
     private ProgressDialog progressDialog;
     private Context context;
     private OnLoadCompleteListener onCompleteListener;
     private PlayersYearsViewModel playersYearsViewModel;
 
-    public PlayersYearsAsyncTask(Context inContext, PlayersYearsViewModel inViewModel){
+    public PlayersYearsCacheAsyncTask(Context inContext, PlayersYearsViewModel inViewModel){
         context = inContext;
         playersYearsViewModel = inViewModel;
     }
@@ -40,30 +40,20 @@ public class PlayersYearsAsyncTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected Void doInBackground(Void... params) {
+        Object outObject;
         try {
 
             playersYearsViewModel.setIsBusy(true);
-            //http://clutchwin.com/api/v1/seasons.json?
-            //access_token=abc
-            final String baseUrl = Config.Years;
-            StringBuffer finalUrl = new StringBuffer(baseUrl);
-            finalUrl.append(Config.AccessTokenKey).append(Config.AccessTokenValue);
 
-            RestTemplate restTemplate = new RestTemplate();
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            List<PlayersYearsViewModel.Year> yearList;
-            yearList = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), PlayersYearsViewModel.Year[].class));
-
-            try {
-                Helpers.writeListToInternalStorage(yearList, context, playersYearsViewModel.CacheFileKey);
-            } catch (IOException e) {
-                Log.e("PlayersYearsAsyncTask::writeListToInternalStorage", e.getMessage(), e);
-            }
-
-            playersYearsViewModel.updateList(yearList);
+            outObject = Helpers.readObjectFromInternalStorage(context, playersYearsViewModel.CacheFileKey);
+            Gson gson = new GsonBuilder().create();
+            JSONArray jsonArray = new JSONArray(outObject.toString());
+            Type listType = new TypeToken<List<PlayersYearsViewModel.Year>>(){}.getType();
+            List<PlayersYearsViewModel.Year> list = gson.fromJson(jsonArray.toString(), listType);
+            playersYearsViewModel.updateList(list);
 
         } catch (Exception e) {
-            Log.e("PlayersYearsAsyncTask::doInBackground", e.getMessage(), e);
+            Log.e("PlayersYearsCacheAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
                 onCompleteListener.onFailure();
             }
@@ -81,7 +71,6 @@ public class PlayersYearsAsyncTask extends AsyncTask<Void, Void, Void> {
         if(onCompleteListener != null){
             onCompleteListener.onComplete();
         }
-
         playersYearsViewModel.setIsBusy(false);
     }
 

@@ -1,39 +1,14 @@
 package com.clutchwin.viewmodels;
 
-import android.os.Parcel;
-import android.os.Parcelable;
+public class PlayersContextViewModel {
 
-public class PlayersContextViewModel implements Parcelable {
+    public static final String CacheFileKey = "playersContextViewModel.json";
 
-    private static PlayersContextViewModel _instance;
-    public static PlayersContextViewModel Instance() {
-        if(_instance == null){
-            _instance = new PlayersContextViewModel();
-        }
-        return _instance;
-    }
+    public PlayersContextViewModel(){}
 
-    private PlayersYearsViewModel playersYearsViewModel;
-    public PlayersYearsViewModel getPlayersYearsViewModel() { return playersYearsViewModel; };
-    private PlayersTeamsViewModel playersTeamsViewModel;
-    public PlayersTeamsViewModel getPlayersTeamsViewModel() { return playersTeamsViewModel; };
-    private PlayersBattersViewModel playersBattersViewModel;
-    public PlayersBattersViewModel getPlayersBattersViewModel() { return playersBattersViewModel; };
-    private PlayersPitchersViewModel playersPitchersViewModel;
-    public PlayersPitchersViewModel getPlayersPitchersViewModel() { return playersPitchersViewModel; };
-    private PlayersResultsViewModel playersResultsViewModel;
-    public PlayersResultsViewModel getPlayersResultsViewModel() { return playersResultsViewModel; };
-    private PlayersDrillDownViewModel playersDrillDownViewModel;
-    public PlayersDrillDownViewModel getPlayersDrillDownViewModel() { return playersDrillDownViewModel; };
-
-    public PlayersContextViewModel(){
-        playersYearsViewModel = PlayersYearsViewModel.Instance();
-        playersTeamsViewModel = PlayersTeamsViewModel.Instance();
-        playersBattersViewModel = PlayersBattersViewModel.Instance();
-        playersPitchersViewModel = PlayersPitchersViewModel.Instance();
-        playersResultsViewModel = PlayersResultsViewModel.Instance();
-        playersDrillDownViewModel = PlayersDrillDownViewModel.Instance();
-    }
+    private transient boolean isHydratedObject = false;
+    public boolean getIsHydratedObject() { return isHydratedObject; }
+    public void setIsHydratedObject(boolean b) { isHydratedObject = b; }
 
     private String yearId;
     public String getYearId() { return yearId; }
@@ -45,7 +20,9 @@ public class PlayersContextViewModel implements Parcelable {
 
     private String batterId;
     public String getBatterId() { return batterId; }
-    public void setBatterId(String id) { batterId = id; }
+    public void setBatterId(String id) {
+        batterId = id;
+    }
 
     private String pitcherId;
     public String getPitcherId() { return pitcherId; }
@@ -54,10 +31,6 @@ public class PlayersContextViewModel implements Parcelable {
     private String resultYearId;
     public String getResultYearId() { return resultYearId; }
     public void setResultYearId(String id) { resultYearId = id; }
-
-    private String gameType;
-    public String getGameType() { return gameType; }
-    public void setGameType(String type) { gameType = type; }
 
     private String lastYearId;
 
@@ -124,15 +97,14 @@ public class PlayersContextViewModel implements Parcelable {
     private String lastDrillDownBatterId;
     private String lastDrillDownPitcherId;
     private String lastDrillDownResultYearId;
-    private String lastDrillDownGameType;
 
     public boolean shouldExecutePlayersDrillDownSearch(){
         boolean returnValue;
-        if(batterId == null || pitcherId == null || resultYearId == null || gameType == null ||
+        if(batterId == null || pitcherId == null || resultYearId == null ||
                 lastDrillDownBatterId == null || lastDrillDownPitcherId == null ||
-                lastDrillDownResultYearId == null || lastDrillDownGameType == null ||
+                lastDrillDownResultYearId == null ||
                 !lastDrillDownBatterId.equals(batterId) || !lastDrillDownPitcherId.equals(pitcherId) ||
-                !lastDrillDownResultYearId.equals(resultYearId) || !lastDrillDownGameType.equals(gameType)){
+                !lastDrillDownResultYearId.equals(resultYearId) ){
             returnValue = true;
         } else {
             returnValue = false;
@@ -140,17 +112,6 @@ public class PlayersContextViewModel implements Parcelable {
         lastDrillDownBatterId = batterId;
         lastDrillDownPitcherId = pitcherId;
         lastDrillDownResultYearId = resultYearId;
-        lastDrillDownGameType = gameType;
         return returnValue;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
-
     }
 }

@@ -11,13 +11,11 @@ import java.util.List;
 
 public class PlayersPitchersViewModel {
 
-    private static PlayersPitchersViewModel _instance;
-    public static PlayersPitchersViewModel Instance() {
-        if(_instance == null){
-            _instance = new PlayersPitchersViewModel();
-        }
-        return _instance;
-    }
+    private boolean _isBusy = false;
+    public boolean getIsBusy() { return _isBusy; }
+    public void setIsBusy(boolean b) { _isBusy = b; }
+
+    public static final String CacheFileKey = "playersPitchers.json";
 
     public List<PlayersPitchersViewModel.Row> ITEMS = new ArrayList<PlayersPitchersViewModel.Row>();
 

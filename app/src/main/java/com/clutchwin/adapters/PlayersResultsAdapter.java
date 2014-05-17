@@ -10,15 +10,16 @@ import android.widget.TextView;
 import com.clutchwin.R;
 import com.clutchwin.viewmodels.PlayersResultsViewModel;
 
+import java.text.NumberFormat;
 import java.util.List;
 
 public class PlayersResultsAdapter extends BaseAdapter {
 
     private final Context context;
     private int layoutResourceId;
-    private List<PlayersResultsViewModel.Row> values;
+    private List<PlayersResultsViewModel.PlayersResult> values;
 
-    public PlayersResultsAdapter(Context context, int layoutResourceId, List<PlayersResultsViewModel.Row> values) {
+    public PlayersResultsAdapter(Context context, int layoutResourceId, List<PlayersResultsViewModel.PlayersResult> values) {
         this.layoutResourceId = layoutResourceId;
         this.context = context;
         this.values = values;
@@ -34,17 +35,16 @@ public class PlayersResultsAdapter extends BaseAdapter {
             convertView = inflater.inflate(layoutResourceId, parent, false);
             holder = new PerformanceViewElementHolder();
             holder.elementOne = (TextView)convertView.findViewById(R.id.textYear);
-            holder.elementTwo = (TextView)convertView.findViewById(R.id.textType);
-            holder.elementThree = (TextView)convertView.findViewById(R.id.textGames);
-            holder.elementFour = (TextView)convertView.findViewById(R.id.textAtBat);
-            holder.elementFive = (TextView)convertView.findViewById(R.id.textHit);
-            holder.elementSix = (TextView)convertView.findViewById(R.id.textSecondBase);
-            holder.elementSeven = (TextView)convertView.findViewById(R.id.textThirdBase);
-            holder.elementEight = (TextView)convertView.findViewById(R.id.textHomeRun);
-            holder.elementNine = (TextView)convertView.findViewById(R.id.textRunBattedIn);
-            holder.elementTen = (TextView)convertView.findViewById(R.id.textStrikeOut);
-            holder.elementEleven = (TextView)convertView.findViewById(R.id.textBaseBall);
-            holder.elementTwelve = (TextView)convertView.findViewById(R.id.textAverage);
+            holder.elementTwo = (TextView)convertView.findViewById(R.id.textGames);
+            holder.elementThree = (TextView)convertView.findViewById(R.id.textAtBat);
+            holder.elementFour = (TextView)convertView.findViewById(R.id.textHit);
+            holder.elementFive = (TextView)convertView.findViewById(R.id.textWalk);
+            holder.elementSix = (TextView)convertView.findViewById(R.id.textStrikeOut);
+            holder.elementSeven = (TextView)convertView.findViewById(R.id.textSecondBase);
+            holder.elementEight = (TextView)convertView.findViewById(R.id.textThirdBase);
+            holder.elementNine = (TextView)convertView.findViewById(R.id.textHomeRun);
+            holder.elementTen = (TextView)convertView.findViewById(R.id.textRunBattedIn);
+            holder.elementEleven = (TextView)convertView.findViewById(R.id.textAverage);
             convertView.setTag(holder);
         }
         else
@@ -52,19 +52,24 @@ public class PlayersResultsAdapter extends BaseAdapter {
             holder = (PerformanceViewElementHolder)convertView.getTag();
         }
 
-        PlayersResultsViewModel.Row resultRow = values.get(position);
+        PlayersResultsViewModel.PlayersResult resultRow = values.get(position);
         holder.elementOne.setText(resultRow.getYear());
-        holder.elementTwo.setText(resultRow.getType());
-        holder.elementThree.setText(resultRow.getGames().toString());
-        holder.elementFour.setText(resultRow.getAtBat().toString());
-        holder.elementFive.setText(resultRow.getHit().toString());
-        holder.elementSix.setText(resultRow.getSecondBase().toString());
-        holder.elementSeven.setText(resultRow.getThirdBase().toString());
-        holder.elementEight.setText(resultRow.getHomeRun().toString());
-        holder.elementNine.setText(resultRow.getRunBattedIn().toString());
-        holder.elementTen.setText(resultRow.getStrikeOut().toString());
-        holder.elementEleven.setText(resultRow.getBaseBall().toString());
-        holder.elementTwelve.setText(resultRow.getAverage());
+        holder.elementTwo.setText(resultRow.getGames().toString());
+        holder.elementThree.setText(resultRow.getAtBat().toString());
+        holder.elementFour.setText(resultRow.getHit().toString());
+        holder.elementFive.setText(resultRow.getWalks().toString());
+        holder.elementSix.setText(resultRow.getStrikeOut().toString());
+        holder.elementSeven.setText(resultRow.getSecondBase().toString());
+        holder.elementEight.setText(resultRow.getThirdBase().toString());
+        holder.elementNine.setText(resultRow.getHomeRun().toString());
+        holder.elementTen.setText(resultRow.getRunBattedIn().toString());
+
+        NumberFormat numberFormat = NumberFormat.getNumberInstance();
+        numberFormat.setMaximumFractionDigits(3);
+        numberFormat.setMinimumFractionDigits(3);
+        String averageAsString = numberFormat.format(resultRow.getAverage().doubleValue());
+
+        holder.elementEleven.setText(averageAsString);
 
         return convertView;
     }
@@ -82,7 +87,6 @@ public class PlayersResultsAdapter extends BaseAdapter {
         public TextView elementNine;
         public TextView elementTen;
         public TextView elementEleven;
-        public TextView elementTwelve;
     }
 
     @Override

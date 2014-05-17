@@ -67,10 +67,10 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        teamsContextViewModel = TeamsContextViewModel.Instance();
-        drillDownViewModel = teamsContextViewModel.getTeamsDrillDownViewModel();
-
         Context activity = getActivity();
+        ClutchWinApplication app = (ClutchWinApplication)activity.getApplicationContext();
+        teamsContextViewModel = app.getTeamsContextViewModel();
+        drillDownViewModel = app.getTeamsDrillDownViewModel();
 
         if(drillDownViewModel.ITEMS.isEmpty() && !drillDownViewModel.getIsBusy()) {
 
@@ -153,8 +153,8 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
 
         if(teamsContextViewModel.shouldExecuteTeamDrillDownSearch() && !drillDownViewModel.getIsBusy()) {
             onServiceComplete = new ServiceCompleteImpl();
-            TeamsDrillDownAsyncTask task = new TeamsDrillDownAsyncTask(getActivity(), drillDownViewModel,
-                    teamsContextViewModel.getFranchiseId(), teamsContextViewModel.getOpponentId(), teamsContextViewModel.getYearId());
+            TeamsDrillDownAsyncTask task = new TeamsDrillDownAsyncTask(getActivity(), teamsContextViewModel,
+                    drillDownViewModel);
             task.setOnCompleteListener(onServiceComplete);
             task.execute();
         }
