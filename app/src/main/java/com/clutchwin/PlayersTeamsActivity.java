@@ -17,6 +17,8 @@ public class PlayersTeamsActivity extends FragmentActivity implements PlayersTea
     private PlayersContextViewModel playersContextViewModel;
     private PlayersTeamsFragment teamsFragment;
 
+    public static final String NoInternet = "Internet";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,8 +52,13 @@ public class PlayersTeamsActivity extends FragmentActivity implements PlayersTea
     }
 
     @Override
-    public void onPlayersTeamsInteractionFail() {
-        showMessage(getString(R.string.fatal_error));
+    public void onPlayersTeamsInteractionFail(String type) {
+
+        if(NoInternet.equals(type)){
+            showMessage(getString(R.string.no_internet));
+        } else {
+            showMessage(getString(R.string.fatal_error));
+        }
     }
 
     private void showMessage(String message) {
@@ -61,7 +68,6 @@ public class PlayersTeamsActivity extends FragmentActivity implements PlayersTea
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
-                navigateToHome();
             }
         });
     }

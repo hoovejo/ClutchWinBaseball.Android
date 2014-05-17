@@ -16,6 +16,8 @@ public class PlayersYearsActivity extends FragmentActivity implements PlayersYea
 
     private PlayersContextViewModel playersContextViewModel;
 
+    public static final String NoInternet = "Internet";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,8 +49,13 @@ public class PlayersYearsActivity extends FragmentActivity implements PlayersYea
     }
 
     @Override
-    public void onPlayersYearsInteractionFail() {
-        showMessage(getString(R.string.fatal_error));
+    public void onPlayersYearsInteractionFail(String type) {
+
+        if(NoInternet.equals(type)){
+            showMessage(getString(R.string.no_internet));
+        } else {
+            showMessage(getString(R.string.fatal_error));
+        }
     }
 
     private void showMessage(String message) {
@@ -58,7 +65,6 @@ public class PlayersYearsActivity extends FragmentActivity implements PlayersYea
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
-                navigateToHome();
             }
         });
     }

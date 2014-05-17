@@ -52,6 +52,8 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
 
     public static TeamsFeatureActivity Current;
 
+    public static final String NoInternet = "Internet";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,11 +99,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
                 actionBar.setSelectedNavigationItem(position);
                 Fragment fragment = (Fragment) mSectionsPagerAdapter.instantiateItem(mViewPager, position);
                 if(fragment instanceof IOnShowFragment) {
-                    if(Helpers.isNetworkAvailable(TeamsFeatureActivity.Current)) {
-                        ((IOnShowFragment) fragment).onShowedFragment();
-                    } else {
-                        showMessage(getString(R.string.no_internet));
-                    }
+                    ((IOnShowFragment) fragment).onShowedFragment();
                 }
             }
         });
@@ -123,68 +121,69 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
 
     @Override
     public void onTeamsFranchisesInteraction(String id) {
-        if(Helpers.isNetworkAvailable(this)) {
-            teamsContextViewModel.setFranchiseId(id);
+        teamsContextViewModel.setFranchiseId(id);
 
-            try {
-                Helpers.updateFileState(teamsContextViewModel, this, teamsContextViewModel.CacheFileKey);
-            } catch (IOException e) {
-                Log.e("TeamsFeatureActivity::onTeamsFranchisesInteraction", e.getMessage(), e);
-            }
-
-            getSupportActionBar().setSelectedNavigationItem(1);
-        } else {
-            showMessage(getString(R.string.no_internet));
+        try {
+            Helpers.updateFileState(teamsContextViewModel, this, teamsContextViewModel.CacheFileKey);
+        } catch (IOException e) {
+            Log.e("TeamsFeatureActivity::onTeamsFranchisesInteraction", e.getMessage(), e);
         }
+
+        getSupportActionBar().setSelectedNavigationItem(1);
     }
 
     @Override
-    public void onTeamsFranchisesInteractionFail() {
-        showMessage(getString(R.string.fatal_error));
+    public void onTeamsFranchisesInteractionFail(String type) {
+
+        if(NoInternet.equals(type)){
+            showMessage(getString(R.string.no_internet));
+        } else {
+            showMessage(getString(R.string.fatal_error));
+        }
     }
 
     @Override
     public void onTeamsOpponentsInteraction(String id) {
-        if(Helpers.isNetworkAvailable(this)) {
-            teamsContextViewModel.setOpponentId(id);
+        teamsContextViewModel.setOpponentId(id);
 
-            try {
-                Helpers.updateFileState(teamsContextViewModel, this, teamsContextViewModel.CacheFileKey);
-            } catch (IOException e) {
-                Log.e("TeamsFeatureActivity::onTeamsOpponentsInteraction", e.getMessage(), e);
-            }
-
-            getSupportActionBar().setSelectedNavigationItem(2);
-        } else {
-            showMessage(getString(R.string.no_internet));
+        try {
+            Helpers.updateFileState(teamsContextViewModel, this, teamsContextViewModel.CacheFileKey);
+        } catch (IOException e) {
+            Log.e("TeamsFeatureActivity::onTeamsOpponentsInteraction", e.getMessage(), e);
         }
+
+        getSupportActionBar().setSelectedNavigationItem(2);
     }
 
     @Override
-    public void onTeamsOpponentsInteractionFail() {
-        showMessage(getString(R.string.fatal_error));
+    public void onTeamsOpponentsInteractionFail(String type) {
+        if(NoInternet.equals(type)){
+            showMessage(getString(R.string.no_internet));
+        } else {
+            showMessage(getString(R.string.fatal_error));
+        }
     }
 
     @Override
     public void onTeamsResultsInteraction(String id) {
-        if(Helpers.isNetworkAvailable(this)) {
-            teamsContextViewModel.setYearId(id);
+        teamsContextViewModel.setYearId(id);
 
-            try {
-                Helpers.updateFileState(teamsContextViewModel, this, teamsContextViewModel.CacheFileKey);
-            } catch (IOException e) {
-                Log.e("TeamsFeatureActivity::onTeamsResultsInteraction", e.getMessage(), e);
-            }
-
-            getSupportActionBar().setSelectedNavigationItem(3);
-        } else {
-            showMessage(getString(R.string.no_internet));
+        try {
+            Helpers.updateFileState(teamsContextViewModel, this, teamsContextViewModel.CacheFileKey);
+        } catch (IOException e) {
+            Log.e("TeamsFeatureActivity::onTeamsResultsInteraction", e.getMessage(), e);
         }
+
+        getSupportActionBar().setSelectedNavigationItem(3);
     }
 
     @Override
-    public void onTeamsResultsInteractionFail() {
-        showMessage(getString(R.string.fatal_error));
+    public void onTeamsResultsInteractionFail(String type) {
+        if(NoInternet.equals(type)){
+            showMessage(getString(R.string.no_internet));
+        } else {
+            showMessage(getString(R.string.fatal_error));
+        }
     }
 
     @Override
@@ -197,8 +196,12 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
     }
 
     @Override
-    public void onTeamsDrillDownInteractionFail() {
-        showMessage(getString(R.string.fatal_error));
+    public void onTeamsDrillDownInteractionFail(String type) {
+        if(NoInternet.equals(type)){
+            showMessage(getString(R.string.no_internet));
+        } else {
+            showMessage(getString(R.string.fatal_error));
+        }
     }
 
     @Override
@@ -230,11 +233,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
     public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
         // When the given tab is selected, switch to the corresponding page in
         // the ViewPager.
-        if(Helpers.isNetworkAvailable(this)) {
-            mViewPager.setCurrentItem(tab.getPosition());
-        } else {
-            showMessage(getString(R.string.no_internet));
-        }
+        mViewPager.setCurrentItem(tab.getPosition());
     }
 
     @Override
@@ -252,7 +251,6 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
-                navigateToHome();
             }
         });
         builder.show();

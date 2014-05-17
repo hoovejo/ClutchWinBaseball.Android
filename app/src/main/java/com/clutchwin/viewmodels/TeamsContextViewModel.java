@@ -24,21 +24,23 @@ public class TeamsContextViewModel {
 
     private String lastOpponentFilterFranchiseId;
 
-    public boolean shouldFilterOpponents(){
+    public boolean shouldFilterOpponents(boolean update){
         boolean returnValue;
         if(lastOpponentFilterFranchiseId == null || !lastOpponentFilterFranchiseId.equals(franchiseId)){
             returnValue = true;
         } else {
             returnValue = false;
         }
-        lastOpponentFilterFranchiseId = franchiseId;
+        if(update) {
+            lastOpponentFilterFranchiseId = franchiseId;
+        }
         return returnValue;
     }
 
     private String lastSearchFranchiseId;
     private String lastSearchOpponentId;
 
-    public boolean shouldExecuteTeamResultsSearch(){
+    public boolean shouldExecuteTeamResultsSearch(boolean update){
         boolean returnValue;
         if(franchiseId == null || opponentId == null ||
                 lastSearchFranchiseId == null || lastSearchOpponentId == null ||
@@ -47,8 +49,10 @@ public class TeamsContextViewModel {
         } else {
             returnValue = false;
         }
-        lastSearchFranchiseId = franchiseId;
-        lastSearchOpponentId = opponentId;
+        if(update) {
+            lastSearchFranchiseId = franchiseId;
+            lastSearchOpponentId = opponentId;
+        }
         return returnValue;
     }
 
@@ -56,7 +60,7 @@ public class TeamsContextViewModel {
     private String lastDrillDownOpponentId;
     private String lastDrillDownYearId;
 
-    public boolean shouldExecuteTeamDrillDownSearch(){
+    public boolean shouldExecuteTeamDrillDownSearch(boolean update){
         boolean returnValue;
         if(franchiseId == null || opponentId == null || yearId == null ||
                 lastDrillDownFranchiseId == null || lastDrillDownOpponentId == null ||
@@ -67,9 +71,11 @@ public class TeamsContextViewModel {
         } else {
             returnValue = false;
         }
-        lastDrillDownFranchiseId = franchiseId;
-        lastDrillDownOpponentId = opponentId;
-        lastDrillDownYearId = yearId;
+        if(update) {
+            lastDrillDownFranchiseId = franchiseId;
+            lastDrillDownOpponentId = opponentId;
+            lastDrillDownYearId = yearId;
+        }
         return returnValue;
     }
 }

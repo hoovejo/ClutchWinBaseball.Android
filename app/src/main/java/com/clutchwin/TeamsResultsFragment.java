@@ -154,17 +154,25 @@ public class TeamsResultsFragment extends Fragment implements AbsListView.OnItem
     */
     public interface OnFragmentInteractionListener {
         public void onTeamsResultsInteraction(String id);
-        public void onTeamsResultsInteractionFail();
+        public void onTeamsResultsInteractionFail(String type);
     }
 
     public void onShowedFragment(){
 
-        if(teamsContextViewModel.shouldExecuteTeamResultsSearch() && !resultsViewModel.getIsBusy()) {
-            onServiceComplete = new ServiceCompleteImpl();
-            TeamsResultsAsyncTask task = new TeamsResultsAsyncTask(getActivity(), teamsContextViewModel,
-                    resultsViewModel);
-            task.setOnCompleteListener(onServiceComplete);
-            task.execute();
+        boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
+
+        if(teamsContextViewModel.shouldExecuteTeamResultsSearch(netAvailable) && !resultsViewModel.getIsBusy()) {
+            if(netAvailable) {
+                onServiceComplete = new ServiceCompleteImpl();
+                TeamsResultsAsyncTask task = new TeamsResultsAsyncTask(getActivity(), teamsContextViewModel,
+                        resultsViewModel);
+                task.setOnCompleteListener(onServiceComplete);
+                task.execute();
+            } else {
+                if (null != mListener) {
+                    mListener.onTeamsResultsInteractionFail(TeamsFeatureActivity.NoInternet);
+                }
+            }
         }
     }
 
@@ -178,7 +186,7 @@ public class TeamsResultsFragment extends Fragment implements AbsListView.OnItem
             if (null != mListener) {
                 // Notify the active callbacks interface (the activity, if the
                 // fragment is attached to one) that a failure has happened.
-                mListener.onTeamsResultsInteractionFail();
+                mListener.onTeamsResultsInteractionFail("");
             }
         }
     }
@@ -191,7 +199,7 @@ public class TeamsResultsFragment extends Fragment implements AbsListView.OnItem
             if (null != mListener) {
                 // Notify the active callbacks interface (the activity, if the
                 // fragment is attached to one) that a failure has happened.
-                mListener.onTeamsResultsInteractionFail();
+                mListener.onTeamsResultsInteractionFail("");
             }
         }
     }

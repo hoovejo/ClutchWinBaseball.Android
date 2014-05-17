@@ -157,14 +157,23 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
     */
     public interface OnFragmentInteractionListener {
         public void onTeamsFranchisesInteraction(String id);
-        public void onTeamsFranchisesInteractionFail();
+        public void onTeamsFranchisesInteractionFail(String type);
     }
 
     private void initiateServiceCall(){
-        onServiceComplete = new ServiceCompleteImpl();
-        TeamsFranchisesAsyncTask task = new TeamsFranchisesAsyncTask(getActivity(), teamsFranchisesViewModel);
-        task.setOnCompleteListener(onServiceComplete);
-        task.execute();
+
+        boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
+
+        if(netAvailable) {
+            onServiceComplete = new ServiceCompleteImpl();
+            TeamsFranchisesAsyncTask task = new TeamsFranchisesAsyncTask(getActivity(), teamsFranchisesViewModel);
+            task.setOnCompleteListener(onServiceComplete);
+            task.execute();
+        } else {
+            if (null != mListener) {
+                mListener.onTeamsFranchisesInteractionFail(TeamsFeatureActivity.NoInternet);
+            }
+        }
     }
 
     private class ServiceCompleteImpl implements TeamsFranchisesAsyncTask.OnLoadCompleteListener {
@@ -175,7 +184,7 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
             if (null != mListener) {
                 // Notify the active callbacks interface (the activity, if the
                 // fragment is attached to one) that a failure has happened.
-                mListener.onTeamsFranchisesInteractionFail();
+                mListener.onTeamsFranchisesInteractionFail("");
             }
         }
     }

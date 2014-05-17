@@ -20,9 +20,7 @@ public class PlayersContextViewModel {
 
     private String batterId;
     public String getBatterId() { return batterId; }
-    public void setBatterId(String id) {
-        batterId = id;
-    }
+    public void setBatterId(String id) { batterId = id; }
 
     private String pitcherId;
     public String getPitcherId() { return pitcherId; }
@@ -34,14 +32,16 @@ public class PlayersContextViewModel {
 
     private String lastYearId;
 
-    public boolean shouldExecuteLoadTeams(){
+    public boolean shouldExecuteLoadTeams(boolean update){
         boolean returnValue;
         if(lastYearId == null || !lastYearId.equals(yearId)){
             returnValue = true;
         } else {
             returnValue = false;
         }
-        lastYearId = yearId;
+        if(update) {
+            lastYearId = yearId;
+        }
         return returnValue;
     }
 
@@ -53,34 +53,38 @@ public class PlayersContextViewModel {
         }
     }
 
-    public boolean shouldExecuteLoadBatters(){
+    public boolean shouldExecuteLoadBatters(boolean update){
         boolean returnValue;
         if(loadBatters){
             returnValue = true;
         } else {
             returnValue = false;
         }
-        lastTeamId = teamId;
+        if(update) {
+            lastTeamId = teamId;
+        }
         return returnValue;
     }
 
     private String lastBatterId;
 
-    public boolean shouldExecuteLoadPitchers(){
+    public boolean shouldExecuteLoadPitchers(boolean update){
         boolean returnValue;
         if(lastBatterId == null || !lastBatterId.equals(batterId)){
             returnValue = true;
         } else {
             returnValue = false;
         }
-        lastBatterId = batterId;
+        if(update) {
+            lastBatterId = batterId;
+        }
         return returnValue;
     }
 
     private String lastSearchBatterId;
     private String lastSearchPitcherId;
 
-    public boolean shouldExecutePlayerResultsSearch(){
+    public boolean shouldExecutePlayerResultsSearch(boolean update){
         boolean returnValue;
         if(batterId == null || pitcherId == null ||
                 lastSearchBatterId == null || lastSearchPitcherId == null ||
@@ -89,8 +93,10 @@ public class PlayersContextViewModel {
         } else {
             returnValue = false;
         }
-        lastSearchBatterId = batterId;
-        lastSearchPitcherId = pitcherId;
+        if(update) {
+            lastSearchBatterId = batterId;
+            lastSearchPitcherId = pitcherId;
+        }
         return returnValue;
     }
 
@@ -98,7 +104,7 @@ public class PlayersContextViewModel {
     private String lastDrillDownPitcherId;
     private String lastDrillDownResultYearId;
 
-    public boolean shouldExecutePlayersDrillDownSearch(){
+    public boolean shouldExecutePlayersDrillDownSearch(boolean update){
         boolean returnValue;
         if(batterId == null || pitcherId == null || resultYearId == null ||
                 lastDrillDownBatterId == null || lastDrillDownPitcherId == null ||
@@ -109,9 +115,11 @@ public class PlayersContextViewModel {
         } else {
             returnValue = false;
         }
-        lastDrillDownBatterId = batterId;
-        lastDrillDownPitcherId = pitcherId;
-        lastDrillDownResultYearId = resultYearId;
+        if(update) {
+            lastDrillDownBatterId = batterId;
+            lastDrillDownPitcherId = pitcherId;
+            lastDrillDownResultYearId = resultYearId;
+        }
         return returnValue;
     }
 }

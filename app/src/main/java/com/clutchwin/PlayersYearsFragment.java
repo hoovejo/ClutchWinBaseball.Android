@@ -154,14 +154,25 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
     */
     public interface OnFragmentInteractionListener {
         public void onPlayersYearsInteraction(String id);
-        public void onPlayersYearsInteractionFail();
+        public void onPlayersYearsInteractionFail(String type);
     }
 
     private void initiateServiceCall(){
-        onServiceComplete = new ServiceCompleteImpl();
-        PlayersYearsAsyncTask task = new PlayersYearsAsyncTask(getActivity(), playersYearsViewModel);
-        task.setOnCompleteListener(onServiceComplete);
-        task.execute();
+
+        boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
+
+        if(netAvailable) {
+            onServiceComplete = new ServiceCompleteImpl();
+            PlayersYearsAsyncTask task = new PlayersYearsAsyncTask(getActivity(), playersYearsViewModel);
+            task.setOnCompleteListener(onServiceComplete);
+            task.execute();
+        } else {
+            if (null != mListener) {
+                // Notify the active callbacks interface (the activity, if the
+                // fragment is attached to one) that a failure has happened.
+                mListener.onPlayersYearsInteractionFail(PlayersYearsActivity.NoInternet);
+            }
+        }
     }
 
     private class ServiceCompleteImpl implements PlayersYearsAsyncTask.OnLoadCompleteListener {
@@ -174,7 +185,7 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
             if (null != mListener) {
                 // Notify the active callbacks interface (the activity, if the
                 // fragment is attached to one) that a failure has happened.
-                mListener.onPlayersYearsInteractionFail();
+                mListener.onPlayersYearsInteractionFail("");
             }
         }
     }

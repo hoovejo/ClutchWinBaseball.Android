@@ -51,6 +51,8 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
 
     public static PlayersFeatureActivity Current;
 
+    public static final String NoInternet = "Internet";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,11 +98,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
                 actionBar.setSelectedNavigationItem(position);
                 Fragment fragment = (Fragment) mSectionsPagerAdapter.instantiateItem(mViewPager, position);
                 if(fragment instanceof IOnShowFragment) {
-                    if(Helpers.isNetworkAvailable(PlayersFeatureActivity.Current)) {
-                        ((IOnShowFragment) fragment).onShowedFragment();
-                    } else {
-                        showMessage(getString(R.string.no_internet));
-                    }
+                    ((IOnShowFragment) fragment).onShowedFragment();
                 }
             }
         });
@@ -122,90 +120,82 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
 
     @Override
     public void onGoToYearsInteraction() {
-        if(Helpers.isNetworkAvailable(this)) {
-            Intent i = new Intent(this, PlayersYearsActivity.class);
-            startActivity(i);
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-        } else {
-            showMessage(getString(R.string.no_internet));
-        }
+        Intent i = new Intent(this, PlayersYearsActivity.class);
+        startActivity(i);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     @Override
     public void onGoToTeamsInteraction() {
-        if(Helpers.isNetworkAvailable(this)) {
-            Intent i = new Intent(this, PlayersTeamsActivity.class);
-            startActivity(i);
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-        } else {
-            showMessage(getString(R.string.no_internet));
-        }
+        Intent i = new Intent(this, PlayersTeamsActivity.class);
+        startActivity(i);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     @Override
     public void onPlayersBattersInteraction(String id) {
-        if(Helpers.isNetworkAvailable(this)) {
-            playersContextViewModel.setBatterId(id);
+        playersContextViewModel.setBatterId(id);
 
-            try {
-                Helpers.updateFileState(playersContextViewModel, this, playersContextViewModel.CacheFileKey);
-            } catch (IOException e) {
-                Log.e("PlayersFeatureActivity::onPlayersBattersInteraction", e.getMessage(), e);
-            }
-
-            getSupportActionBar().setSelectedNavigationItem(1);
-        } else {
-            showMessage(getString(R.string.no_internet));
+        try {
+            Helpers.updateFileState(playersContextViewModel, this, playersContextViewModel.CacheFileKey);
+        } catch (IOException e) {
+            Log.e("PlayersFeatureActivity::onPlayersBattersInteraction", e.getMessage(), e);
         }
+
+        getSupportActionBar().setSelectedNavigationItem(1);
     }
 
     @Override
-    public void onPlayersBattersInteractionFail() {
-        showMessage(getString(R.string.fatal_error));
+    public void onPlayersBattersInteractionFail(String type) {
+        if(NoInternet.equals(type)){
+            showMessage(getString(R.string.no_internet));
+        } else {
+            showMessage(getString(R.string.fatal_error));
+        }
     }
 
     @Override
     public void onPlayersPitchersInteraction(String id) {
-        if(Helpers.isNetworkAvailable(this)) {
-            playersContextViewModel.setPitcherId(id);
+        playersContextViewModel.setPitcherId(id);
 
-            try {
-                Helpers.updateFileState(playersContextViewModel, this, playersContextViewModel.CacheFileKey);
-            } catch (IOException e) {
-                Log.e("PlayersFeatureActivity::onPlayersPitchersInteraction", e.getMessage(), e);
-            }
-
-            getSupportActionBar().setSelectedNavigationItem(2);
-        } else {
-            showMessage(getString(R.string.no_internet));
+        try {
+            Helpers.updateFileState(playersContextViewModel, this, playersContextViewModel.CacheFileKey);
+        } catch (IOException e) {
+            Log.e("PlayersFeatureActivity::onPlayersPitchersInteraction", e.getMessage(), e);
         }
+
+        getSupportActionBar().setSelectedNavigationItem(2);
     }
 
     @Override
-    public void onPlayersPitchersInteractionFail() {
-        showMessage(getString(R.string.fatal_error));
+    public void onPlayersPitchersInteractionFail(String type) {
+        if(NoInternet.equals(type)){
+            showMessage(getString(R.string.no_internet));
+        } else {
+            showMessage(getString(R.string.fatal_error));
+        }
     }
 
     @Override
     public void onPlayersResultsInteraction(String id) {
-        if(Helpers.isNetworkAvailable(this)) {
-            playersContextViewModel.setResultYearId(id);
+        playersContextViewModel.setResultYearId(id);
 
-            try {
-                Helpers.updateFileState(playersContextViewModel, this, playersContextViewModel.CacheFileKey);
-            } catch (IOException e) {
-                Log.e("PlayersFeatureActivity::onPlayersResultsInteraction", e.getMessage(), e);
-            }
-
-            getSupportActionBar().setSelectedNavigationItem(3);
-        } else {
-            showMessage(getString(R.string.no_internet));
+        try {
+            Helpers.updateFileState(playersContextViewModel, this, playersContextViewModel.CacheFileKey);
+        } catch (IOException e) {
+            Log.e("PlayersFeatureActivity::onPlayersResultsInteraction", e.getMessage(), e);
         }
+
+        getSupportActionBar().setSelectedNavigationItem(3);
     }
 
     @Override
-    public void onPlayersResultsInteractionFail() {
-        showMessage(getString(R.string.fatal_error));
+    public void onPlayersResultsInteractionFail(String type) {
+        if(NoInternet.equals(type)){
+            showMessage(getString(R.string.no_internet));
+        } else {
+            showMessage(getString(R.string.fatal_error));
+        }
     }
 
     @Override
@@ -218,8 +208,12 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
     }
 
     @Override
-    public void onPlayersDrillDownInteractionFail() {
-        showMessage(getString(R.string.fatal_error));
+    public void onPlayersDrillDownInteractionFail(String type) {
+        if(NoInternet.equals(type)){
+            showMessage(getString(R.string.no_internet));
+        } else {
+            showMessage(getString(R.string.fatal_error));
+        }
     }
 
     @Override
@@ -251,11 +245,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
     public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
         // When the given tab is selected, switch to the corresponding page in
         // the ViewPager.
-        if(Helpers.isNetworkAvailable(this)) {
-            mViewPager.setCurrentItem(tab.getPosition());
-        } else {
-            showMessage(getString(R.string.no_internet));
-        }
+        mViewPager.setCurrentItem(tab.getPosition());
     }
 
     @Override
@@ -273,7 +263,6 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
-                navigateToHome();
             }
         });
     }

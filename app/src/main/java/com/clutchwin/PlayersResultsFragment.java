@@ -155,17 +155,25 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
     */
     public interface OnFragmentInteractionListener {
         public void onPlayersResultsInteraction(String id);
-        public void onPlayersResultsInteractionFail();
+        public void onPlayersResultsInteractionFail(String type);
     }
 
     public void onShowedFragment(){
 
-        if(playersContextViewModel.shouldExecutePlayerResultsSearch() && !resultsViewModel.getIsBusy()) {
-            onServiceComplete = new ServiceCompleteImpl();
-            PlayersResultsAsyncTask task = new PlayersResultsAsyncTask(getActivity(), playersContextViewModel,
-                    resultsViewModel);
-            task.setOnCompleteListener(onServiceComplete);
-            task.execute();
+        boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
+
+        if(playersContextViewModel.shouldExecutePlayerResultsSearch(netAvailable) && !resultsViewModel.getIsBusy()) {
+            if(netAvailable) {
+                onServiceComplete = new ServiceCompleteImpl();
+                PlayersResultsAsyncTask task = new PlayersResultsAsyncTask(getActivity(), playersContextViewModel,
+                        resultsViewModel);
+                task.setOnCompleteListener(onServiceComplete);
+                task.execute();
+            } else {
+                if (null != mListener) {
+                    mListener.onPlayersResultsInteractionFail(TeamsFeatureActivity.NoInternet);
+                }
+            }
         }
     }
 
@@ -179,7 +187,7 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
             if (null != mListener) {
                 // Notify the active callbacks interface (the activity, if the
                 // fragment is attached to one) that a failure has happened.
-                mListener.onPlayersResultsInteractionFail();
+                mListener.onPlayersResultsInteractionFail("");
             }
         }
     }
@@ -192,7 +200,7 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
             if (null != mListener) {
                 // Notify the active callbacks interface (the activity, if the
                 // fragment is attached to one) that a failure has happened.
-                mListener.onPlayersResultsInteractionFail();
+                mListener.onPlayersResultsInteractionFail("");
             }
         }
     }

@@ -197,18 +197,27 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
     */
     public interface OnFragmentInteractionListener {
         public void onPlayersBattersInteraction(String id);
-        public void onPlayersBattersInteractionFail();
+        public void onPlayersBattersInteractionFail(String type);
         public void onGoToYearsInteraction();
         public void onGoToTeamsInteraction();
     }
 
     private void initiateServiceCall(boolean force){
-        if(playersContextViewModel.shouldExecuteLoadBatters() || force) {
-            onServiceComplete = new ServiceCompleteImpl();
-            PlayersBattersAsyncTask task = new PlayersBattersAsyncTask(getActivity(), playersContextViewModel,
-                    playersBattersViewModel);
-            task.setOnCompleteListener(onServiceComplete);
-            task.execute();
+
+        boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
+
+        if(playersContextViewModel.shouldExecuteLoadBatters(netAvailable) || force) {
+            if(netAvailable) {
+                onServiceComplete = new ServiceCompleteImpl();
+                PlayersBattersAsyncTask task = new PlayersBattersAsyncTask(getActivity(), playersContextViewModel,
+                        playersBattersViewModel);
+                task.setOnCompleteListener(onServiceComplete);
+                task.execute();
+            } else {
+                if (null != mListener) {
+                    mListener.onPlayersBattersInteractionFail(TeamsFeatureActivity.NoInternet);
+                }
+            }
         }
     }
 
@@ -222,7 +231,7 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
             if (null != mListener) {
                 // Notify the active callbacks interface (the activity, if the
                 // fragment is attached to one) that a failure has happened.
-                mListener.onPlayersBattersInteractionFail();
+                mListener.onPlayersBattersInteractionFail("");
             }
         }
     }

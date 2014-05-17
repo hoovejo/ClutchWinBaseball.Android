@@ -146,17 +146,25 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
     */
     public interface OnFragmentInteractionListener {
         public void onTeamsDrillDownInteraction(String id);
-        public void onTeamsDrillDownInteractionFail();
+        public void onTeamsDrillDownInteractionFail(String type);
     }
 
     public void onShowedFragment(){
 
-        if(teamsContextViewModel.shouldExecuteTeamDrillDownSearch() && !drillDownViewModel.getIsBusy()) {
-            onServiceComplete = new ServiceCompleteImpl();
-            TeamsDrillDownAsyncTask task = new TeamsDrillDownAsyncTask(getActivity(), teamsContextViewModel,
-                    drillDownViewModel);
-            task.setOnCompleteListener(onServiceComplete);
-            task.execute();
+        boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
+
+        if(teamsContextViewModel.shouldExecuteTeamDrillDownSearch(netAvailable) && !drillDownViewModel.getIsBusy()) {
+            if(netAvailable) {
+                onServiceComplete = new ServiceCompleteImpl();
+                TeamsDrillDownAsyncTask task = new TeamsDrillDownAsyncTask(getActivity(), teamsContextViewModel,
+                        drillDownViewModel);
+                task.setOnCompleteListener(onServiceComplete);
+                task.execute();
+            } else {
+                if (null != mListener) {
+                    mListener.onTeamsDrillDownInteractionFail(TeamsFeatureActivity.NoInternet);
+                }
+            }
         }
     }
 
@@ -176,7 +184,7 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
             if (null != mListener) {
                 // Notify the active callbacks interface (the activity, if the
                 // fragment is attached to one) that a failure has happened.
-                mListener.onTeamsDrillDownInteractionFail();
+                mListener.onTeamsDrillDownInteractionFail("");
             }
         }
     }
@@ -189,7 +197,7 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
             if (null != mListener) {
                 // Notify the active callbacks interface (the activity, if the
                 // fragment is attached to one) that a failure has happened.
-                mListener.onTeamsDrillDownInteractionFail();
+                mListener.onTeamsDrillDownInteractionFail("");
             }
         }
     }

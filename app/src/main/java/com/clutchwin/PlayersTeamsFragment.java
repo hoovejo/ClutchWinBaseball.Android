@@ -81,7 +81,7 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
             } else {
                 initiateServiceCall(false);
             }
-        }else {
+        } else {
             initiateServiceCall(false);
         }
 
@@ -156,16 +156,27 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
     */
     public interface OnFragmentInteractionListener {
         public void onPlayersTeamsInteraction(String id);
-        public void onPlayersTeamsInteractionFail();
+        public void onPlayersTeamsInteractionFail(String type);
     }
 
     private void initiateServiceCall(boolean force){
-        if(playersContextViewModel.shouldExecuteLoadTeams() || force) {
-            onServiceComplete = new ServiceCompleteImpl();
-            PlayersTeamsAsyncTask task = new PlayersTeamsAsyncTask(getActivity(), playersContextViewModel,
-                    playersTeamsViewModel);
-            task.setOnCompleteListener(onServiceComplete);
-            task.execute();
+
+        boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
+
+        if(playersContextViewModel.shouldExecuteLoadTeams(netAvailable) || force) {
+            if(netAvailable) {
+                onServiceComplete = new ServiceCompleteImpl();
+                PlayersTeamsAsyncTask task = new PlayersTeamsAsyncTask(getActivity(), playersContextViewModel,
+                        playersTeamsViewModel);
+                task.setOnCompleteListener(onServiceComplete);
+                task.execute();
+            } else {
+                if (null != mListener) {
+                    // Notify the active callbacks interface (the activity, if the
+                    // fragment is attached to one) that a failure has happened.
+                    mListener.onPlayersTeamsInteractionFail(PlayersTeamsActivity.NoInternet);
+                }
+            }
         }
     }
 
@@ -179,7 +190,7 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
             if (null != mListener) {
                 // Notify the active callbacks interface (the activity, if the
                 // fragment is attached to one) that a failure has happened.
-                mListener.onPlayersTeamsInteractionFail();
+                mListener.onPlayersTeamsInteractionFail("");
             }
         }
     }
