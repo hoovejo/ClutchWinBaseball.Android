@@ -1,6 +1,7 @@
 package com.clutchwin;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -12,6 +13,8 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.clutchwin.adapters.TeamsDrillDownAdapter;
+import com.clutchwin.cachetasks.TeamsDrillDownCacheAsyncTask;
+import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.service.TeamsDrillDownAsyncTask;
 import com.clutchwin.viewmodels.TeamsContextViewModel;
@@ -30,6 +33,7 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
 
     private OnFragmentInteractionListener mListener;
     private ServiceCompleteImpl onServiceComplete;
+    private CacheCompleteImpl onCacheComplete;
     /**
      * The fragment's ListView/GridView.
      */
@@ -66,7 +70,19 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
         teamsContextViewModel = TeamsContextViewModel.Instance();
         drillDownViewModel = teamsContextViewModel.getTeamsDrillDownViewModel();
 
-        mAdapter = new TeamsDrillDownAdapter(getActivity(),
+        Context activity = getActivity();
+
+        if(drillDownViewModel.ITEMS.isEmpty() && !drillDownViewModel.getIsBusy()) {
+
+            if(Helpers.checkFileExists(activity, drillDownViewModel.CacheFileKey)) {
+                onCacheComplete = new CacheCompleteImpl();
+                TeamsDrillDownCacheAsyncTask cacheAsyncTask = new TeamsDrillDownCacheAsyncTask(activity, drillDownViewModel);
+                cacheAsyncTask.setOnCompleteListener(onCacheComplete);
+                cacheAsyncTask.execute();
+            }
+        }
+
+        mAdapter = new TeamsDrillDownAdapter(activity,
                 R.layout.listview_teamsdrilldown_row, drillDownViewModel.ITEMS);
     }
 
@@ -107,11 +123,6 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (null != mListener) {
-            // Notify the active callbacks interface (the activity, if the
-            // fragment is attached to one) that an item has been selected.
-            mListener.onTeamsDrillDownInteraction("");
-        }
     }
 
     /**
@@ -140,7 +151,7 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
 
     public void onShowedFragment(){
 
-        if(teamsContextViewModel.shouldExecuteTeamDrillDownSearch()) {
+        if(teamsContextViewModel.shouldExecuteTeamDrillDownSearch() && !drillDownViewModel.getIsBusy()) {
             onServiceComplete = new ServiceCompleteImpl();
             TeamsDrillDownAsyncTask task = new TeamsDrillDownAsyncTask(getActivity(), drillDownViewModel,
                     teamsContextViewModel.getFranchiseId(), teamsContextViewModel.getOpponentId(), teamsContextViewModel.getYearId());
@@ -152,8 +163,27 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
     private class ServiceCompleteImpl implements TeamsDrillDownAsyncTask.OnLoadCompleteListener {
         @Override
         public void onComplete(){
+
+            if (null != mListener) {
+                // Trigger the activity to save the last ids used in search
+                mListener.onTeamsDrillDownInteraction("");
+            }
+
             mAdapter.notifyDataSetChanged();
         }
+        @Override
+        public void onFailure(){
+            if (null != mListener) {
+                // Notify the active callbacks interface (the activity, if the
+                // fragment is attached to one) that a failure has happened.
+                mListener.onTeamsDrillDownInteractionFail();
+            }
+        }
+    }
+
+    private class CacheCompleteImpl implements TeamsDrillDownCacheAsyncTask.OnLoadCompleteListener {
+        @Override
+        public void onComplete(){ mAdapter.notifyDataSetChanged(); }
         @Override
         public void onFailure(){
             if (null != mListener) {

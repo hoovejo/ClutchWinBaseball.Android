@@ -1,9 +1,12 @@
 package com.clutchwin.viewmodels;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class TeamsResultsViewModel {
@@ -16,68 +19,56 @@ public class TeamsResultsViewModel {
         return _instance;
     }
 
-    public List<TeamsResultsViewModel.Row> ITEMS = new ArrayList<TeamsResultsViewModel.Row>();
+    private boolean _isBusy = false;
+    public boolean getIsBusy() { return _isBusy; }
+    public void setIsBusy(boolean b) { _isBusy = b; }
 
-    private void addItem(TeamsResultsViewModel.Row item) {
+    public static final String CacheFileKey = "teamsResults.json";
+
+    public List<TeamsResultsViewModel.TeamsResult> ITEMS = new ArrayList<TeamsResultsViewModel.TeamsResult>();
+
+    private void addItem(TeamsResultsViewModel.TeamsResult item) {
         ITEMS.add(item);
     }
 
-    public void updateList(List<Row> rows) {
+    public void updateList(List<TeamsResult> rows) {
         ITEMS.clear();
-        for (TeamsResultsViewModel.Row item : rows) {
+        for (TeamsResultsViewModel.TeamsResult item : rows) {
             addItem(item);
         }
+
+        Collections.sort(ITEMS, new Comparator<TeamsResult>() {
+            public int compare(TeamsResult o1, TeamsResult o2) {
+                return o2.getYear().compareTo(o1.getYear());
+            }
+        });
     }
 
     /**
-     * TeamResult model
+     * TeamsResult model
      */
-    public static class TeamResult {
-        @JsonCreator
-        public TeamResult(@JsonProperty("fieldnames") List<FieldNames> fieldNames, @JsonProperty("rows") List<Row> rows)
-        {
-            this.fieldNames = fieldNames;
-            this.rows = rows;
-        }
-        public List<FieldNames> fieldNames;
-        public List<Row> rows;
-    }
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class TeamsResult {
 
-    public static class FieldNames {
         @JsonCreator
-        public FieldNames(@JsonProperty("name") String name)
+        public TeamsResult(@JsonProperty("season") String season,
+                         @JsonProperty("team_abbr") String team_abbr,
+                         @JsonProperty("opp_abbr") String opp_abbr,
+                         @JsonProperty("win") Number win,
+                         @JsonProperty("loss") Number loss,
+                         @JsonProperty("score") Number score,
+                         @JsonProperty("opp_score") Number opp_score)
         {
-            this.name = name;
-        }
-
-        private String name;
-        public String getName() { return this.name; }
-        public void setName(String name) { this.name = name; }
-    }
-
-    public static class Row {
-        @JsonCreator
-        public Row(@JsonProperty("year") String year,
-                    @JsonProperty("games") Number games,
-                    @JsonProperty("team") String team,
-                    @JsonProperty("opponent") String opponent,
-                    @JsonProperty("wins") Number wins,
-                    @JsonProperty("losses") Number losses,
-                    @JsonProperty("runs_for") Number runsFor,
-                    @JsonProperty("runs_against") Number runsAgainst)
-        {
-            this.year = year;
-            this.games = games;
-            this.team = team;
-            this.opponent = opponent;
-            this.wins = wins;
-            this.losses = losses;
-            this.runsFor = runsFor;
-            this.runsAgainst = runsAgainst;
+            this.year = season;
+            this.team = team_abbr;
+            this.opponent = opp_abbr;
+            this.wins = win;
+            this.losses = loss;
+            this.runsFor = score;
+            this.runsAgainst = opp_score;
         }
 
         private String year;
-        private Number games;
         private String team;
         private String opponent;
         private Number wins;
@@ -86,7 +77,7 @@ public class TeamsResultsViewModel {
         private Number runsAgainst;
 
         public Number getGames() {
-            return this.games;
+            return wins.intValue() + losses.intValue();
         }
 
         public Number getLosses() {
@@ -98,11 +89,11 @@ public class TeamsResultsViewModel {
         }
 
         public Number getRunsAgainst() {
-            return this.runsFor;
+            return this.runsAgainst;
         }
 
         public Number getRunsFor() {
-            return this.runsAgainst;
+            return this.runsFor;
         }
 
         public String getTeam() {
@@ -116,6 +107,5 @@ public class TeamsResultsViewModel {
         public String getYear() {
             return this.year;
         }
-
     }
 }

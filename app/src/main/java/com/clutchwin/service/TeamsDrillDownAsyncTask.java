@@ -7,10 +7,15 @@ import android.util.Log;
 
 import com.clutchwin.R;
 import com.clutchwin.common.Config;
+import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.TeamsDrillDownViewModel;
 
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 public class TeamsDrillDownAsyncTask extends AsyncTask<Void, Void, Void> {
 
@@ -43,20 +48,31 @@ public class TeamsDrillDownAsyncTask extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... params) {
         try {
-            //"http://versus.skeenshare.com/search/franchise_vs_franchise_by_year/ATL/BOS/2012.json";
+            //http://clutchwin.com/api/v1/games/for_team.json?
+            //&access_token=abc&franchise_abbr=TOR&opp_franchise_abbr=BAL&season=2013&fieldset=basic
             final String baseUrl = Config.FranchiseYearSearch;
             StringBuffer finalUrl = new StringBuffer(baseUrl);
-            finalUrl.append(Config.Slash).append(franchiseId)
-                    .append(Config.Slash).append(opponentId)
-                    .append(Config.Slash).append(yearId)
-                    .append(Config.JsonSuffix);
+            finalUrl.append(Config.AccessTokenKey).append(Config.AccessTokenValue)
+                    .append(Config.FranchiseIdKey).append(franchiseId)
+                    .append(Config.OpponentIdKey).append(opponentId)
+                    .append(Config.SeasonIdKey).append(yearId)
+                    .append(Config.FranchiseYearSearchKeyValue);
 
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            TeamsDrillDownViewModel.TeamDrillDown result = restTemplate.getForObject(finalUrl.toString(), TeamsDrillDownViewModel.TeamDrillDown.class);
-            viewModel.updateList(result.rows);
+            List<TeamsDrillDownViewModel.TeamsDrillDown> resultsList;
+            resultsList = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), TeamsDrillDownViewModel.TeamsDrillDown[].class));
+
+            viewModel.updateList(resultsList);
+
+            try {
+                Helpers.writeListToInternalStorage(resultsList, context, viewModel.CacheFileKey);
+            } catch (IOException e) {
+                Log.e("TeamsDrillDownAsyncTask::writeListToInternalStorage", e.getMessage(), e);
+            }
+
         } catch (Exception e) {
-            Log.e("TeamsDrillDownAsyncTask", e.getMessage(), e);
+            Log.e("TeamsDrillDownAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
                 onCompleteListener.onFailure();
             }

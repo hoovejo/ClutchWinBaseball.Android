@@ -11,13 +11,17 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.viewmodels.TeamsContextViewModel;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
+import java.io.IOException;
 import java.util.Locale;
 
 public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar.TabListener,
@@ -52,6 +56,28 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_teamsfeature);
+
+        teamsContextViewModel = TeamsContextViewModel.Instance();
+
+        //if cache file exists and we have a new instance, then rehydrate from cache
+        if(Helpers.checkFileExists(this, teamsContextViewModel.CacheFileKey) && teamsContextViewModel.needsInnerRehydrate()){
+            Object outObject;
+            try {
+                outObject = Helpers.readObjectFromInternalStorage(this, teamsContextViewModel.CacheFileKey);
+                Gson gson = new GsonBuilder().create();
+                teamsContextViewModel = gson.fromJson(outObject.toString(), TeamsContextViewModel.class);
+            } catch (IOException e) {
+                Log.e("TeamsFeatureActivity::onCreate", e.getMessage(), e);
+            } catch (ClassNotFoundException e) {
+                Log.e("TeamsFeatureActivity::onCreate", e.getMessage(), e);
+            }
+        }
+
+        if(teamsContextViewModel.needsInnerRehydrate()){
+            teamsContextViewModel.rehydrateSecondaries();
+        }
+
+        Current = this;
 
         // Set up the action bar.
         final ActionBar actionBar = getSupportActionBar();
@@ -94,34 +120,19 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
                             .setText(mSectionsPagerAdapter.getPageTitle(i))
                             .setTabListener(this));
         }
-
-        teamsContextViewModel = TeamsContextViewModel.Instance();
-        Current = this;
-    }
-
-    @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-        // Restore the previously serialized current dropdown position.
-        //if (savedInstanceState.containsKey(STATE_SELECTED_NAVIGATION_ITEM)) {
-        //    getSupportActionBar().setSelectedNavigationItem(
-        //            savedInstanceState.getInt(STATE_SELECTED_NAVIGATION_ITEM));
-        //}
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        // Serialize the current dropdown position.
-        //outState.putInt(STATE_SELECTED_NAVIGATION_ITEM,
-        //        getSupportActionBar().getSelectedNavigationIndex());
-
-        //outState.putSerializable("fragmentsKey", PlayersFragments);
-        super.onSaveInstanceState(outState);
     }
 
     @Override
     public void onTeamsFranchisesInteraction(String id) {
         if(Helpers.isNetworkAvailable(this)) {
             teamsContextViewModel.setFranchiseId(id);
+
+            try {
+                Helpers.updateFileState(teamsContextViewModel, this, teamsContextViewModel.CacheFileKey);
+            } catch (IOException e) {
+                Log.e("TeamsFeatureActivity::onTeamsFranchisesInteraction", e.getMessage(), e);
+            }
+
             getSupportActionBar().setSelectedNavigationItem(1);
         } else {
             showMessage(getString(R.string.no_internet));
@@ -137,6 +148,13 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
     public void onTeamsOpponentsInteraction(String id) {
         if(Helpers.isNetworkAvailable(this)) {
             teamsContextViewModel.setOpponentId(id);
+
+            try {
+                Helpers.updateFileState(teamsContextViewModel, this, teamsContextViewModel.CacheFileKey);
+            } catch (IOException e) {
+                Log.e("TeamsFeatureActivity::onTeamsOpponentsInteraction", e.getMessage(), e);
+            }
+
             getSupportActionBar().setSelectedNavigationItem(2);
         } else {
             showMessage(getString(R.string.no_internet));
@@ -144,9 +162,21 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
     }
 
     @Override
+    public void onTeamsOpponentsInteractionFail() {
+        showMessage(getString(R.string.fatal_error));
+    }
+
+    @Override
     public void onTeamsResultsInteraction(String id) {
         if(Helpers.isNetworkAvailable(this)) {
             teamsContextViewModel.setYearId(id);
+
+            try {
+                Helpers.updateFileState(teamsContextViewModel, this, teamsContextViewModel.CacheFileKey);
+            } catch (IOException e) {
+                Log.e("TeamsFeatureActivity::onTeamsResultsInteraction", e.getMessage(), e);
+            }
+
             getSupportActionBar().setSelectedNavigationItem(3);
         } else {
             showMessage(getString(R.string.no_internet));
@@ -160,6 +190,11 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
 
     @Override
     public void onTeamsDrillDownInteraction(String id) {
+        try {
+            Helpers.updateFileState(teamsContextViewModel, this, teamsContextViewModel.CacheFileKey);
+        } catch (IOException e) {
+            Log.e("TeamsFeatureActivity::onTeamsDrillDownInteraction", e.getMessage(), e);
+        }
     }
 
     @Override

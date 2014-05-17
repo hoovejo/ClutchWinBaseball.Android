@@ -16,9 +16,9 @@ public class TeamsResultsAdapter extends BaseAdapter {
 
     private final Context context;
     private int layoutResourceId;
-    private List<TeamsResultsViewModel.Row> values;
+    private List<TeamsResultsViewModel.TeamsResult> values;
 
-    public TeamsResultsAdapter(Context context, int layoutResourceId, List<TeamsResultsViewModel.Row> values) {
+    public TeamsResultsAdapter(Context context, int layoutResourceId, List<TeamsResultsViewModel.TeamsResult> values) {
         this.layoutResourceId = layoutResourceId;
         this.context = context;
         this.values = values;
@@ -48,7 +48,7 @@ public class TeamsResultsAdapter extends BaseAdapter {
             holder = (PerformanceViewElementHolder)convertView.getTag();
         }
 
-        TeamsResultsViewModel.Row resultRow = values.get(position);
+        TeamsResultsViewModel.TeamsResult resultRow = values.get(position);
         holder.elementOne.setText(resultRow.getYear());
         holder.elementTwo.setText(resultRow.getGames().toString());
         holder.elementThree.setText(resultRow.getTeam());

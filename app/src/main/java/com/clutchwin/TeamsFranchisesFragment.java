@@ -1,6 +1,7 @@
 package com.clutchwin;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -12,9 +13,12 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.clutchwin.adapters.TeamsFranchisesAdapter;
+import com.clutchwin.cachetasks.FranchisesCacheAsyncTask;
+import com.clutchwin.common.Helpers;
 import com.clutchwin.service.TeamsFranchisesAsyncTask;
 import com.clutchwin.viewmodels.TeamsContextViewModel;
 import com.clutchwin.viewmodels.TeamsFranchisesViewModel;
+
 
 /**
  * A fragment representing a list of Items.
@@ -29,6 +33,7 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
 
     private OnFragmentInteractionListener mListener;
     private ServiceCompleteImpl onServiceComplete;
+    private CacheCompleteImpl onCacheComplete;
 
     /**
      * The fragment's ListView/GridView.
@@ -66,14 +71,21 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
         teamsContextViewModel = TeamsContextViewModel.Instance();
         teamsFranchisesViewModel = teamsContextViewModel.getTeamsFranchisesViewModel();
 
-        if(teamsFranchisesViewModel.ITEMS.isEmpty()) {
-            onServiceComplete = new ServiceCompleteImpl();
-            TeamsFranchisesAsyncTask task = new TeamsFranchisesAsyncTask(getActivity(), teamsFranchisesViewModel);
-            task.setOnCompleteListener(onServiceComplete);
-            task.execute();
+        Context activity = getActivity();
+
+        if(teamsFranchisesViewModel.ITEMS.isEmpty() && !teamsFranchisesViewModel.getIsBusy()) {
+
+            if(Helpers.checkFileExists(activity, teamsFranchisesViewModel.CacheFileKey)) {
+                onCacheComplete = new CacheCompleteImpl();
+                FranchisesCacheAsyncTask cacheAsyncTask = new FranchisesCacheAsyncTask(activity, teamsFranchisesViewModel);
+                cacheAsyncTask.setOnCompleteListener(onCacheComplete);
+                cacheAsyncTask.execute();
+            } else {
+                initiateServiceCall();
+            }
         }
 
-        mAdapter = new TeamsFranchisesAdapter(getActivity(),
+        mAdapter = new TeamsFranchisesAdapter(activity,
                 R.layout.listview_teamsfranchises_row, teamsFranchisesViewModel.ITEMS);
     }
 
@@ -148,6 +160,13 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
         public void onTeamsFranchisesInteractionFail();
     }
 
+    private void initiateServiceCall(){
+        onServiceComplete = new ServiceCompleteImpl();
+        TeamsFranchisesAsyncTask task = new TeamsFranchisesAsyncTask(getActivity(), teamsFranchisesViewModel);
+        task.setOnCompleteListener(onServiceComplete);
+        task.execute();
+    }
+
     private class ServiceCompleteImpl implements TeamsFranchisesAsyncTask.OnLoadCompleteListener {
         @Override
         public void onComplete(){ mAdapter.notifyDataSetChanged(); }
@@ -158,6 +177,16 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
                 // fragment is attached to one) that a failure has happened.
                 mListener.onTeamsFranchisesInteractionFail();
             }
+        }
+    }
+
+    private class CacheCompleteImpl implements FranchisesCacheAsyncTask.OnLoadCompleteListener {
+        @Override
+        public void onComplete(){ mAdapter.notifyDataSetChanged(); }
+        @Override
+        public void onFailure(){
+            //if any failure occurs loading cache, just call the service for fresh franchises
+            initiateServiceCall();
         }
     }
 }

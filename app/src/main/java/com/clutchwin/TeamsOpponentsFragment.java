@@ -1,6 +1,7 @@
 package com.clutchwin;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -12,7 +13,10 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.clutchwin.adapters.TeamsFranchisesAdapter;
+import com.clutchwin.cachetasks.OpponentsCacheAsyncTask;
+import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
+import com.clutchwin.service.TeamsOpponentsAsyncTask;
 import com.clutchwin.viewmodels.TeamsContextViewModel;
 import com.clutchwin.viewmodels.TeamsFranchisesViewModel;
 import com.clutchwin.viewmodels.TeamsOpponentsViewModel;
@@ -29,6 +33,8 @@ import com.clutchwin.viewmodels.TeamsOpponentsViewModel;
 public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnItemClickListener, IOnShowFragment {
 
     private OnFragmentInteractionListener mListener;
+    private ServiceCompleteImpl onServiceComplete;
+    private CacheCompleteImpl onCacheComplete;
 
     /**
      * The fragment's ListView/GridView.
@@ -68,8 +74,20 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
         teamsFranchisesViewModel = teamsContextViewModel.getTeamsFranchisesViewModel();
         teamsOpponentsViewModel = teamsContextViewModel.getTeamsOpponentsViewModel();
 
+        Context activity = getActivity();
 
-        mAdapter = new TeamsFranchisesAdapter(getActivity(),
+        if(teamsOpponentsViewModel.ITEMS.isEmpty() && !teamsOpponentsViewModel.getIsBusy()) {
+
+            if(Helpers.checkFileExists(activity, teamsFranchisesViewModel.CacheFileKey)) {
+                onCacheComplete = new CacheCompleteImpl();
+                OpponentsCacheAsyncTask cacheAsyncTask = new OpponentsCacheAsyncTask(activity, teamsContextViewModel,
+                        teamsOpponentsViewModel, teamsFranchisesViewModel);
+                cacheAsyncTask.setOnCompleteListener(onCacheComplete);
+                cacheAsyncTask.execute();
+            }
+        }
+
+        mAdapter = new TeamsFranchisesAdapter(activity,
                 R.layout.listview_teamsfranchises_row, teamsOpponentsViewModel.ITEMS);
     }
 
@@ -141,12 +159,44 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
     */
     public interface OnFragmentInteractionListener {
         public void onTeamsOpponentsInteraction(String id);
+        public void onTeamsOpponentsInteractionFail();
     }
 
     public void onShowedFragment(){
-        if(teamsContextViewModel.shouldFilterOpponents()) {
-            teamsOpponentsViewModel.filterList(teamsFranchisesViewModel.ITEMS, teamsContextViewModel.getFranchiseId());
-            mAdapter.notifyDataSetChanged();
+
+        if(teamsContextViewModel.shouldFilterOpponents() && !teamsOpponentsViewModel.getIsBusy()) {
+
+            onServiceComplete = new ServiceCompleteImpl();
+            TeamsOpponentsAsyncTask task = new TeamsOpponentsAsyncTask(getActivity(),
+                    teamsContextViewModel, teamsOpponentsViewModel, teamsFranchisesViewModel);
+            task.setOnCompleteListener(onServiceComplete);
+            task.execute();
+        }
+    }
+
+    private class ServiceCompleteImpl implements TeamsOpponentsAsyncTask.OnLoadCompleteListener {
+        @Override
+        public void onComplete(){ mAdapter.notifyDataSetChanged(); }
+        @Override
+        public void onFailure(){
+            if (null != mListener) {
+                // Notify the active callbacks interface (the activity, if the
+                // fragment is attached to one) that a failure has happened.
+                mListener.onTeamsOpponentsInteractionFail();
+            }
+        }
+    }
+
+    private class CacheCompleteImpl implements OpponentsCacheAsyncTask.OnLoadCompleteListener {
+        @Override
+        public void onComplete(){ mAdapter.notifyDataSetChanged(); }
+        @Override
+        public void onFailure(){
+            if (null != mListener) {
+                // Notify the active callbacks interface (the activity, if the
+                // fragment is attached to one) that a failure has happened.
+                mListener.onTeamsOpponentsInteractionFail();
+            }
         }
     }
 }

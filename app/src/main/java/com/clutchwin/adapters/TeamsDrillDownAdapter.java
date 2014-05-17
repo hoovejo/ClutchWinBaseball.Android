@@ -16,9 +16,9 @@ public class TeamsDrillDownAdapter extends BaseAdapter {
 
     private final Context context;
     private int layoutResourceId;
-    private List<TeamsDrillDownViewModel.Row> values;
+    private List<TeamsDrillDownViewModel.TeamsDrillDown> values;
 
-    public TeamsDrillDownAdapter(Context context, int layoutResourceId, List<TeamsDrillDownViewModel.Row> values) {
+    public TeamsDrillDownAdapter(Context context, int layoutResourceId, List<TeamsDrillDownViewModel.TeamsDrillDown> values) {
         this.layoutResourceId = layoutResourceId;
         this.context = context;
         this.values = values;
@@ -47,7 +47,7 @@ public class TeamsDrillDownAdapter extends BaseAdapter {
             holder = (PerformanceViewElementHolder)convertView.getTag();
         }
 
-        TeamsDrillDownViewModel.Row resultRow = values.get(position);
+        TeamsDrillDownViewModel.TeamsDrillDown resultRow = values.get(position);
         holder.elementOne.setText(resultRow.getGameDate());
         holder.elementTwo.setText(resultRow.getTeam());
         holder.elementThree.setText(resultRow.getOpponent());

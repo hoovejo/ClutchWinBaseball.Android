@@ -1,9 +1,6 @@
 package com.clutchwin.viewmodels;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
-public class TeamsContextViewModel implements Parcelable {
+public class TeamsContextViewModel {
 
     private static TeamsContextViewModel _instance;
     public static TeamsContextViewModel Instance() {
@@ -13,20 +10,33 @@ public class TeamsContextViewModel implements Parcelable {
         return _instance;
     }
 
-    private TeamsFranchisesViewModel teamsFranchisesViewModel;
+    public static final String CacheFileKey = "teamsContextViewModel.json";
+
+    public TeamsContextViewModel(){}
+
+    private transient TeamsFranchisesViewModel teamsFranchisesViewModel;
     public TeamsFranchisesViewModel getTeamsFranchisesViewModel() { return teamsFranchisesViewModel; };
-    private TeamsOpponentsViewModel teamsOpponentsViewModel;
+
+    private transient TeamsOpponentsViewModel teamsOpponentsViewModel;
     public TeamsOpponentsViewModel getTeamsOpponentsViewModel() { return teamsOpponentsViewModel; };
-    private TeamsResultsViewModel teamsResultsViewModel;
+
+    private transient TeamsResultsViewModel teamsResultsViewModel;
     public TeamsResultsViewModel getTeamsResultsViewModel() { return teamsResultsViewModel; };
-    private TeamsDrillDownViewModel teamsDrillDownViewModel;
+
+    private transient TeamsDrillDownViewModel teamsDrillDownViewModel;
     public TeamsDrillDownViewModel getTeamsDrillDownViewModel() { return teamsDrillDownViewModel; };
 
-    public TeamsContextViewModel(){
+    public boolean needsInnerRehydrate(){
+        return (teamsFranchisesViewModel == null || teamsOpponentsViewModel == null ||
+                teamsResultsViewModel == null || teamsDrillDownViewModel == null);
+    }
+
+    public void rehydrateSecondaries(){
         teamsFranchisesViewModel = TeamsFranchisesViewModel.Instance();
         teamsOpponentsViewModel = TeamsOpponentsViewModel.Instance();
         teamsResultsViewModel = TeamsResultsViewModel.Instance();
         teamsDrillDownViewModel = TeamsDrillDownViewModel.Instance();
+        _instance = this;
     }
 
     private String franchiseId;
@@ -90,15 +100,5 @@ public class TeamsContextViewModel implements Parcelable {
         lastDrillDownOpponentId = opponentId;
         lastDrillDownYearId = yearId;
         return returnValue;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
-
     }
 }

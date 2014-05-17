@@ -6,27 +6,28 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.clutchwin.R;
-import com.clutchwin.common.Config;
-import com.clutchwin.common.Helpers;
+import com.clutchwin.viewmodels.TeamsContextViewModel;
 import com.clutchwin.viewmodels.TeamsFranchisesViewModel;
+import com.clutchwin.viewmodels.TeamsOpponentsViewModel;
 
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
-public class TeamsFranchisesAsyncTask extends AsyncTask<Void, Void, Void> {
+public class TeamsOpponentsAsyncTask extends AsyncTask<Void, Void, Void> {
 
     private ProgressDialog progressDialog;
     private Context context;
     private OnLoadCompleteListener onCompleteListener;
+    private TeamsContextViewModel teamsContextViewModel;
+    private TeamsOpponentsViewModel teamsOpponentsViewModel;
     private TeamsFranchisesViewModel teamsFranchisesViewModel;
 
-    public TeamsFranchisesAsyncTask(Context inContext, TeamsFranchisesViewModel inViewModel){
+    public TeamsOpponentsAsyncTask(Context inContext,
+                                   TeamsContextViewModel inContextViewModel,
+                                   TeamsOpponentsViewModel inOpponentsViewModel,
+                                   TeamsFranchisesViewModel inFranchisesViewModel){
         context = inContext;
-        teamsFranchisesViewModel = inViewModel;
+        teamsContextViewModel = inContextViewModel;
+        teamsOpponentsViewModel = inOpponentsViewModel;
+        teamsFranchisesViewModel = inFranchisesViewModel;
     }
 
     @Override
@@ -42,24 +43,13 @@ public class TeamsFranchisesAsyncTask extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... params) {
         try {
 
-            teamsFranchisesViewModel.setIsBusy(true);
-            //"http://versus.skeenshare.com/franchises.json";
-            final String url = Config.Franchise;
-            RestTemplate restTemplate = new RestTemplate();
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            List<TeamsFranchisesViewModel.Franchise> franchiseList;
-            franchiseList = Arrays.asList(restTemplate.getForObject(url, TeamsFranchisesViewModel.Franchise[].class));
+            teamsOpponentsViewModel.setIsBusy(true);
+            teamsOpponentsViewModel.filterList(teamsFranchisesViewModel.ITEMS, teamsContextViewModel.getFranchiseId());
 
-            teamsFranchisesViewModel.updateList(franchiseList);
-
-            try {
-                Helpers.writeListToInternalStorage(franchiseList, context, teamsFranchisesViewModel.CacheFileKey);
-            } catch (IOException e) {
-                Log.e("TeamsFranchisesAsyncTask::writeListToInternalStorage", e.getMessage(), e);
-            }
+            //Helpers.writeListToInternalStorage(teamsOpponentsViewModel.ITEMS, context, teamsOpponentsViewModel.CacheFileKey);
 
         } catch (Exception e) {
-            Log.e("TeamsFranchisesAsyncTask::doInBackground", e.getMessage(), e);
+            Log.e("TeamsOpponentsAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
                 onCompleteListener.onFailure();
             }
@@ -77,7 +67,7 @@ public class TeamsFranchisesAsyncTask extends AsyncTask<Void, Void, Void> {
         if(onCompleteListener != null){
             onCompleteListener.onComplete();
         }
-        teamsFranchisesViewModel.setIsBusy(false);
+        teamsOpponentsViewModel.setIsBusy(false);
     }
 
     public void setOnCompleteListener(OnLoadCompleteListener inOnCompleteListener){

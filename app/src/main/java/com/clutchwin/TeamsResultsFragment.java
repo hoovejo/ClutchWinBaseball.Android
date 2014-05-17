@@ -1,6 +1,7 @@
 package com.clutchwin;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -12,6 +13,8 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.clutchwin.adapters.TeamsResultsAdapter;
+import com.clutchwin.cachetasks.TeamsResultsCacheAsyncTask;
+import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.service.TeamsResultsAsyncTask;
 import com.clutchwin.viewmodels.TeamsContextViewModel;
@@ -30,6 +33,7 @@ public class TeamsResultsFragment extends Fragment implements AbsListView.OnItem
 
     private OnFragmentInteractionListener mListener;
     private ServiceCompleteImpl onServiceComplete;
+    private CacheCompleteImpl onCacheComplete;
     /**
      * The fragment's ListView/GridView.
      */
@@ -66,7 +70,19 @@ public class TeamsResultsFragment extends Fragment implements AbsListView.OnItem
         teamsContextViewModel = TeamsContextViewModel.Instance();
         resultsViewModel = teamsContextViewModel.getTeamsResultsViewModel();
 
-        mAdapter = new TeamsResultsAdapter(getActivity(),
+        Context activity = getActivity();
+
+        if(resultsViewModel.ITEMS.isEmpty() && !resultsViewModel.getIsBusy()) {
+
+            if(Helpers.checkFileExists(activity, resultsViewModel.CacheFileKey)) {
+                onCacheComplete = new CacheCompleteImpl();
+                TeamsResultsCacheAsyncTask cacheAsyncTask = new TeamsResultsCacheAsyncTask(activity, resultsViewModel);
+                cacheAsyncTask.setOnCompleteListener(onCacheComplete);
+                cacheAsyncTask.execute();
+            }
+        }
+
+        mAdapter = new TeamsResultsAdapter(activity,
                 R.layout.listview_teamsresults_row, resultsViewModel.ITEMS);
     }
 
@@ -143,7 +159,7 @@ public class TeamsResultsFragment extends Fragment implements AbsListView.OnItem
 
     public void onShowedFragment(){
 
-        if(teamsContextViewModel.shouldExecuteTeamResultsSearch()) {
+        if(teamsContextViewModel.shouldExecuteTeamResultsSearch() && !resultsViewModel.getIsBusy()) {
             onServiceComplete = new ServiceCompleteImpl();
             TeamsResultsAsyncTask task = new TeamsResultsAsyncTask(getActivity(), resultsViewModel,
                     teamsContextViewModel.getFranchiseId(), teamsContextViewModel.getOpponentId());
@@ -157,6 +173,19 @@ public class TeamsResultsFragment extends Fragment implements AbsListView.OnItem
         public void onComplete(){
             mAdapter.notifyDataSetChanged();
         }
+        @Override
+        public void onFailure(){
+            if (null != mListener) {
+                // Notify the active callbacks interface (the activity, if the
+                // fragment is attached to one) that a failure has happened.
+                mListener.onTeamsResultsInteractionFail();
+            }
+        }
+    }
+
+    private class CacheCompleteImpl implements TeamsResultsCacheAsyncTask.OnLoadCompleteListener {
+        @Override
+        public void onComplete(){ mAdapter.notifyDataSetChanged(); }
         @Override
         public void onFailure(){
             if (null != mListener) {

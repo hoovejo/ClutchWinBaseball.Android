@@ -15,6 +15,12 @@ public class TeamsOpponentsViewModel {
         return _instance;
     }
 
+    private boolean _isBusy = false;
+    public boolean getIsBusy() { return _isBusy; }
+    public void setIsBusy(boolean b) { _isBusy = b; }
+
+    //public static final String CacheFileKey = "opponents.json";
+
     public List<TeamsFranchisesViewModel.Franchise> ITEMS = new ArrayList<TeamsFranchisesViewModel.Franchise>();
 
     private void addItem(TeamsFranchisesViewModel.Franchise item) {
@@ -22,9 +28,10 @@ public class TeamsOpponentsViewModel {
     }
 
     public void filterList(List<TeamsFranchisesViewModel.Franchise> baseList, String filter) {
+
         ITEMS.clear();
         for (TeamsFranchisesViewModel.Franchise franchise : baseList) { // complete base list
-            if( franchise.getRetroId() != filter) {
+            if( !franchise.getRetroId().equals(filter) ) {
                 addItem(franchise);
             }
         }
