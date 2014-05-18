@@ -255,6 +255,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
     private boolean navigateToHome(){
         Intent i = new Intent(this, MainActivity.class);
         startActivity(i);
+        this.finish();
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         return true;
     }
@@ -262,6 +263,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
     private boolean navigateToPlayers(){
         Intent i = new Intent(this, PlayersFeatureActivity.class);
         startActivity(i);
+        this.finish();
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         return true;
     }

@@ -41,6 +41,7 @@ public class PlayersYearsActivity extends FragmentActivity implements PlayersYea
 
         Intent i = new Intent(this, PlayersFeatureActivity.class);
         startActivity(i);
+        this.finish();
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 

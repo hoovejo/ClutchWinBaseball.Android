@@ -118,6 +118,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
     public void onGoToYearsInteraction() {
         Intent i = new Intent(this, PlayersYearsActivity.class);
         startActivity(i);
+        this.finish();
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
@@ -125,6 +126,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
     public void onGoToTeamsInteraction() {
         Intent i = new Intent(this, PlayersTeamsActivity.class);
         startActivity(i);
+        this.finish();
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
@@ -266,6 +268,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
     private boolean navigateToHome(){
         Intent i = new Intent(this, MainActivity.class);
         startActivity(i);
+        this.finish();
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         return true;
     }
@@ -273,6 +276,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
     private boolean navigateToTeams(){
         Intent i = new Intent(this, TeamsFeatureActivity.class);
         startActivity(i);
+        this.finish();
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         return true;
     }

@@ -94,6 +94,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     private boolean navigateToTeams(){
         Intent i = new Intent(this, TeamsFeatureActivity.class);
         startActivity(i);
+        this.finish();
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         return true;
     }
@@ -101,6 +102,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     private boolean navigateToPlayers(){
         Intent i = new Intent(this, PlayersFeatureActivity.class);
         startActivity(i);
+        this.finish();
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         return true;
     }
@@ -123,11 +125,13 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                 case 1: //Teams
                     Intent iTeams = new Intent(this, TeamsFeatureActivity.class);
                     startActivity(iTeams);
+                    this.finish();
                     overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                     break;
                 case 2: //Players
                     Intent iPlayers = new Intent(this, PlayersFeatureActivity.class);
                     startActivity(iPlayers);
+                    this.finish();
                     overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                     break;
             }
