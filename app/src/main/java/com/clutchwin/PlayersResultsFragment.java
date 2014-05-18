@@ -142,7 +142,7 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
     public void setEmptyText(CharSequence emptyText) {
         View emptyView = mListView.getEmptyView();
 
-        if (emptyText instanceof TextView) {
+        if (emptyText instanceof String) {
             ((TextView) emptyView).setText(emptyText);
         }
     }
@@ -164,6 +164,7 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
 
         if(playersContextViewModel.shouldExecutePlayerResultsSearch(netAvailable) && !resultsViewModel.getIsBusy()) {
             if(netAvailable) {
+                setEmptyText(getString(R.string.no_search_results));
                 onServiceComplete = new ServiceCompleteImpl();
                 PlayersResultsAsyncTask task = new PlayersResultsAsyncTask(getActivity(), playersContextViewModel,
                         resultsViewModel);
@@ -171,9 +172,13 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
                 task.execute();
             } else {
                 if (null != mListener) {
-                    mListener.onPlayersResultsInteractionFail(TeamsFeatureActivity.NoInternet);
+                    mListener.onPlayersResultsInteractionFail(PlayersFeatureActivity.NoInternet);
                 }
             }
+        } else {
+            //likely new session and tabbed to results tab
+            setEmptyText(getString(R.string.select_pitcher_first));
+            mAdapter.notifyDataSetChanged();
         }
     }
 

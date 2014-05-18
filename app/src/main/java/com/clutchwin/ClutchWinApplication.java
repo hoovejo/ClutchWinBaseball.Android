@@ -3,6 +3,7 @@ package com.clutchwin;
 import android.app.Application;
 import android.content.res.Configuration;
 
+import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.PlayersBattersViewModel;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
 import com.clutchwin.viewmodels.PlayersDrillDownViewModel;
@@ -33,6 +34,19 @@ public class ClutchWinApplication extends Application {
     public void onCreate() {
         super.onCreate();
         singleton = this;
+
+        final Thread.UncaughtExceptionHandler subclass = Thread.currentThread().getUncaughtExceptionHandler();
+        Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread thread, Throwable ex) {
+                try{
+                    Helpers.purgeAllCacheFiles(getApplicationContext());
+                } catch (Exception e){}
+
+                // carry on with prior flow
+                subclass.uncaughtException(thread, ex);
+            }
+        });
     }
 
     @Override
@@ -44,6 +58,14 @@ public class ClutchWinApplication extends Application {
     public void onTerminate() {
         super.onTerminate();
     }
+
+    private boolean hasLoadedFranchisesOncePerSession = false;
+    public boolean getHasLoadedFranchisesOnce() { return hasLoadedFranchisesOncePerSession; }
+    public void setHasLoadedFranchisesOnce(boolean b) { hasLoadedFranchisesOncePerSession = b;}
+
+    private boolean hasLoadedSeasonsOncePerSession = false;
+    public boolean getHasLoadedSeasonsOnce() { return hasLoadedSeasonsOncePerSession; }
+    public void setHasLoadedSeasonsOnce(boolean b) { hasLoadedSeasonsOncePerSession = b;}
 
     /**
      * All teams context view models

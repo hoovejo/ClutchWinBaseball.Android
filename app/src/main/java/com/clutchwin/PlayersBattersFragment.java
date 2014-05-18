@@ -143,9 +143,9 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
         }
 
         TextView emptyText = (TextView) view.findViewById(android.R.id.empty);
-        emptyText.setText(getString(R.string.no_search_results));
+        emptyText.setText(getString(R.string.select_season_team));
         mListView.setEmptyView(emptyText);
-        emptyText.setVisibility(TextView.INVISIBLE);
+        //emptyText.setVisibility(TextView.INVISIBLE);
 
         return view;
     }
@@ -182,10 +182,12 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
      * to supply the text it should use.
      */
     public void setEmptyText(CharSequence emptyText) {
-        View emptyView = mListView.getEmptyView();
+        if(mListView != null) {
+            View emptyView = mListView.getEmptyView();
 
-        if (emptyText instanceof TextView) {
-            ((TextView) emptyView).setText(emptyText);
+            if (emptyText instanceof String) {
+                ((TextView) emptyView).setText(emptyText);
+            }
         }
     }
 
@@ -208,6 +210,7 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
 
         if(playersContextViewModel.shouldExecuteLoadBatters(netAvailable) || force) {
             if(netAvailable) {
+                setEmptyText(getString(R.string.no_search_results));
                 onServiceComplete = new ServiceCompleteImpl();
                 PlayersBattersAsyncTask task = new PlayersBattersAsyncTask(getActivity(), playersContextViewModel,
                         playersBattersViewModel);
@@ -215,7 +218,7 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
                 task.execute();
             } else {
                 if (null != mListener) {
-                    mListener.onPlayersBattersInteractionFail(TeamsFeatureActivity.NoInternet);
+                    mListener.onPlayersBattersInteractionFail(PlayersFeatureActivity.NoInternet);
                 }
             }
         }

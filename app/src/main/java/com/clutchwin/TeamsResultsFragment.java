@@ -141,7 +141,7 @@ public class TeamsResultsFragment extends Fragment implements AbsListView.OnItem
     public void setEmptyText(CharSequence emptyText) {
         View emptyView = mListView.getEmptyView();
 
-        if (emptyText instanceof TextView) {
+        if (emptyText instanceof String) {
             ((TextView) emptyView).setText(emptyText);
         }
     }
@@ -173,6 +173,10 @@ public class TeamsResultsFragment extends Fragment implements AbsListView.OnItem
                     mListener.onTeamsResultsInteractionFail(TeamsFeatureActivity.NoInternet);
                 }
             }
+        } else {
+            //likely new session and tabbed to results tab
+            setEmptyText(getString(R.string.select_opponent_first));
+            mAdapter.notifyDataSetChanged();
         }
     }
 

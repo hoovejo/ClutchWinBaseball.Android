@@ -4,6 +4,17 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import com.clutchwin.viewmodels.PlayersBattersViewModel;
+import com.clutchwin.viewmodels.PlayersContextViewModel;
+import com.clutchwin.viewmodels.PlayersDrillDownViewModel;
+import com.clutchwin.viewmodels.PlayersPitchersViewModel;
+import com.clutchwin.viewmodels.PlayersResultsViewModel;
+import com.clutchwin.viewmodels.PlayersTeamsViewModel;
+import com.clutchwin.viewmodels.PlayersYearsViewModel;
+import com.clutchwin.viewmodels.TeamsContextViewModel;
+import com.clutchwin.viewmodels.TeamsDrillDownViewModel;
+import com.clutchwin.viewmodels.TeamsFranchisesViewModel;
+import com.clutchwin.viewmodels.TeamsResultsViewModel;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -59,5 +70,22 @@ public class Helpers {
             }
         }
         return returnValue;
+    }
+
+    public static void purgeAllCacheFiles(Context context){
+
+        context.deleteFile(TeamsContextViewModel.CacheFileKey);
+        context.deleteFile(TeamsFranchisesViewModel.CacheFileKey);
+        context.deleteFile(TeamsResultsViewModel.CacheFileKey);
+        context.deleteFile(TeamsDrillDownViewModel.CacheFileKey);
+
+        context.deleteFile(PlayersContextViewModel.CacheFileKey);
+        context.deleteFile(PlayersYearsViewModel.CacheFileKey);
+        context.deleteFile(PlayersTeamsViewModel.CacheFileKey);
+        context.deleteFile(PlayersBattersViewModel.CacheFileKey);
+        context.deleteFile(PlayersPitchersViewModel.CacheFileKey);
+        context.deleteFile(PlayersResultsViewModel.CacheFileKey);
+        context.deleteFile(PlayersDrillDownViewModel.CacheFileKey);
+
     }
 }

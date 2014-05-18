@@ -76,7 +76,8 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
         teamsFranchisesViewModel = app.getTeamsFranchisesViewModel();
         teamsOpponentsViewModel = app.getTeamsOpponentsViewModel();
 
-        if(teamsOpponentsViewModel.ITEMS.isEmpty() && !teamsOpponentsViewModel.getIsBusy()) {
+        if(teamsOpponentsViewModel.ITEMS.isEmpty() && !teamsOpponentsViewModel.getIsBusy()
+                && teamsContextViewModel.getFranchiseId() != null) {
 
             if(Helpers.checkFileExists(activity, teamsFranchisesViewModel.CacheFileKey)) {
                 onCacheComplete = new CacheCompleteImpl();
@@ -146,7 +147,7 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
     public void setEmptyText(CharSequence emptyText) {
         View emptyView = mListView.getEmptyView();
 
-        if (emptyText instanceof TextView) {
+        if (emptyText instanceof String) {
             ((TextView) emptyView).setText(emptyText);
         }
     }
@@ -179,6 +180,10 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
                     mListener.onTeamsOpponentsInteractionFail(TeamsFeatureActivity.NoInternet);
                 }
             }
+        } else {
+            //likely new session and tabbed to opponents tab
+            setEmptyText(getString(R.string.select_team_first));
+            mAdapter.notifyDataSetChanged();
         }
     }
 

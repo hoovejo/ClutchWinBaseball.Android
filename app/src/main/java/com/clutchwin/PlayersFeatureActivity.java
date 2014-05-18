@@ -56,6 +56,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_playersfeature);
 
         ClutchWinApplication app = (ClutchWinApplication)getApplicationContext();

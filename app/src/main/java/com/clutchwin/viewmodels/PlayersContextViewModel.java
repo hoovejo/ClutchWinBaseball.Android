@@ -54,6 +54,9 @@ public class PlayersContextViewModel {
     }
 
     public boolean shouldExecuteLoadBatters(boolean update){
+        //needed for batter svc call
+        if(teamId == null) return false;
+
         boolean returnValue;
         if(loadBatters){
             returnValue = true;
@@ -69,6 +72,9 @@ public class PlayersContextViewModel {
     private String lastBatterId;
 
     public boolean shouldExecuteLoadPitchers(boolean update){
+        //needed for pitcher svc call
+        if(batterId == null || yearId == null) return false;
+
         boolean returnValue;
         if(lastBatterId == null || !lastBatterId.equals(batterId)){
             returnValue = true;
@@ -85,9 +91,11 @@ public class PlayersContextViewModel {
     private String lastSearchPitcherId;
 
     public boolean shouldExecutePlayerResultsSearch(boolean update){
+        //needed for results svc call
+        if(batterId == null || pitcherId == null) return false;
+
         boolean returnValue;
-        if(batterId == null || pitcherId == null ||
-                lastSearchBatterId == null || lastSearchPitcherId == null ||
+        if(lastSearchBatterId == null || lastSearchPitcherId == null ||
                 !lastSearchBatterId.equals(batterId) || !lastSearchPitcherId.equals(pitcherId)){
             returnValue = true;
         } else {
@@ -105,9 +113,11 @@ public class PlayersContextViewModel {
     private String lastDrillDownResultYearId;
 
     public boolean shouldExecutePlayersDrillDownSearch(boolean update){
+        //needed for drillDown svc call
+        if(batterId == null || pitcherId == null || resultYearId == null) return false;
+
         boolean returnValue;
-        if(batterId == null || pitcherId == null || resultYearId == null ||
-                lastDrillDownBatterId == null || lastDrillDownPitcherId == null ||
+        if(lastDrillDownBatterId == null || lastDrillDownPitcherId == null ||
                 lastDrillDownResultYearId == null ||
                 !lastDrillDownBatterId.equals(batterId) || !lastDrillDownPitcherId.equals(pitcherId) ||
                 !lastDrillDownResultYearId.equals(resultYearId) ){

@@ -137,7 +137,7 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
     public void setEmptyText(CharSequence emptyText) {
         View emptyView = mListView.getEmptyView();
 
-        if (emptyText instanceof TextView) {
+        if (emptyText instanceof String) {
             ((TextView) emptyView).setText(emptyText);
         }
     }
@@ -159,6 +159,7 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
 
         if(playersContextViewModel.shouldExecutePlayersDrillDownSearch(netAvailable) && !drillDownViewModel.getIsBusy()) {
             if(netAvailable) {
+                setEmptyText(getString(R.string.no_search_results));
                 onServiceComplete = new ServiceCompleteImpl();
                 PlayersDrillDownAsyncTask task = new PlayersDrillDownAsyncTask(getActivity(), playersContextViewModel,
                         drillDownViewModel);
@@ -166,9 +167,13 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
                 task.execute();
             } else {
                 if (null != mListener) {
-                    mListener.onPlayersDrillDownInteractionFail(TeamsFeatureActivity.NoInternet);
+                    mListener.onPlayersDrillDownInteractionFail(PlayersFeatureActivity.NoInternet);
                 }
             }
+        } else {
+            //likely new session and tabbed to results tab
+            setEmptyText(getString(R.string.p_select_results_first));
+            mAdapter.notifyDataSetChanged();
         }
     }
 

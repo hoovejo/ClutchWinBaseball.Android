@@ -73,6 +73,10 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
         teamsContextViewModel = app.getTeamsContextViewModel();
         teamsFranchisesViewModel = app.getTeamsFranchisesViewModel();
 
+        if(!app.getHasLoadedFranchisesOnce()){
+            initiateServiceCall();
+        }
+
         if(teamsFranchisesViewModel.ITEMS.isEmpty() && !teamsFranchisesViewModel.getIsBusy()) {
 
             if(Helpers.checkFileExists(activity, teamsFranchisesViewModel.CacheFileKey)) {
@@ -178,7 +182,11 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
 
     private class ServiceCompleteImpl implements TeamsFranchisesAsyncTask.OnLoadCompleteListener {
         @Override
-        public void onComplete(){ mAdapter.notifyDataSetChanged(); }
+        public void onComplete(){
+            mAdapter.notifyDataSetChanged();
+            ClutchWinApplication app = (ClutchWinApplication)getActivity().getApplicationContext();
+            app.setHasLoadedFranchisesOnce(true);
+        }
         @Override
         public void onFailure(){
             if (null != mListener) {

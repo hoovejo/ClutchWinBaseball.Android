@@ -133,7 +133,7 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
     public void setEmptyText(CharSequence emptyText) {
         View emptyView = mListView.getEmptyView();
 
-        if (emptyText instanceof TextView) {
+        if (emptyText instanceof String) {
             ((TextView) emptyView).setText(emptyText);
         }
     }
@@ -165,6 +165,10 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
                     mListener.onTeamsDrillDownInteractionFail(TeamsFeatureActivity.NoInternet);
                 }
             }
+        } else {
+            //likely new session and tabbed to drillDown tab
+            setEmptyText(getString(R.string.t_select_result_first));
+            mAdapter.notifyDataSetChanged();
         }
     }
 

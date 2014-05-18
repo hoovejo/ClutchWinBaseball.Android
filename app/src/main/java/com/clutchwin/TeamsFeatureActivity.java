@@ -57,6 +57,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_teamsfeature);
 
         ClutchWinApplication app = (ClutchWinApplication)getApplicationContext();

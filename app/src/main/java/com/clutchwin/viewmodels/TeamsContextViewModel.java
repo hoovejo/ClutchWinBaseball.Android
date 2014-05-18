@@ -25,6 +25,9 @@ public class TeamsContextViewModel {
     private String lastOpponentFilterFranchiseId;
 
     public boolean shouldFilterOpponents(boolean update){
+        //needed for opponent filtering
+        if(franchiseId == null) return false;
+
         boolean returnValue;
         if(lastOpponentFilterFranchiseId == null || !lastOpponentFilterFranchiseId.equals(franchiseId)){
             returnValue = true;
@@ -41,9 +44,11 @@ public class TeamsContextViewModel {
     private String lastSearchOpponentId;
 
     public boolean shouldExecuteTeamResultsSearch(boolean update){
+        //needed for team results svc call
+        if(franchiseId == null || opponentId == null) return false;
+
         boolean returnValue;
-        if(franchiseId == null || opponentId == null ||
-                lastSearchFranchiseId == null || lastSearchOpponentId == null ||
+        if(lastSearchFranchiseId == null || lastSearchOpponentId == null ||
                 !lastSearchFranchiseId.equals(franchiseId) || !lastSearchOpponentId.equals(opponentId)){
             returnValue = true;
         } else {
@@ -61,9 +66,11 @@ public class TeamsContextViewModel {
     private String lastDrillDownYearId;
 
     public boolean shouldExecuteTeamDrillDownSearch(boolean update){
+        //needed for team results svc call
+        if(franchiseId == null || opponentId == null || yearId == null) return false;
+
         boolean returnValue;
-        if(franchiseId == null || opponentId == null || yearId == null ||
-                lastDrillDownFranchiseId == null || lastDrillDownOpponentId == null ||
+        if(lastDrillDownFranchiseId == null || lastDrillDownOpponentId == null ||
                 lastDrillDownYearId == null ||
                 !lastDrillDownFranchiseId.equals(franchiseId) || !lastDrillDownOpponentId.equals(opponentId) ||
                 !lastDrillDownYearId.equals(yearId)){

@@ -71,6 +71,10 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
         playersContextViewModel = app.getPlayersContextViewModel();
         playersYearsViewModel = app.getPlayersYearsViewModel();
 
+        if(!app.getHasLoadedSeasonsOnce()){
+            initiateServiceCall();
+        }
+
         if(playersYearsViewModel.ITEMS.isEmpty() && !playersYearsViewModel.getIsBusy()) {
 
             if(Helpers.checkFileExists(activity, playersYearsViewModel.CacheFileKey)) {
@@ -179,6 +183,8 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
         @Override
         public void onComplete(){
             ((ArrayAdapter) mAdapter).notifyDataSetChanged();
+            ClutchWinApplication app = (ClutchWinApplication)getActivity().getApplicationContext();
+            app.setHasLoadedSeasonsOnce(true);
         }
         @Override
         public void onFailure(){
