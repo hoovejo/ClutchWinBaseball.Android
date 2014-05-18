@@ -2,8 +2,6 @@ package com.clutchwin.viewmodels;
 
 public class TeamsContextViewModel {
 
-    public static final String CacheFileKey = "teamsContextViewModel.json";
-
     public TeamsContextViewModel(){}
 
     private transient boolean isHydratedObject = false;

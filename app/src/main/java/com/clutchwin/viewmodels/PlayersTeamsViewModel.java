@@ -13,8 +13,6 @@ public class PlayersTeamsViewModel {
     public boolean getIsBusy() { return _isBusy; }
     public void setIsBusy(boolean b) { _isBusy = b; }
 
-    public static final String CacheFileKey = "playersTeams.json";
-
     public List<PlayersTeamsViewModel.Team> ITEMS = new ArrayList<PlayersTeamsViewModel.Team>();
 
     private void addItem(PlayersTeamsViewModel.Team item) {

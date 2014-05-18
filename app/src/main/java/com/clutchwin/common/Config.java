@@ -2,6 +2,22 @@ package com.clutchwin.common;
 
 public class Config {
 
+    public static final String NoInternet = "Internet";
+
+    public static final String PC_CacheFileKey = "playersContextViewModel.json";
+    public static final String PY_CacheFileKey = "playersYears.json";
+    public static final String PT_CacheFileKey = "playersTeams.json";
+    public static final String PB_CacheFileKey = "playersBatters.json";
+    public static final String PP_CacheFileKey = "playersPitchers.json";
+    public static final String PR_CacheFileKey = "playersResults.json";
+    public static final String PDD_CacheFileKey = "playersDrillDown.json";
+
+    public static final String TC_CacheFileKey = "teamsContextViewModel.json";
+    public static final String TF_CacheFileKey = "franchises.json";
+    public static final String TR_CacheFileKey = "teamsResults.json";
+    public static final String TDD_CacheFileKey = "teamsDrillDown.json";
+
+
     public static final String AccessTokenKey = "&access_token=";
     public static final String AccessTokenValue = "joe";
 

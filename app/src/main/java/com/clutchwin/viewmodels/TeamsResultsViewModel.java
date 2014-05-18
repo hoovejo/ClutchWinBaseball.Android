@@ -15,8 +15,6 @@ public class TeamsResultsViewModel {
     public boolean getIsBusy() { return _isBusy; }
     public void setIsBusy(boolean b) { _isBusy = b; }
 
-    public static final String CacheFileKey = "teamsResults.json";
-
     public List<TeamsResultsViewModel.TeamsResult> ITEMS = new ArrayList<TeamsResultsViewModel.TeamsResult>();
 
     private void addItem(TeamsResultsViewModel.TeamsResult item) {

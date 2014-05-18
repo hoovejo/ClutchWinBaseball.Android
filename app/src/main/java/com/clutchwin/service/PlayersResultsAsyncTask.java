@@ -62,7 +62,7 @@ public class PlayersResultsAsyncTask extends AsyncTask<Void, Void, Void> {
             playersResults = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), PlayersResultsViewModel.PlayersResult[].class));
 
             try {
-                Helpers.writeListToInternalStorage(playersResults, context, playersResultsViewModel.CacheFileKey);
+                Helpers.writeListToInternalStorage(playersResults, context, Config.PR_CacheFileKey);
             } catch (IOException e) {
                 Log.e("PlayersResultsAsyncTask::writeListToInternalStorage", e.getMessage(), e);
             }

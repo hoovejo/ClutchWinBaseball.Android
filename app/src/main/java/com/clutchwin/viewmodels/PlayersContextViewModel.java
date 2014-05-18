@@ -2,8 +2,6 @@ package com.clutchwin.viewmodels;
 
 public class PlayersContextViewModel {
 
-    public static final String CacheFileKey = "playersContextViewModel.json";
-
     public PlayersContextViewModel(){}
 
     private transient boolean isHydratedObject = false;
@@ -33,6 +31,9 @@ public class PlayersContextViewModel {
     private String lastYearId;
 
     public boolean shouldExecuteLoadTeams(boolean update){
+        //needed for teams svc call
+        if(yearId == null) return false;
+
         boolean returnValue;
         if(lastYearId == null || !lastYearId.equals(yearId)){
             returnValue = true;

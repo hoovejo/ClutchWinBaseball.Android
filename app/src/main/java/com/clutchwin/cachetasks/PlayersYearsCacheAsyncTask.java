@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.clutchwin.R;
+import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.PlayersYearsViewModel;
 import com.google.gson.Gson;
@@ -45,7 +46,7 @@ public class PlayersYearsCacheAsyncTask extends AsyncTask<Void, Void, Void> {
 
             playersYearsViewModel.setIsBusy(true);
 
-            outObject = Helpers.readObjectFromInternalStorage(context, playersYearsViewModel.CacheFileKey);
+            outObject = Helpers.readObjectFromInternalStorage(context, Config.PY_CacheFileKey);
             Gson gson = new GsonBuilder().create();
             JSONArray jsonArray = new JSONArray(outObject.toString());
             Type listType = new TypeToken<List<PlayersYearsViewModel.Year>>(){}.getType();

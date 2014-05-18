@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.clutchwin.R;
+import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.TeamsContextViewModel;
 import com.clutchwin.viewmodels.TeamsFranchisesViewModel;
@@ -53,7 +54,7 @@ public class TeamsOpponentsCacheAsyncTask extends AsyncTask<Void, Void, Void> {
 
             teamsOpponentsViewModel.setIsBusy(true);
 
-            outObject = Helpers.readObjectFromInternalStorage(context, teamsFranchisesViewModel.CacheFileKey);
+            outObject = Helpers.readObjectFromInternalStorage(context, Config.TF_CacheFileKey);
             Gson gson = new GsonBuilder().create();
             JSONArray jsonArray = new JSONArray(outObject.toString());
             Type listType = new TypeToken<List<TeamsFranchisesViewModel.Franchise>>(){}.getType();

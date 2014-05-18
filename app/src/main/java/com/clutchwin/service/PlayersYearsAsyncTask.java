@@ -55,7 +55,7 @@ public class PlayersYearsAsyncTask extends AsyncTask<Void, Void, Void> {
             yearList = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), PlayersYearsViewModel.Year[].class));
 
             try {
-                Helpers.writeListToInternalStorage(yearList, context, playersYearsViewModel.CacheFileKey);
+                Helpers.writeListToInternalStorage(yearList, context, Config.PY_CacheFileKey);
             } catch (IOException e) {
                 Log.e("PlayersYearsAsyncTask::writeListToInternalStorage", e.getMessage(), e);
             }

@@ -13,8 +13,6 @@ public class PlayersYearsViewModel {
     public boolean getIsBusy() { return _isBusy; }
     public void setIsBusy(boolean b) { _isBusy = b; }
 
-    public static final String CacheFileKey = "playersYears.json";
-
     public List<PlayersYearsViewModel.Year> ITEMS = new ArrayList<PlayersYearsViewModel.Year>();
 
     private void addItem(PlayersYearsViewModel.Year item) {

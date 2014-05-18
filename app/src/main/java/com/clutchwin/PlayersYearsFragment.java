@@ -14,6 +14,7 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.clutchwin.cachetasks.PlayersYearsCacheAsyncTask;
+import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.service.PlayersYearsAsyncTask;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
@@ -77,7 +78,7 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
 
         if(playersYearsViewModel.ITEMS.isEmpty() && !playersYearsViewModel.getIsBusy()) {
 
-            if(Helpers.checkFileExists(activity, playersYearsViewModel.CacheFileKey)) {
+            if(Helpers.checkFileExists(activity, Config.PY_CacheFileKey)) {
                 onCacheComplete = new CacheCompleteImpl();
                 PlayersYearsCacheAsyncTask cacheAsyncTask = new PlayersYearsCacheAsyncTask(activity, playersYearsViewModel);
                 cacheAsyncTask.setOnCompleteListener(onCacheComplete);
@@ -126,6 +127,8 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
     public void onDetach() {
         super.onDetach();
         mListener = null;
+        onServiceComplete = null;
+        onCacheComplete = null;
     }
 
     @Override
@@ -174,7 +177,7 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
             if (null != mListener) {
                 // Notify the active callbacks interface (the activity, if the
                 // fragment is attached to one) that a failure has happened.
-                mListener.onPlayersYearsInteractionFail(PlayersYearsActivity.NoInternet);
+                mListener.onPlayersYearsInteractionFail(Config.NoInternet);
             }
         }
     }

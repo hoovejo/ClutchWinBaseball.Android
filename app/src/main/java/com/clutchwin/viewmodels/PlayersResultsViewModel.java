@@ -15,8 +15,6 @@ public class PlayersResultsViewModel {
     public boolean getIsBusy() { return _isBusy; }
     public void setIsBusy(boolean b) { _isBusy = b; }
 
-    public static final String CacheFileKey = "playersResults.json";
-
     public List<PlayersResultsViewModel.PlayersResult> ITEMS = new ArrayList<PlayersResultsViewModel.PlayersResult>();
 
     private void addItem(PlayersResultsViewModel.PlayersResult item) {

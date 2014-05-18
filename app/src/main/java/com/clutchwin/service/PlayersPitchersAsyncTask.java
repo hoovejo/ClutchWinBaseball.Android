@@ -56,7 +56,7 @@ public class PlayersPitchersAsyncTask extends AsyncTask<Void, Void, Void> {
             PlayersPitchersViewModel.PitchersResult result = restTemplate.getForObject(finalUrl.toString(), PlayersPitchersViewModel.PitchersResult.class);
 
             try {
-                Helpers.writeListToInternalStorage(result.rows, context, playersPitchersViewModel.CacheFileKey);
+                Helpers.writeListToInternalStorage(result.rows, context, Config.PR_CacheFileKey);
             } catch (IOException e) {
                 Log.e("PlayersPitchersAsyncTask::writeListToInternalStorage", e.getMessage(), e);
             }

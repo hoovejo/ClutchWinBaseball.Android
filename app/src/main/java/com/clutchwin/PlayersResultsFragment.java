@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.clutchwin.adapters.PlayersResultsAdapter;
 import com.clutchwin.cachetasks.PlayersResultsCacheAsyncTask;
+import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.service.PlayersResultsAsyncTask;
@@ -74,7 +75,7 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
 
         if(resultsViewModel.ITEMS.isEmpty() && !resultsViewModel.getIsBusy()) {
 
-            if(Helpers.checkFileExists(activity, resultsViewModel.CacheFileKey)) {
+            if(Helpers.checkFileExists(activity, Config.PR_CacheFileKey)) {
                 onCacheComplete = new CacheCompleteImpl();
                 PlayersResultsCacheAsyncTask cacheAsyncTask = new PlayersResultsCacheAsyncTask(activity, resultsViewModel);
                 cacheAsyncTask.setOnCompleteListener(onCacheComplete);
@@ -121,6 +122,8 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
     public void onDetach() {
         super.onDetach();
         mListener = null;
+        onServiceComplete = null;
+        onCacheComplete = null;
     }
 
 
@@ -172,7 +175,7 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
                 task.execute();
             } else {
                 if (null != mListener) {
-                    mListener.onPlayersResultsInteractionFail(PlayersFeatureActivity.NoInternet);
+                    mListener.onPlayersResultsInteractionFail(Config.NoInternet);
                 }
             }
         } else {

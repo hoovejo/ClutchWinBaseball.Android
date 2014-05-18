@@ -54,7 +54,7 @@ public class TeamsFranchisesAsyncTask extends AsyncTask<Void, Void, Void> {
             franchiseList = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), TeamsFranchisesViewModel.Franchise[].class));
 
             try {
-                Helpers.writeListToInternalStorage(franchiseList, context, teamsFranchisesViewModel.CacheFileKey);
+                Helpers.writeListToInternalStorage(franchiseList, context, Config.TF_CacheFileKey);
             } catch (IOException e) {
                 Log.e("TeamsFranchisesAsyncTask::writeListToInternalStorage", e.getMessage(), e);
             }

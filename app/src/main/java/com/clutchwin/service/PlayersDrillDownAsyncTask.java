@@ -63,7 +63,7 @@ public class PlayersDrillDownAsyncTask extends AsyncTask<Void, Void, Void> {
             playersDrillDownResults = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), PlayersDrillDownViewModel.PlayersDrillDown[].class));
 
             try {
-                Helpers.writeListToInternalStorage(playersDrillDownResults, context, playersDrillDownViewModel.CacheFileKey);
+                Helpers.writeListToInternalStorage(playersDrillDownResults, context, Config.PDD_CacheFileKey);
             } catch (IOException e) {
                 Log.e("PlayersDrillDownCacheAsyncTask::writeListToInternalStorage", e.getMessage(), e);
             }

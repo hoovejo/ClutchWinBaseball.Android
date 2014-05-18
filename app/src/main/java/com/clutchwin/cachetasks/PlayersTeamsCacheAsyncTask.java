@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.clutchwin.R;
+import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.PlayersTeamsViewModel;
 import com.google.gson.Gson;
@@ -45,7 +46,7 @@ public class PlayersTeamsCacheAsyncTask extends AsyncTask<Void, Void, Void> {
 
             playersTeamsViewModel.setIsBusy(true);
 
-            outObject = Helpers.readObjectFromInternalStorage(context, playersTeamsViewModel.CacheFileKey);
+            outObject = Helpers.readObjectFromInternalStorage(context, Config.PT_CacheFileKey);
             Gson gson = new GsonBuilder().create();
             JSONArray jsonArray = new JSONArray(outObject.toString());
             Type listType = new TypeToken<List<PlayersTeamsViewModel.Team>>(){}.getType();

@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.viewmodels.TeamsContextViewModel;
@@ -50,10 +51,6 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
      */
     private TeamsContextViewModel teamsContextViewModel;
 
-    public static TeamsFeatureActivity Current;
-
-    public static final String NoInternet = "Internet";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,10 +61,10 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
         teamsContextViewModel = app.getTeamsContextViewModel();
 
         //if cache file exists and we have a new instance, then rehydrate from cache
-        if(Helpers.checkFileExists(this, teamsContextViewModel.CacheFileKey) && !teamsContextViewModel.getIsHydratedObject()){
+        if(Helpers.checkFileExists(this, Config.TC_CacheFileKey) && !teamsContextViewModel.getIsHydratedObject()){
             Object outObject;
             try {
-                outObject = Helpers.readObjectFromInternalStorage(this, teamsContextViewModel.CacheFileKey);
+                outObject = Helpers.readObjectFromInternalStorage(this, Config.TC_CacheFileKey);
                 Gson gson = new GsonBuilder().create();
                 teamsContextViewModel = gson.fromJson(outObject.toString(), TeamsContextViewModel.class);
                 teamsContextViewModel.setIsHydratedObject(true);
@@ -116,8 +113,6 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
                             .setText(mSectionsPagerAdapter.getPageTitle(i))
                             .setTabListener(this));
         }
-
-        Current = this;
     }
 
     @Override
@@ -125,7 +120,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
         teamsContextViewModel.setFranchiseId(id);
 
         try {
-            Helpers.updateFileState(teamsContextViewModel, this, teamsContextViewModel.CacheFileKey);
+            Helpers.updateFileState(teamsContextViewModel, this, Config.TC_CacheFileKey);
         } catch (IOException e) {
             Log.e("TeamsFeatureActivity::onTeamsFranchisesInteraction", e.getMessage(), e);
         }
@@ -136,7 +131,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
     @Override
     public void onTeamsFranchisesInteractionFail(String type) {
 
-        if(NoInternet.equals(type)){
+        if(Config.NoInternet.equals(type)){
             showMessage(getString(R.string.no_internet));
         } else {
             showMessage(getString(R.string.fatal_error));
@@ -148,7 +143,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
         teamsContextViewModel.setOpponentId(id);
 
         try {
-            Helpers.updateFileState(teamsContextViewModel, this, teamsContextViewModel.CacheFileKey);
+            Helpers.updateFileState(teamsContextViewModel, this, Config.TC_CacheFileKey);
         } catch (IOException e) {
             Log.e("TeamsFeatureActivity::onTeamsOpponentsInteraction", e.getMessage(), e);
         }
@@ -158,7 +153,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
 
     @Override
     public void onTeamsOpponentsInteractionFail(String type) {
-        if(NoInternet.equals(type)){
+        if(Config.NoInternet.equals(type)){
             showMessage(getString(R.string.no_internet));
         } else {
             showMessage(getString(R.string.fatal_error));
@@ -170,7 +165,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
         teamsContextViewModel.setYearId(id);
 
         try {
-            Helpers.updateFileState(teamsContextViewModel, this, teamsContextViewModel.CacheFileKey);
+            Helpers.updateFileState(teamsContextViewModel, this, Config.TC_CacheFileKey);
         } catch (IOException e) {
             Log.e("TeamsFeatureActivity::onTeamsResultsInteraction", e.getMessage(), e);
         }
@@ -180,7 +175,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
 
     @Override
     public void onTeamsResultsInteractionFail(String type) {
-        if(NoInternet.equals(type)){
+        if(Config.NoInternet.equals(type)){
             showMessage(getString(R.string.no_internet));
         } else {
             showMessage(getString(R.string.fatal_error));
@@ -190,7 +185,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
     @Override
     public void onTeamsDrillDownInteraction(String id) {
         try {
-            Helpers.updateFileState(teamsContextViewModel, this, teamsContextViewModel.CacheFileKey);
+            Helpers.updateFileState(teamsContextViewModel, this, Config.TC_CacheFileKey);
         } catch (IOException e) {
             Log.e("TeamsFeatureActivity::onTeamsDrillDownInteraction", e.getMessage(), e);
         }
@@ -198,7 +193,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
 
     @Override
     public void onTeamsDrillDownInteractionFail(String type) {
-        if(NoInternet.equals(type)){
+        if(Config.NoInternet.equals(type)){
             showMessage(getString(R.string.no_internet));
         } else {
             showMessage(getString(R.string.fatal_error));

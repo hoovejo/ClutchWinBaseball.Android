@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.clutchwin.R;
+import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.PlayersDrillDownViewModel;
 import com.google.gson.Gson;
@@ -45,7 +46,7 @@ public class PlayersDrillDownCacheAsyncTask extends AsyncTask<Void, Void, Void> 
 
             playersDrillDownViewModel.setIsBusy(true);
 
-            outObject = Helpers.readObjectFromInternalStorage(context, playersDrillDownViewModel.CacheFileKey);
+            outObject = Helpers.readObjectFromInternalStorage(context, Config.PDD_CacheFileKey);
             Gson gson = new GsonBuilder().create();
             JSONArray jsonArray = new JSONArray(outObject.toString());
             Type listType = new TypeToken<List<PlayersDrillDownViewModel.PlayersDrillDown>>(){}.getType();

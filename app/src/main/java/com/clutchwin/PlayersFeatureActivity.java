@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
@@ -49,10 +50,6 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
      */
     private PlayersContextViewModel playersContextViewModel;
 
-    public static PlayersFeatureActivity Current;
-
-    public static final String NoInternet = "Internet";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,10 +60,10 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
         playersContextViewModel = app.getPlayersContextViewModel();
 
         //if cache file exists and we have a new instance, then rehydrate from cache
-        if(Helpers.checkFileExists(this, playersContextViewModel.CacheFileKey) && !playersContextViewModel.getIsHydratedObject()){
+        if(Helpers.checkFileExists(this, Config.PC_CacheFileKey) && !playersContextViewModel.getIsHydratedObject()){
             Object outObject;
             try {
-                outObject = Helpers.readObjectFromInternalStorage(this, playersContextViewModel.CacheFileKey);
+                outObject = Helpers.readObjectFromInternalStorage(this, Config.PC_CacheFileKey);
                 Gson gson = new GsonBuilder().create();
                 playersContextViewModel = gson.fromJson(outObject.toString(), PlayersContextViewModel.class);
                 playersContextViewModel.setIsHydratedObject(true);
@@ -115,8 +112,6 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
                             .setText(mSectionsPagerAdapter.getPageTitle(i))
                             .setTabListener(this));
         }
-
-        Current = this;
     }
 
     @Override
@@ -138,7 +133,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
         playersContextViewModel.setBatterId(id);
 
         try {
-            Helpers.updateFileState(playersContextViewModel, this, playersContextViewModel.CacheFileKey);
+            Helpers.updateFileState(playersContextViewModel, this, Config.PC_CacheFileKey);
         } catch (IOException e) {
             Log.e("PlayersFeatureActivity::onPlayersBattersInteraction", e.getMessage(), e);
         }
@@ -148,7 +143,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
 
     @Override
     public void onPlayersBattersInteractionFail(String type) {
-        if(NoInternet.equals(type)){
+        if(Config.NoInternet.equals(type)){
             showMessage(getString(R.string.no_internet));
         } else {
             showMessage(getString(R.string.fatal_error));
@@ -160,7 +155,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
         playersContextViewModel.setPitcherId(id);
 
         try {
-            Helpers.updateFileState(playersContextViewModel, this, playersContextViewModel.CacheFileKey);
+            Helpers.updateFileState(playersContextViewModel, this, Config.PC_CacheFileKey);
         } catch (IOException e) {
             Log.e("PlayersFeatureActivity::onPlayersPitchersInteraction", e.getMessage(), e);
         }
@@ -170,7 +165,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
 
     @Override
     public void onPlayersPitchersInteractionFail(String type) {
-        if(NoInternet.equals(type)){
+        if(Config.NoInternet.equals(type)){
             showMessage(getString(R.string.no_internet));
         } else {
             showMessage(getString(R.string.fatal_error));
@@ -182,7 +177,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
         playersContextViewModel.setResultYearId(id);
 
         try {
-            Helpers.updateFileState(playersContextViewModel, this, playersContextViewModel.CacheFileKey);
+            Helpers.updateFileState(playersContextViewModel, this, Config.PC_CacheFileKey);
         } catch (IOException e) {
             Log.e("PlayersFeatureActivity::onPlayersResultsInteraction", e.getMessage(), e);
         }
@@ -192,7 +187,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
 
     @Override
     public void onPlayersResultsInteractionFail(String type) {
-        if(NoInternet.equals(type)){
+        if(Config.NoInternet.equals(type)){
             showMessage(getString(R.string.no_internet));
         } else {
             showMessage(getString(R.string.fatal_error));
@@ -202,7 +197,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
     @Override
     public void onPlayersDrillDownInteraction(String id) {
         try {
-            Helpers.updateFileState(playersContextViewModel, this, playersContextViewModel.CacheFileKey);
+            Helpers.updateFileState(playersContextViewModel, this, Config.PC_CacheFileKey);
         } catch (IOException e) {
             Log.e("PlayersFeatureActivity::onPlayersDrillDownInteraction", e.getMessage(), e);
         }
@@ -210,7 +205,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
 
     @Override
     public void onPlayersDrillDownInteractionFail(String type) {
-        if(NoInternet.equals(type)){
+        if(Config.NoInternet.equals(type)){
             showMessage(getString(R.string.no_internet));
         } else {
             showMessage(getString(R.string.fatal_error));

@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
+import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
 
@@ -14,17 +15,10 @@ import java.io.IOException;
 
 public class PlayersYearsActivity extends FragmentActivity implements PlayersYearsFragment.OnFragmentInteractionListener {
 
-    private PlayersContextViewModel playersContextViewModel;
-
-    public static final String NoInternet = "Internet";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playersyears);
-
-        ClutchWinApplication app = (ClutchWinApplication)getApplicationContext();
-        playersContextViewModel = app.getPlayersContextViewModel();
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -35,10 +29,12 @@ public class PlayersYearsActivity extends FragmentActivity implements PlayersYea
 
     @Override
     public void onPlayersYearsInteraction(String id) {
+        ClutchWinApplication app = (ClutchWinApplication)getApplicationContext();
+        PlayersContextViewModel playersContextViewModel = app.getPlayersContextViewModel();
         playersContextViewModel.setYearId(id);
 
         try {
-            Helpers.updateFileState(playersContextViewModel, this, playersContextViewModel.CacheFileKey);
+            Helpers.updateFileState(playersContextViewModel, this, Config.PC_CacheFileKey);
         } catch (IOException e) {
             Log.e("PlayersYearsActivity::onPlayersYearsInteraction", e.getMessage(), e);
         }
@@ -51,7 +47,7 @@ public class PlayersYearsActivity extends FragmentActivity implements PlayersYea
     @Override
     public void onPlayersYearsInteractionFail(String type) {
 
-        if(NoInternet.equals(type)){
+        if(Config.NoInternet.equals(type)){
             showMessage(getString(R.string.no_internet));
         } else {
             showMessage(getString(R.string.fatal_error));
@@ -67,12 +63,5 @@ public class PlayersYearsActivity extends FragmentActivity implements PlayersYea
                 dialogInterface.dismiss();
             }
         });
-    }
-
-    private boolean navigateToHome(){
-        Intent i = new Intent(this, MainActivity.class);
-        startActivity(i);
-        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-        return true;
     }
 }

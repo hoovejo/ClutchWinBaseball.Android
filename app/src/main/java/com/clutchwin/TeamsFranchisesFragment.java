@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.clutchwin.adapters.TeamsFranchisesAdapter;
 import com.clutchwin.cachetasks.TeamsFranchisesCacheAsyncTask;
+import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.service.TeamsFranchisesAsyncTask;
 import com.clutchwin.viewmodels.TeamsContextViewModel;
@@ -79,7 +80,7 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
 
         if(teamsFranchisesViewModel.ITEMS.isEmpty() && !teamsFranchisesViewModel.getIsBusy()) {
 
-            if(Helpers.checkFileExists(activity, teamsFranchisesViewModel.CacheFileKey)) {
+            if(Helpers.checkFileExists(activity, Config.TF_CacheFileKey)) {
                 onCacheComplete = new CacheCompleteImpl();
                 TeamsFranchisesCacheAsyncTask cacheAsyncTask = new TeamsFranchisesCacheAsyncTask(activity, teamsFranchisesViewModel);
                 cacheAsyncTask.setOnCompleteListener(onCacheComplete);
@@ -128,6 +129,8 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
     public void onDetach() {
         super.onDetach();
         mListener = null;
+        onServiceComplete = null;
+        onCacheComplete = null;
     }
 
 
@@ -175,7 +178,7 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
             task.execute();
         } else {
             if (null != mListener) {
-                mListener.onTeamsFranchisesInteractionFail(TeamsFeatureActivity.NoInternet);
+                mListener.onTeamsFranchisesInteractionFail(Config.NoInternet);
             }
         }
     }

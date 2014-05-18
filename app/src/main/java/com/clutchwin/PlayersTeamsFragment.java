@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.clutchwin.adapters.PlayersTeamsAdapter;
 import com.clutchwin.cachetasks.PlayersTeamsCacheAsyncTask;
+import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.service.PlayersTeamsAsyncTask;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
@@ -73,7 +74,7 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
 
         if(playersTeamsViewModel.ITEMS.isEmpty() && !playersTeamsViewModel.getIsBusy()) {
 
-            if(Helpers.checkFileExists(activity, playersTeamsViewModel.CacheFileKey)) {
+            if(Helpers.checkFileExists(activity, Config.PT_CacheFileKey)) {
                 onCacheComplete = new CacheCompleteImpl();
                 PlayersTeamsCacheAsyncTask cacheAsyncTask = new PlayersTeamsCacheAsyncTask(activity, playersTeamsViewModel);
                 cacheAsyncTask.setOnCompleteListener(onCacheComplete);
@@ -124,6 +125,8 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
     public void onDetach() {
         super.onDetach();
         mListener = null;
+        onServiceComplete = null;
+        onCacheComplete = null;
     }
 
     @Override
@@ -174,7 +177,7 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
                 if (null != mListener) {
                     // Notify the active callbacks interface (the activity, if the
                     // fragment is attached to one) that a failure has happened.
-                    mListener.onPlayersTeamsInteractionFail(PlayersTeamsActivity.NoInternet);
+                    mListener.onPlayersTeamsInteractionFail(Config.NoInternet);
                 }
             }
         }

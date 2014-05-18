@@ -15,8 +15,6 @@ public class TeamsFranchisesViewModel {
     public boolean getIsBusy() { return _isBusy; }
     public void setIsBusy(boolean b) { _isBusy = b; }
 
-    public static final String CacheFileKey = "franchises.json";
-
     public List<Franchise> ITEMS = new ArrayList<Franchise>();
 
     private void addItem(Franchise item) {

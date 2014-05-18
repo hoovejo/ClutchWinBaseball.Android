@@ -63,7 +63,7 @@ public class TeamsDrillDownAsyncTask extends AsyncTask<Void, Void, Void> {
             resultsList = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), TeamsDrillDownViewModel.TeamsDrillDown[].class));
 
             try {
-                Helpers.writeListToInternalStorage(resultsList, context, teamsDrillDownViewModel.CacheFileKey);
+                Helpers.writeListToInternalStorage(resultsList, context, Config.TDD_CacheFileKey);
             } catch (IOException e) {
                 Log.e("TeamsDrillDownAsyncTask::writeListToInternalStorage", e.getMessage(), e);
             }

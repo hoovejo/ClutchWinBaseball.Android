@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.clutchwin.adapters.PlayersDrillDownAdapter;
 import com.clutchwin.cachetasks.PlayersDrillDownCacheAsyncTask;
+import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.service.PlayersDrillDownAsyncTask;
@@ -74,7 +75,7 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
 
         if(drillDownViewModel.ITEMS.isEmpty() && !drillDownViewModel.getIsBusy()) {
 
-            if(Helpers.checkFileExists(activity, drillDownViewModel.CacheFileKey)) {
+            if(Helpers.checkFileExists(activity, Config.PDD_CacheFileKey)) {
                 onCacheComplete = new CacheCompleteImpl();
                 PlayersDrillDownCacheAsyncTask cacheAsyncTask = new PlayersDrillDownCacheAsyncTask(activity, drillDownViewModel);
                 cacheAsyncTask.setOnCompleteListener(onCacheComplete);
@@ -118,6 +119,8 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
     public void onDetach() {
         super.onDetach();
         mListener = null;
+        onServiceComplete = null;
+        onCacheComplete = null;
     }
 
     @Override
@@ -167,7 +170,7 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
                 task.execute();
             } else {
                 if (null != mListener) {
-                    mListener.onPlayersDrillDownInteractionFail(PlayersFeatureActivity.NoInternet);
+                    mListener.onPlayersDrillDownInteractionFail(Config.NoInternet);
                 }
             }
         } else {

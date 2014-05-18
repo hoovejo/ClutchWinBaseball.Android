@@ -15,8 +15,6 @@ public class TeamsDrillDownViewModel {
     public boolean getIsBusy() { return _isBusy; }
     public void setIsBusy(boolean b) { _isBusy = b; }
 
-    public static final String CacheFileKey = "teamsDrillDown.json";
-
     public List<TeamsDrillDownViewModel.TeamsDrillDown> ITEMS = new ArrayList<TeamsDrillDownViewModel.TeamsDrillDown>();
 
     private void addItem(TeamsDrillDownViewModel.TeamsDrillDown item) {
