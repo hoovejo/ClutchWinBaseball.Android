@@ -75,6 +75,12 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
         TeamsOpponentsCacheAsyncTask cacheTask;
         cacheTask = (TeamsOpponentsCacheAsyncTask) getApp().getTask(Config.TO_CacheTaskKey);
 
+        // if we are constructing and have no active tasks in the background, ensure no other orphan
+        // tasks left the viewModel as busy on an orientation change
+        if(cacheTask == null){
+            getOpponentsViewModel().setIsBusy(false);
+        }
+
         if(getOpponentsViewModel().ITEMS.isEmpty() &&
                 !getOpponentsViewModel().getIsBusy()
                 && getContextViewModel().getFranchiseId() != null) {
@@ -98,8 +104,6 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
         if (cacheTask != null) {
             getProgressDialog().show();
              cacheTask.setOnCompleteListener(this);
-        } else {
-            getOpponentsViewModel().setIsBusy(false);
         }
     }
 

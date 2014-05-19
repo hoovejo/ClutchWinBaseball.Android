@@ -80,6 +80,12 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
          PlayersYearsAsyncTask serviceTask;
          serviceTask = (PlayersYearsAsyncTask) getApp().getTask(Config.PY_SvcTaskKey);
 
+         // if we are constructing and have no active tasks in the background, ensure no other orphan
+         // tasks left the viewModel as busy on an orientation change
+         if(cacheTask == null && serviceTask == null){
+             getYearsViewModel().setIsBusy(false);
+         }
+
          if(getYearsViewModel().ITEMS.isEmpty() && !getYearsViewModel().getIsBusy()) {
 
              if(Helpers.checkFileExists(activity, Config.PY_CacheFileKey)) {
@@ -109,9 +115,6 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
          if (serviceTask != null) {
              getProgressDialog().show();
              serviceTask.setOnCompleteListener(this);
-         }
-         if(cacheTask == null && serviceTask == null){
-             getYearsViewModel().setIsBusy(false);
          }
      }
 

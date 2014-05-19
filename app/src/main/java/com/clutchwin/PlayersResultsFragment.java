@@ -79,6 +79,12 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
          PlayersResultsAsyncTask serviceTask;
          serviceTask = (PlayersResultsAsyncTask)getApp().getTask(Config.PR_SvcTaskKey);
 
+         // if we are constructing and have no active tasks in the background, ensure no other orphan
+         // tasks left the viewModel as busy on an orientation change
+         if(cacheTask == null && serviceTask == null){
+             getResultsViewModel().setIsBusy(false);
+         }
+
          if(getResultsViewModel().ITEMS.isEmpty() && !getResultsViewModel().getIsBusy()) {
 
              if(Helpers.checkFileExists(activity, Config.PR_CacheFileKey)) {
@@ -103,9 +109,6 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
          if(serviceTask != null){
              getProgressDialog().show();
               serviceTask.setOnCompleteListener(this);
-         }
-         if(cacheTask == null && serviceTask == null){
-             getResultsViewModel().setIsBusy(false);
          }
      }
 

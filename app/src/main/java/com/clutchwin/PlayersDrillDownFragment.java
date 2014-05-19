@@ -79,6 +79,12 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
         PlayersDrillDownAsyncTask serviceTask;
         serviceTask = (PlayersDrillDownAsyncTask) getApp().getTask(Config.PDD_SvcTaskKey);
 
+        // if we are constructing and have no active tasks in the background, ensure no other orphan
+        // tasks left the viewModel as busy on an orientation change
+        if (cacheTask == null && serviceTask == null) {
+            getDrillDownViewModel().setIsBusy(false);
+        }
+
         if (getDrillDownViewModel().ITEMS.isEmpty() && !getDrillDownViewModel().getIsBusy()) {
 
             if (Helpers.checkFileExists(activity, Config.PDD_CacheFileKey)) {
@@ -103,9 +109,6 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
         if (serviceTask != null) {
             getProgressDialog().show();
             serviceTask.setOnCompleteListener(this);
-        }
-        if (cacheTask == null && serviceTask == null) {
-            getDrillDownViewModel().setIsBusy(false);
         }
     }
 

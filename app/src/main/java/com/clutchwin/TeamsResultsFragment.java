@@ -79,6 +79,12 @@ public class TeamsResultsFragment extends Fragment implements AbsListView.OnItem
         TeamsResultsAsyncTask serviceTask;
         serviceTask = (TeamsResultsAsyncTask) getApp().getTask(Config.TR_SvcTaskKey);
 
+        // if we are constructing and have no active tasks in the background, ensure no other orphan
+        // tasks left the viewModel as busy on an orientation change
+        if(cacheTask == null && serviceTask == null){
+            getResultsViewModel().setIsBusy(false);
+        }
+
         if(getResultsViewModel().ITEMS.isEmpty() && !getResultsViewModel().getIsBusy()) {
 
             if(Helpers.checkFileExists(activity, Config.TR_CacheFileKey)) {
@@ -92,8 +98,7 @@ public class TeamsResultsFragment extends Fragment implements AbsListView.OnItem
             }
         }
 
-        mAdapter = new TeamsResultsAdapter(activity,
-                R.layout.listview_teamsresults_row,
+        mAdapter = new TeamsResultsAdapter(activity, R.layout.listview_teamsresults_row,
                 getResultsViewModel().ITEMS);
 
         // Hook back up to running tasks if this fragment was recreated in the middle of a running task
@@ -104,9 +109,6 @@ public class TeamsResultsFragment extends Fragment implements AbsListView.OnItem
         if (serviceTask != null) {
             getProgressDialog().show();
              serviceTask.setOnCompleteListener(this);
-        }
-        if(cacheTask == null && serviceTask == null){
-            getResultsViewModel().setIsBusy(false);
         }
     }
 

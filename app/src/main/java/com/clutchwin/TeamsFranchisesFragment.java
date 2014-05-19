@@ -81,6 +81,12 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
         TeamsFranchisesAsyncTask serviceTask;
         serviceTask = (TeamsFranchisesAsyncTask) getApp().getTask(Config.TF_SvcTaskKey);
 
+        // if we are constructing and have no active tasks in the background, ensure no other orphan
+        // tasks left the viewModel as busy on an orientation change
+        if(cacheTask == null && serviceTask == null){
+            getFranchisesViewModel().setIsBusy(false);
+        }
+
         if (getFranchisesViewModel().ITEMS.isEmpty() && !getFranchisesViewModel().getIsBusy()) {
 
             if (Helpers.checkFileExists(activity, Config.TF_CacheFileKey)) {
@@ -111,9 +117,6 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
         if (serviceTask != null) {
             getProgressDialog().show();
             serviceTask.setOnCompleteListener(this);
-        }
-        if(cacheTask == null && serviceTask == null){
-            getFranchisesViewModel().setIsBusy(false);
         }
     }
 
