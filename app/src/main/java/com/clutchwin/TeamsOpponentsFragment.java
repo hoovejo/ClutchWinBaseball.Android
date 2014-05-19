@@ -1,6 +1,7 @@
 package com.clutchwin;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -21,6 +22,8 @@ import com.clutchwin.viewmodels.TeamsContextViewModel;
 import com.clutchwin.viewmodels.TeamsFranchisesViewModel;
 import com.clutchwin.viewmodels.TeamsOpponentsViewModel;
 
+import java.util.List;
+
 /**
  * A fragment representing a list of Items.
  * <p />
@@ -30,11 +33,11 @@ import com.clutchwin.viewmodels.TeamsOpponentsViewModel;
  * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
  * interface.
  */
-public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnItemClickListener, IOnShowFragment {
+public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnItemClickListener,
+        TeamsOpponentsCacheAsyncTask.OnLoadCompleteListener,
+        IOnShowFragment {
 
     private OnFragmentInteractionListener mListener;
-    private ServiceCompleteImpl onServiceComplete;
-    private CacheCompleteImpl onCacheComplete;
 
     /**
      * The fragment's ListView/GridView.
@@ -46,13 +49,10 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
      * Views.
      */
     private TeamsFranchisesAdapter mAdapter;
-
     /**
-     * The view models for this fragment
+     * Progress dialog for the cache and service async background tasks.
      */
-    private TeamsContextViewModel teamsContextViewModel;
-    private TeamsFranchisesViewModel teamsFranchisesViewModel;
-    private TeamsOpponentsViewModel teamsOpponentsViewModel;
+    private ProgressDialog progressDialog;
 
     public static TeamsOpponentsFragment newInstance() {
         TeamsOpponentsFragment fragment = new TeamsOpponentsFragment();
@@ -71,25 +71,36 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
         super.onCreate(savedInstanceState);
 
         Context activity = getActivity();
-        ClutchWinApplication app = (ClutchWinApplication)activity.getApplicationContext();
-        teamsContextViewModel = app.getTeamsContextViewModel();
-        teamsFranchisesViewModel = app.getTeamsFranchisesViewModel();
-        teamsOpponentsViewModel = app.getTeamsOpponentsViewModel();
 
-        if(teamsOpponentsViewModel.ITEMS.isEmpty() && !teamsOpponentsViewModel.getIsBusy()
-                && teamsContextViewModel.getFranchiseId() != null) {
+        TeamsOpponentsCacheAsyncTask cacheTask;
+        cacheTask = (TeamsOpponentsCacheAsyncTask) getApp().getTask(Config.TO_CacheTaskKey);
+
+        if(getOpponentsViewModel().ITEMS.isEmpty() &&
+                !getOpponentsViewModel().getIsBusy()
+                && getContextViewModel().getFranchiseId() != null) {
 
             if(Helpers.checkFileExists(activity, Config.TF_CacheFileKey)) {
-                onCacheComplete = new CacheCompleteImpl();
-                TeamsOpponentsCacheAsyncTask cacheAsyncTask = new TeamsOpponentsCacheAsyncTask(activity, teamsContextViewModel,
-                        teamsOpponentsViewModel, teamsFranchisesViewModel);
-                cacheAsyncTask.setOnCompleteListener(onCacheComplete);
+                TeamsOpponentsCacheAsyncTask cacheAsyncTask = new TeamsOpponentsCacheAsyncTask();
+
+                getApp().registerTask(Config.TO_CacheTaskKey, cacheAsyncTask);
+                cacheAsyncTask.setOnCompleteListener(this);
+                getOpponentsViewModel().setIsBusy(true);
+                getProgressDialog().show();
                 cacheAsyncTask.execute();
             }
         }
 
         mAdapter = new TeamsFranchisesAdapter(activity,
-                R.layout.listview_teamsfranchises_row, teamsOpponentsViewModel.ITEMS);
+                R.layout.listview_teamsfranchises_row,
+                getOpponentsViewModel().ITEMS);
+
+        // Hook back up to running tasks if this fragment was recreated in the middle of a running task
+        if (cacheTask != null) {
+            getProgressDialog().show();
+             cacheTask.setOnCompleteListener(this);
+        } else {
+            getOpponentsViewModel().setIsBusy(false);
+        }
     }
 
     @Override
@@ -127,8 +138,8 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
     public void onDetach() {
         super.onDetach();
         mListener = null;
-        onServiceComplete = null;
-        onCacheComplete = null;
+        // kill any progress dialogs if we are being destroyed
+        dismissProgressDialog();
     }
 
 
@@ -137,7 +148,7 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            mListener.onTeamsOpponentsInteraction(teamsOpponentsViewModel.ITEMS.get(position).getRetroId());
+            mListener.onTeamsOpponentsInteraction(getOpponentsViewModel().ITEMS.get(position).getRetroId());
         }
     }
 
@@ -165,18 +176,57 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
         public void onTeamsOpponentsInteractionFail(String type);
     }
 
+    @Override
+    public void onTeamsOpponentsCacheComplete(List<TeamsFranchisesViewModel.Franchise> result) {
+        TeamsOpponentsCacheAsyncTask cacheAsyncTask;
+        cacheAsyncTask = (TeamsOpponentsCacheAsyncTask) getApp().getTask(Config.TO_CacheTaskKey);
+        if (cacheAsyncTask != null) {
+            cacheAsyncTask.setOnCompleteListener(null);
+        }
+        getApp().unregisterTask(Config.TO_CacheTaskKey);
+
+        getOpponentsViewModel().filterList(
+                result,
+                getContextViewModel().getFranchiseId());
+
+        mAdapter.notifyDataSetChanged();
+        getOpponentsViewModel().setIsBusy(false);
+        dismissProgressDialog();
+    }
+
+    @Override
+    public void onTeamsOpponentsCacheFailure() {
+        TeamsOpponentsCacheAsyncTask cacheAsyncTask;
+        cacheAsyncTask = (TeamsOpponentsCacheAsyncTask) getApp().getTask(Config.TO_CacheTaskKey);
+        if (cacheAsyncTask != null) {
+            cacheAsyncTask.setOnCompleteListener(null);
+        }
+        getApp().unregisterTask(Config.TO_CacheTaskKey);
+        dismissProgressDialog();
+        if (null != mListener) {
+             // Notify the active callbacks interface (the activity, if the
+             // fragment is attached to one) that a failure has happened.
+             mListener.onTeamsOpponentsInteractionFail("");
+         }
+    }
+
     public void onShowedFragment(){
 
         boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
 
-        if(teamsContextViewModel.shouldFilterOpponents(netAvailable) && !teamsOpponentsViewModel.getIsBusy()) {
+        if(getContextViewModel().shouldFilterOpponents(netAvailable) &&
+                !getOpponentsViewModel().getIsBusy()) {
 
             if(netAvailable) {
-                onServiceComplete = new ServiceCompleteImpl();
-                TeamsOpponentsAsyncTask task = new TeamsOpponentsAsyncTask(getActivity(),
-                        teamsContextViewModel, teamsOpponentsViewModel, teamsFranchisesViewModel);
-                task.setOnCompleteListener(onServiceComplete);
-                task.execute();
+
+                getOpponentsViewModel().setIsBusy(true);
+                getOpponentsViewModel().filterList(getFranchisesViewModel().ITEMS,
+                        getContextViewModel().getFranchiseId());
+
+                mAdapter.notifyDataSetChanged();
+
+                getOpponentsViewModel().setIsBusy(false);
+
             } else {
                 if (null != mListener) {
                     mListener.onTeamsOpponentsInteractionFail(Config.NoInternet);
@@ -189,28 +239,36 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
         }
     }
 
-    private class ServiceCompleteImpl implements TeamsOpponentsAsyncTask.OnLoadCompleteListener {
-        @Override
-        public void onComplete(){ mAdapter.notifyDataSetChanged(); }
-        @Override
-        public void onFailure(){
-            if (null != mListener) {
-                // Notify the active callbacks interface (the activity, if the
-                // fragment is attached to one) that a failure has happened.
-                mListener.onTeamsOpponentsInteractionFail("");
-            }
-        }
+    private ClutchWinApplication getApp(){
+        return ClutchWinApplication.getInstance();
     }
 
-    private class CacheCompleteImpl implements TeamsOpponentsCacheAsyncTask.OnLoadCompleteListener {
-        @Override
-        public void onComplete(){ mAdapter.notifyDataSetChanged(); }
-        @Override
-        public void onFailure(){
-            if (null != mListener) {
-                // Notify the active callbacks interface (the activity, if the
-                // fragment is attached to one) that a failure has happened.
-                mListener.onTeamsOpponentsInteractionFail("");
+    private TeamsContextViewModel getContextViewModel(){
+        return ClutchWinApplication.getTeamsContextViewModel();
+    }
+
+    private TeamsFranchisesViewModel getFranchisesViewModel(){
+        return ClutchWinApplication.getTeamsFranchisesViewModel();
+    }
+
+    private TeamsOpponentsViewModel getOpponentsViewModel(){
+        return ClutchWinApplication.getTeamsOpponentsViewModel();
+    }
+
+    private ProgressDialog getProgressDialog(){
+        if(progressDialog == null) {
+            progressDialog = new ProgressDialog(getActivity());
+            progressDialog.setMessage(getString(R.string.loading));
+            progressDialog.setIndeterminate(true);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        }
+        return progressDialog;
+    }
+
+    private void dismissProgressDialog() {
+        if (progressDialog != null) {
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
             }
         }
     }

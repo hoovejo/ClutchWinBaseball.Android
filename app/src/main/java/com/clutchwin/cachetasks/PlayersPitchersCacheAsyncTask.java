@@ -1,11 +1,8 @@
 package com.clutchwin.cachetasks;
 
-import android.app.ProgressDialog;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.clutchwin.R;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.PlayersPitchersViewModel;
@@ -18,61 +15,45 @@ import org.json.JSONArray;
 import java.lang.reflect.Type;
 import java.util.List;
 
-public class PlayersPitchersCacheAsyncTask extends AsyncTask<Void, Void, Void> {
+public class PlayersPitchersCacheAsyncTask extends AsyncTask<Void, Void, List<PlayersPitchersViewModel.Row> > {
 
-    private ProgressDialog progressDialog;
-    private Context context;
     private OnLoadCompleteListener onCompleteListener;
-    private PlayersPitchersViewModel playersPitchersViewModel;
 
-    public PlayersPitchersCacheAsyncTask(Context inContext, PlayersPitchersViewModel inViewModel){
-        context = inContext;
-        playersPitchersViewModel = inViewModel;
-    }
+    public PlayersPitchersCacheAsyncTask() {}
 
     @Override
-    protected void onPreExecute(){
-        progressDialog = new ProgressDialog(context);
-        progressDialog.setMessage(context.getString(R.string.loading));
-        progressDialog.setIndeterminate(true);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progressDialog.show();
-    }
+    protected List<PlayersPitchersViewModel.Row> doInBackground(Void... params) {
 
-    @Override
-    protected Void doInBackground(Void... params) {
+        List<PlayersPitchersViewModel.Row> list = null;
         Object outObject;
+
         try {
 
-            playersPitchersViewModel.setIsBusy(true);
-
-            outObject = Helpers.readObjectFromInternalStorage(context, Config.PP_CacheFileKey);
+            outObject = Helpers.readObjectFromInternalStorage(Config.PP_CacheFileKey);
             Gson gson = new GsonBuilder().create();
             JSONArray jsonArray = new JSONArray(outObject.toString());
             Type listType = new TypeToken<List<PlayersPitchersViewModel.Row>>(){}.getType();
-            List<PlayersPitchersViewModel.Row> list = gson.fromJson(jsonArray.toString(), listType);
-            playersPitchersViewModel.updateList(list);
+            list = gson.fromJson(jsonArray.toString(), listType);
 
         } catch (Exception e) {
             Log.e("PlayersPitchersCacheAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
-                onCompleteListener.onFailure();
+                onCompleteListener.onPlayersPitchersCacheFailure();
             }
         }
-        return null;
+        return list;
     }
 
     @Override
-    protected void onPostExecute(Void result) {
-        if(progressDialog != null){
-            if(progressDialog.isShowing()){
-                progressDialog.dismiss();
+    protected void onPostExecute(List<PlayersPitchersViewModel.Row> result) {
+
+        if(onCompleteListener != null){
+            if(result == null) {
+                onCompleteListener.onPlayersPitchersCacheFailure();
+            } else {
+                onCompleteListener.onPlayersPitchersCacheComplete(result);
             }
         }
-        if(onCompleteListener != null){
-            onCompleteListener.onComplete();
-        }
-        playersPitchersViewModel.setIsBusy(false);
     }
 
     public void setOnCompleteListener(OnLoadCompleteListener inOnCompleteListener){
@@ -80,7 +61,7 @@ public class PlayersPitchersCacheAsyncTask extends AsyncTask<Void, Void, Void> {
     }
 
     public interface OnLoadCompleteListener {
-        public void onComplete();
-        public void onFailure();
+        public void onPlayersPitchersCacheComplete(List<PlayersPitchersViewModel.Row> list);
+        public void onPlayersPitchersCacheFailure();
     }
 }

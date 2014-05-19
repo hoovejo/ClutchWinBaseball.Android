@@ -64,7 +64,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
         if(Helpers.checkFileExists(this, Config.TC_CacheFileKey) && !teamsContextViewModel.getIsHydratedObject()){
             Object outObject;
             try {
-                outObject = Helpers.readObjectFromInternalStorage(this, Config.TC_CacheFileKey);
+                outObject = Helpers.readObjectFromInternalStorage(Config.TC_CacheFileKey);
                 Gson gson = new GsonBuilder().create();
                 teamsContextViewModel = gson.fromJson(outObject.toString(), TeamsContextViewModel.class);
                 teamsContextViewModel.setIsHydratedObject(true);

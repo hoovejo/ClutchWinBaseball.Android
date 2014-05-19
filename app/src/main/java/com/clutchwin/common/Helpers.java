@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import com.clutchwin.ClutchWinApplication;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -31,8 +32,8 @@ public class Helpers {
         fileOutputStream.close();
     }
 
-    public static Object readObjectFromInternalStorage(Context context, String filename) throws IOException, ClassNotFoundException{
-        Context appContext = context.getApplicationContext();
+    public static Object readObjectFromInternalStorage(String filename) throws IOException, ClassNotFoundException{
+        Context appContext = ClutchWinApplication.getInstance().getApplicationContext();
         FileInputStream fileInputStream = appContext.openFileInput(filename);
         return new ObjectInputStream(fileInputStream).readObject();
     }
@@ -44,8 +45,8 @@ public class Helpers {
         Helpers.writeObjectInInternalStorage(appContext, fileName, json);
     }
 
-    public static void writeListToInternalStorage(Object object, Context context, String fileName) throws IOException{
-        Context appContext = context.getApplicationContext();
+    public static void writeListToInternalStorage(Object object, String fileName) throws IOException{
+        Context appContext = ClutchWinApplication.getInstance().getApplicationContext();
         Gson gson = new GsonBuilder().create();
         JsonArray jsonArray = gson.toJsonTree(object).getAsJsonArray();
         Helpers.writeObjectInInternalStorage(appContext, fileName, jsonArray.toString());

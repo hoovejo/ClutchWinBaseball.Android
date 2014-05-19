@@ -63,7 +63,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
         if(Helpers.checkFileExists(this, Config.PC_CacheFileKey) && !playersContextViewModel.getIsHydratedObject()){
             Object outObject;
             try {
-                outObject = Helpers.readObjectFromInternalStorage(this, Config.PC_CacheFileKey);
+                outObject = Helpers.readObjectFromInternalStorage(Config.PC_CacheFileKey);
                 Gson gson = new GsonBuilder().create();
                 playersContextViewModel = gson.fromJson(outObject.toString(), PlayersContextViewModel.class);
                 playersContextViewModel.setIsHydratedObject(true);

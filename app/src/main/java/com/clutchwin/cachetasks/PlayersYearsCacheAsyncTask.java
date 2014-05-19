@@ -1,11 +1,8 @@
 package com.clutchwin.cachetasks;
 
-import android.app.ProgressDialog;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.clutchwin.R;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.PlayersYearsViewModel;
@@ -18,61 +15,45 @@ import org.json.JSONArray;
 import java.lang.reflect.Type;
 import java.util.List;
 
-public class PlayersYearsCacheAsyncTask extends AsyncTask<Void, Void, Void> {
+public class PlayersYearsCacheAsyncTask extends AsyncTask<Void, Void, List<PlayersYearsViewModel.Year>> {
 
-    private ProgressDialog progressDialog;
-    private Context context;
     private OnLoadCompleteListener onCompleteListener;
-    private PlayersYearsViewModel playersYearsViewModel;
 
-    public PlayersYearsCacheAsyncTask(Context inContext, PlayersYearsViewModel inViewModel){
-        context = inContext;
-        playersYearsViewModel = inViewModel;
-    }
+    public PlayersYearsCacheAsyncTask() {}
 
     @Override
-    protected void onPreExecute(){
-        progressDialog = new ProgressDialog(context);
-        progressDialog.setMessage(context.getString(R.string.loading));
-        progressDialog.setIndeterminate(true);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progressDialog.show();
-    }
+    protected List<PlayersYearsViewModel.Year> doInBackground(Void... params) {
 
-    @Override
-    protected Void doInBackground(Void... params) {
+        List<PlayersYearsViewModel.Year> list = null;
         Object outObject;
+
         try {
 
-            playersYearsViewModel.setIsBusy(true);
-
-            outObject = Helpers.readObjectFromInternalStorage(context, Config.PY_CacheFileKey);
+            outObject = Helpers.readObjectFromInternalStorage(Config.PY_CacheFileKey);
             Gson gson = new GsonBuilder().create();
             JSONArray jsonArray = new JSONArray(outObject.toString());
             Type listType = new TypeToken<List<PlayersYearsViewModel.Year>>(){}.getType();
-            List<PlayersYearsViewModel.Year> list = gson.fromJson(jsonArray.toString(), listType);
-            playersYearsViewModel.updateList(list);
+            list = gson.fromJson(jsonArray.toString(), listType);
 
         } catch (Exception e) {
             Log.e("PlayersYearsCacheAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
-                onCompleteListener.onFailure();
+                onCompleteListener.onPlayersYearsCacheFailure();
             }
         }
-        return null;
+        return list;
     }
 
     @Override
-    protected void onPostExecute(Void result) {
-        if(progressDialog != null){
-            if(progressDialog.isShowing()){
-                progressDialog.dismiss();
+    protected void onPostExecute(List<PlayersYearsViewModel.Year> result) {
+
+        if(onCompleteListener != null){
+            if(result == null) {
+                onCompleteListener.onPlayersYearsCacheFailure();
+            } else {
+                onCompleteListener.onPlayersYearsCacheComplete(result);
             }
         }
-        if(onCompleteListener != null){
-            onCompleteListener.onComplete();
-        }
-        playersYearsViewModel.setIsBusy(false);
     }
 
     public void setOnCompleteListener(OnLoadCompleteListener inOnCompleteListener){
@@ -80,8 +61,8 @@ public class PlayersYearsCacheAsyncTask extends AsyncTask<Void, Void, Void> {
     }
 
     public interface OnLoadCompleteListener {
-        public void onComplete();
-        public void onFailure();
+        public void onPlayersYearsCacheComplete(List<PlayersYearsViewModel.Year> result);
+        public void onPlayersYearsCacheFailure();
     }
 }
 

@@ -1,16 +1,11 @@
 package com.clutchwin.cachetasks;
 
-import android.app.ProgressDialog;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.clutchwin.R;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
-import com.clutchwin.viewmodels.TeamsContextViewModel;
 import com.clutchwin.viewmodels.TeamsFranchisesViewModel;
-import com.clutchwin.viewmodels.TeamsOpponentsViewModel;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -20,67 +15,45 @@ import org.json.JSONArray;
 import java.lang.reflect.Type;
 import java.util.List;
 
-public class TeamsOpponentsCacheAsyncTask extends AsyncTask<Void, Void, Void> {
+public class TeamsOpponentsCacheAsyncTask extends AsyncTask<Void, Void, List<TeamsFranchisesViewModel.Franchise>> {
 
-    private ProgressDialog progressDialog;
-    private Context context;
     private OnLoadCompleteListener onCompleteListener;
-    private TeamsContextViewModel teamsContextViewModel;
-    private TeamsOpponentsViewModel teamsOpponentsViewModel;
-    private TeamsFranchisesViewModel teamsFranchisesViewModel;
 
-    public TeamsOpponentsCacheAsyncTask(Context inContext, TeamsContextViewModel inContextViewModel,
-                                        TeamsOpponentsViewModel inOpponentsViewModel,
-                                        TeamsFranchisesViewModel inFranchisesViewModel){
-        context = inContext;
-        teamsContextViewModel = inContextViewModel;
-        teamsOpponentsViewModel = inOpponentsViewModel;
-        teamsFranchisesViewModel = inFranchisesViewModel;
-    }
+    public TeamsOpponentsCacheAsyncTask() {}
 
     @Override
-    protected void onPreExecute(){
-        progressDialog = new ProgressDialog(context);
-        progressDialog.setMessage(context.getString(R.string.loading));
-        progressDialog.setIndeterminate(true);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progressDialog.show();
-    }
+    protected List<TeamsFranchisesViewModel.Franchise> doInBackground(Void... params) {
 
-    @Override
-    protected Void doInBackground(Void... params) {
+        List<TeamsFranchisesViewModel.Franchise> list = null;
         Object outObject;
+
         try {
 
-            teamsOpponentsViewModel.setIsBusy(true);
-
-            outObject = Helpers.readObjectFromInternalStorage(context, Config.TF_CacheFileKey);
+            outObject = Helpers.readObjectFromInternalStorage(Config.TF_CacheFileKey);
             Gson gson = new GsonBuilder().create();
             JSONArray jsonArray = new JSONArray(outObject.toString());
             Type listType = new TypeToken<List<TeamsFranchisesViewModel.Franchise>>(){}.getType();
-            List<TeamsFranchisesViewModel.Franchise> list = gson.fromJson(jsonArray.toString(), listType);
-            teamsOpponentsViewModel.filterList(list, teamsContextViewModel.getFranchiseId());
+            list = gson.fromJson(jsonArray.toString(), listType);
 
         } catch (Exception e) {
             Log.e("TeamsOpponentsCacheAsyncTask::doInBackground", e.getMessage(), e);
             if (onCompleteListener != null) {
-                onCompleteListener.onFailure();
+                onCompleteListener.onTeamsOpponentsCacheFailure();
             }
         }
-        return null;
+        return list;
     }
 
     @Override
-    protected void onPostExecute(Void result) {
-        if(progressDialog != null){
-            if(progressDialog.isShowing()){
-                progressDialog.dismiss();
+    protected void onPostExecute(List<TeamsFranchisesViewModel.Franchise> result) {
+
+        if(onCompleteListener != null){
+            if(result == null) {
+                onCompleteListener.onTeamsOpponentsCacheFailure();
+            } else {
+                onCompleteListener.onTeamsOpponentsCacheComplete(result);
             }
         }
-        if(onCompleteListener != null){
-            onCompleteListener.onComplete();
-        }
-        teamsOpponentsViewModel.setIsBusy(false);
     }
 
     public void setOnCompleteListener(OnLoadCompleteListener inOnCompleteListener){
@@ -88,8 +61,8 @@ public class TeamsOpponentsCacheAsyncTask extends AsyncTask<Void, Void, Void> {
     }
 
     public interface OnLoadCompleteListener {
-        public void onComplete();
-        public void onFailure();
+        public void onTeamsOpponentsCacheComplete(List<TeamsFranchisesViewModel.Franchise> result);
+        public void onTeamsOpponentsCacheFailure();
     }
 }
 

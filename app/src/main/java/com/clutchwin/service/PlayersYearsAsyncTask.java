@@ -1,6 +1,5 @@
 package com.clutchwin.service;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -17,17 +16,14 @@ import java.util.List;
 
 public class PlayersYearsAsyncTask extends AsyncTask<Void, Void, List<PlayersYearsViewModel.Year>> {
 
-    private Context context;
     private OnLoadCompleteListener onCompleteListener;
 
-    public PlayersYearsAsyncTask(Context inContext){
-        context = inContext;
-    }
+    public PlayersYearsAsyncTask() {}
 
     @Override
     protected List<PlayersYearsViewModel.Year> doInBackground(Void... params) {
 
-        List<PlayersYearsViewModel.Year> yearList = null;
+        List<PlayersYearsViewModel.Year> list = null;
 
         try {
 
@@ -39,11 +35,11 @@ public class PlayersYearsAsyncTask extends AsyncTask<Void, Void, List<PlayersYea
 
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            yearList = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), PlayersYearsViewModel.Year[].class));
+            list = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), PlayersYearsViewModel.Year[].class));
 
             try {
-                if(yearList != null && yearList.size() > 0) {
-                    Helpers.writeListToInternalStorage(yearList, context, Config.PY_CacheFileKey);
+                if(list != null && list.size() > 0) {
+                    Helpers.writeListToInternalStorage(list, Config.PY_CacheFileKey);
                 }
             } catch (IOException e) {
                 Log.e("PlayersYearsAsyncTask::writeListToInternalStorage", e.getMessage(), e);
@@ -54,19 +50,15 @@ public class PlayersYearsAsyncTask extends AsyncTask<Void, Void, List<PlayersYea
             if(onCompleteListener != null){
                 onCompleteListener.onPlayersYearsServiceFailure();
             }
-
-            context = null;
         }
-        return yearList;
+        return list;
     }
 
     @Override
-    protected void onPostExecute(List<PlayersYearsViewModel.Year> results) {
+    protected void onPostExecute(List<PlayersYearsViewModel.Year> result) {
         if(onCompleteListener != null){
-            onCompleteListener.onPlayersYearsServiceComplete(results);
+            onCompleteListener.onPlayersYearsServiceComplete(result);
         }
-
-        context = null;
     }
 
     public void setOnCompleteListener(OnLoadCompleteListener inOnCompleteListener){
@@ -74,7 +66,7 @@ public class PlayersYearsAsyncTask extends AsyncTask<Void, Void, List<PlayersYea
     }
 
     public interface OnLoadCompleteListener {
-        public void onPlayersYearsServiceComplete(List<PlayersYearsViewModel.Year> results);
+        public void onPlayersYearsServiceComplete(List<PlayersYearsViewModel.Year> result);
         public void onPlayersYearsServiceFailure();
     }
 }

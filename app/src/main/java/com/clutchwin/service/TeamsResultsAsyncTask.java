@@ -1,12 +1,11 @@
 package com.clutchwin.service;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.clutchwin.ClutchWinApplication;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
-import com.clutchwin.viewmodels.TeamsContextViewModel;
 import com.clutchwin.viewmodels.TeamsResultsViewModel;
 
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -18,19 +17,14 @@ import java.util.List;
 
 public class TeamsResultsAsyncTask extends AsyncTask<Void, Void, List<TeamsResultsViewModel.TeamsResult>> {
 
-    private Context context;
     private OnLoadCompleteListener onCompleteListener;
-    private TeamsContextViewModel teamsContextViewModel;
 
-    public TeamsResultsAsyncTask(Context inContext, TeamsContextViewModel inContextViewModel){
-        context = inContext;
-        teamsContextViewModel = inContextViewModel;
-    }
+    public TeamsResultsAsyncTask() {}
 
     @Override
     protected List<TeamsResultsViewModel.TeamsResult> doInBackground(Void... params) {
 
-        List<TeamsResultsViewModel.TeamsResult> resultsList = null;
+        List<TeamsResultsViewModel.TeamsResult> list = null;
 
         try {
 
@@ -39,16 +33,18 @@ public class TeamsResultsAsyncTask extends AsyncTask<Void, Void, List<TeamsResul
             final String baseUrl = Config.FranchiseSearch;
             StringBuffer finalUrl = new StringBuffer(baseUrl);
             finalUrl.append(Config.AccessTokenKey).append(Config.AccessTokenValue)
-                    .append(Config.FranchiseIdKey).append(teamsContextViewModel.getFranchiseId())
-                    .append(Config.OpponentIdKey).append(teamsContextViewModel.getOpponentId())
+                    .append(Config.FranchiseIdKey)
+                    .append(ClutchWinApplication.getTeamsContextViewModel().getFranchiseId())
+                    .append(Config.OpponentIdKey)
+                    .append(ClutchWinApplication.getTeamsContextViewModel().getOpponentId())
                     .append(Config.FranchiseSearchKeyValue);
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            resultsList = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), TeamsResultsViewModel.TeamsResult[].class));
+            list = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), TeamsResultsViewModel.TeamsResult[].class));
 
             try {
-                if(resultsList != null && resultsList.size() > 0) {
-                    Helpers.writeListToInternalStorage(resultsList, context, Config.TR_CacheFileKey);
+                if(list != null && list.size() > 0) {
+                    Helpers.writeListToInternalStorage(list, Config.TR_CacheFileKey);
                 }
             } catch (IOException e) {
                 Log.e("TeamsResultsAsyncTask::writeListToInternalStorage", e.getMessage(), e);
@@ -59,20 +55,16 @@ public class TeamsResultsAsyncTask extends AsyncTask<Void, Void, List<TeamsResul
             if(onCompleteListener != null){
                 onCompleteListener.onTeamsResultsServiceFailure();
             }
-
-            context = null;
         }
-        return resultsList;
+        return list;
     }
 
     @Override
-    protected void onPostExecute(List<TeamsResultsViewModel.TeamsResult> results) {
+    protected void onPostExecute(List<TeamsResultsViewModel.TeamsResult> result) {
 
         if(onCompleteListener != null){
-            onCompleteListener.onTeamsResultsServiceComplete(results);
+            onCompleteListener.onTeamsResultsServiceComplete(result);
         }
-
-        context = null;
     }
 
     public void setOnCompleteListener(OnLoadCompleteListener inOnCompleteListener){
@@ -80,7 +72,7 @@ public class TeamsResultsAsyncTask extends AsyncTask<Void, Void, List<TeamsResul
     }
 
     public interface OnLoadCompleteListener {
-        public void onTeamsResultsServiceComplete(List<TeamsResultsViewModel.TeamsResult> results);
+        public void onTeamsResultsServiceComplete(List<TeamsResultsViewModel.TeamsResult> result);
         public void onTeamsResultsServiceFailure();
     }
 }

@@ -1,12 +1,11 @@
 package com.clutchwin.service;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.clutchwin.ClutchWinApplication;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
-import com.clutchwin.viewmodels.PlayersContextViewModel;
 import com.clutchwin.viewmodels.PlayersResultsViewModel;
 
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -18,19 +17,14 @@ import java.util.List;
 
 public class PlayersResultsAsyncTask extends AsyncTask<Void, Void, List<PlayersResultsViewModel.PlayersResult>> {
 
-    private Context context;
     private OnLoadCompleteListener onCompleteListener;
-    private PlayersContextViewModel playersContextViewModel;
 
-    public PlayersResultsAsyncTask(Context inContext, PlayersContextViewModel inContextViewModel){
-        context = inContext;
-        playersContextViewModel = inContextViewModel;
-    }
+    public PlayersResultsAsyncTask() {}
 
     @Override
     protected List<PlayersResultsViewModel.PlayersResult> doInBackground(Void... params) {
 
-        List<PlayersResultsViewModel.PlayersResult> playersResults = null;
+        List<PlayersResultsViewModel.PlayersResult> list = null;
 
         try {
 
@@ -39,17 +33,19 @@ public class PlayersResultsAsyncTask extends AsyncTask<Void, Void, List<PlayersR
             final String baseUrl = Config.PlayerPlayerSearch;
             StringBuffer finalUrl = new StringBuffer(baseUrl);
             finalUrl.append(Config.AccessTokenKey).append(Config.AccessTokenValue)
-                    .append(Config.BatterIdKey).append(playersContextViewModel.getBatterId())
-                    .append(Config.PitcherIdKey).append(playersContextViewModel.getPitcherId())
+                    .append(Config.BatterIdKey)
+                    .append(ClutchWinApplication.getPlayersContextViewModel().getBatterId())
+                    .append(Config.PitcherIdKey)
+                    .append(ClutchWinApplication.getPlayersContextViewModel().getPitcherId())
                     .append(Config.GroupSeasonKeyValue);
 
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            playersResults = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), PlayersResultsViewModel.PlayersResult[].class));
+            list = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), PlayersResultsViewModel.PlayersResult[].class));
 
             try {
-                if(playersResults != null && playersResults.size() > 0) {
-                    Helpers.writeListToInternalStorage(playersResults, context, Config.PR_CacheFileKey);
+                if(list != null && list.size() > 0) {
+                    Helpers.writeListToInternalStorage(list, Config.PR_CacheFileKey);
                 }
             } catch (IOException e) {
                 Log.e("PlayersResultsAsyncTask::writeListToInternalStorage", e.getMessage(), e);
@@ -60,20 +56,16 @@ public class PlayersResultsAsyncTask extends AsyncTask<Void, Void, List<PlayersR
             if(onCompleteListener != null){
                 onCompleteListener.onPlayersResultsServiceFailure();
             }
-
-            context = null;
         }
-        return playersResults;
+        return list;
     }
 
     @Override
-    protected void onPostExecute(List<PlayersResultsViewModel.PlayersResult> results) {
+    protected void onPostExecute(List<PlayersResultsViewModel.PlayersResult> result) {
 
         if(onCompleteListener != null){
-            onCompleteListener.onPlayersResultsServiceComplete(results);
+            onCompleteListener.onPlayersResultsServiceComplete(result);
         }
-
-        context = null;
     }
 
     public void setOnCompleteListener(OnLoadCompleteListener inOnCompleteListener){
@@ -81,7 +73,7 @@ public class PlayersResultsAsyncTask extends AsyncTask<Void, Void, List<PlayersR
     }
 
     public interface OnLoadCompleteListener {
-        public void onPlayersResultsServiceComplete(List<PlayersResultsViewModel.PlayersResult> results);
+        public void onPlayersResultsServiceComplete(List<PlayersResultsViewModel.PlayersResult> result);
         public void onPlayersResultsServiceFailure();
     }
 }

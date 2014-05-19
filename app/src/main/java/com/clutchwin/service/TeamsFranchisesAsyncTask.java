@@ -1,6 +1,5 @@
 package com.clutchwin.service;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -17,17 +16,14 @@ import java.util.List;
 
 public class TeamsFranchisesAsyncTask extends AsyncTask<Void, Void, List<TeamsFranchisesViewModel.Franchise>> {
 
-    private Context context;
     private OnLoadCompleteListener onCompleteListener;
 
-    public TeamsFranchisesAsyncTask(Context inContext){
-        context = inContext;
-    }
+    public TeamsFranchisesAsyncTask() {}
 
     @Override
     protected List<TeamsFranchisesViewModel.Franchise> doInBackground(Void... params) {
 
-        List<TeamsFranchisesViewModel.Franchise> franchiseList = null;
+        List<TeamsFranchisesViewModel.Franchise> list = null;
 
         try {
 
@@ -38,11 +34,11 @@ public class TeamsFranchisesAsyncTask extends AsyncTask<Void, Void, List<TeamsFr
 
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            franchiseList = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), TeamsFranchisesViewModel.Franchise[].class));
+            list = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), TeamsFranchisesViewModel.Franchise[].class));
 
             try {
-                if(franchiseList != null && franchiseList.size() > 0 ) {
-                    Helpers.writeListToInternalStorage(franchiseList, context, Config.TF_CacheFileKey);
+                if(list != null && list.size() > 0 ) {
+                    Helpers.writeListToInternalStorage(list, Config.TF_CacheFileKey);
                 }
             } catch (IOException e) {
                 Log.e("TeamsFranchisesAsyncTask::writeListToInternalStorage", e.getMessage(), e);
@@ -53,20 +49,16 @@ public class TeamsFranchisesAsyncTask extends AsyncTask<Void, Void, List<TeamsFr
             if(onCompleteListener != null){
                 onCompleteListener.onTeamsFranchisesServiceFailure();
             }
-
-            context = null;
         }
-        return franchiseList;
+        return list;
     }
 
     @Override
-    protected void onPostExecute(List<TeamsFranchisesViewModel.Franchise> results) {
+    protected void onPostExecute(List<TeamsFranchisesViewModel.Franchise> result) {
 
         if(onCompleteListener != null){
-            onCompleteListener.onTeamsFranchisesServiceComplete(results);
+            onCompleteListener.onTeamsFranchisesServiceComplete(result);
         }
-
-        context = null;
     }
 
     public void setOnCompleteListener(OnLoadCompleteListener inOnCompleteListener){
@@ -74,7 +66,7 @@ public class TeamsFranchisesAsyncTask extends AsyncTask<Void, Void, List<TeamsFr
     }
 
     public interface OnLoadCompleteListener {
-        public void onTeamsFranchisesServiceComplete(List<TeamsFranchisesViewModel.Franchise> results);
+        public void onTeamsFranchisesServiceComplete(List<TeamsFranchisesViewModel.Franchise> result);
         public void onTeamsFranchisesServiceFailure();
     }
 }

@@ -1,12 +1,11 @@
 package com.clutchwin.service;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.clutchwin.ClutchWinApplication;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
-import com.clutchwin.viewmodels.TeamsContextViewModel;
 import com.clutchwin.viewmodels.TeamsDrillDownViewModel;
 
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -18,19 +17,14 @@ import java.util.List;
 
 public class TeamsDrillDownAsyncTask extends AsyncTask<Void, Void, List<TeamsDrillDownViewModel.TeamsDrillDown>> {
 
-    private Context context;
     private OnLoadCompleteListener onCompleteListener;
-    private TeamsContextViewModel teamsContextViewModel;
 
-    public TeamsDrillDownAsyncTask(Context inContext, TeamsContextViewModel inContextViewModel){
-        context = inContext;
-        teamsContextViewModel = inContextViewModel;
-    }
+    public TeamsDrillDownAsyncTask() {}
 
     @Override
     protected List<TeamsDrillDownViewModel.TeamsDrillDown> doInBackground(Void... params) {
 
-        List<TeamsDrillDownViewModel.TeamsDrillDown> resultsList = null;
+        List<TeamsDrillDownViewModel.TeamsDrillDown> list = null;
 
         try {
 
@@ -39,18 +33,21 @@ public class TeamsDrillDownAsyncTask extends AsyncTask<Void, Void, List<TeamsDri
             final String baseUrl = Config.FranchiseYearSearch;
             StringBuffer finalUrl = new StringBuffer(baseUrl);
             finalUrl.append(Config.AccessTokenKey).append(Config.AccessTokenValue)
-                    .append(Config.FranchiseIdKey).append(teamsContextViewModel.getFranchiseId())
-                    .append(Config.OpponentIdKey).append(teamsContextViewModel.getOpponentId())
-                    .append(Config.SeasonIdKey).append(teamsContextViewModel.getYearId())
+                    .append(Config.FranchiseIdKey)
+                    .append(ClutchWinApplication.getTeamsContextViewModel().getFranchiseId())
+                    .append(Config.OpponentIdKey)
+                    .append(ClutchWinApplication.getTeamsContextViewModel().getOpponentId())
+                    .append(Config.SeasonIdKey)
+                    .append(ClutchWinApplication.getTeamsContextViewModel().getYearId())
                     .append(Config.FranchiseYearSearchKeyValue);
 
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            resultsList = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), TeamsDrillDownViewModel.TeamsDrillDown[].class));
+            list = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), TeamsDrillDownViewModel.TeamsDrillDown[].class));
 
             try {
-                if(resultsList != null && resultsList.size() > 0) {
-                    Helpers.writeListToInternalStorage(resultsList, context, Config.TDD_CacheFileKey);
+                if(list != null && list.size() > 0) {
+                    Helpers.writeListToInternalStorage(list, Config.TDD_CacheFileKey);
                 }
             } catch (IOException e) {
                 Log.e("TeamsDrillDownAsyncTask::writeListToInternalStorage", e.getMessage(), e);
@@ -61,20 +58,16 @@ public class TeamsDrillDownAsyncTask extends AsyncTask<Void, Void, List<TeamsDri
             if(onCompleteListener != null){
                 onCompleteListener.onTeamsDrillDownServiceFailure();
             }
-
-            context = null;
         }
-        return resultsList;
+        return list;
     }
 
     @Override
-    protected void onPostExecute(List<TeamsDrillDownViewModel.TeamsDrillDown> results) {
+    protected void onPostExecute(List<TeamsDrillDownViewModel.TeamsDrillDown> result) {
 
         if(onCompleteListener != null){
-            onCompleteListener.onTeamsDrillDownServiceComplete(results);
+            onCompleteListener.onTeamsDrillDownServiceComplete(result);
         }
-
-        context = null;
     }
 
     public void setOnCompleteListener(OnLoadCompleteListener inOnCompleteListener){
@@ -82,7 +75,7 @@ public class TeamsDrillDownAsyncTask extends AsyncTask<Void, Void, List<TeamsDri
     }
 
     public interface OnLoadCompleteListener {
-        public void onTeamsDrillDownServiceComplete(List<TeamsDrillDownViewModel.TeamsDrillDown> results);
+        public void onTeamsDrillDownServiceComplete(List<TeamsDrillDownViewModel.TeamsDrillDown> result);
         public void onTeamsDrillDownServiceFailure();
     }
 }

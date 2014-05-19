@@ -1,6 +1,7 @@
 package com.clutchwin;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -21,6 +22,8 @@ import com.clutchwin.service.PlayersPitchersAsyncTask;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
 import com.clutchwin.viewmodels.PlayersPitchersViewModel;
 
+import java.util.List;
+
 /**
  * A fragment representing a list of Items.
  * <p />
@@ -30,11 +33,13 @@ import com.clutchwin.viewmodels.PlayersPitchersViewModel;
  * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
  * interface.
  */
-public class PlayersPitchersFragment extends Fragment implements AbsListView.OnItemClickListener, IOnShowFragment {
+public class PlayersPitchersFragment extends Fragment implements AbsListView.OnItemClickListener,
+        PlayersPitchersAsyncTask.OnLoadCompleteListener,
+        PlayersPitchersCacheAsyncTask.OnLoadCompleteListener,
+        IOnShowFragment {
 
     private OnFragmentInteractionListener mListener;
-    private ServiceCompleteImpl onServiceComplete;
-    private CacheCompleteImpl onCacheComplete;
+
     /**
      * The fragment's ListView/GridView.
      */
@@ -45,12 +50,10 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
      * Views.
      */
     private ListAdapter mAdapter;
-
     /**
-     * The view models for this fragment
+     * Progress dialog for the cache and service async background tasks.
      */
-    private PlayersContextViewModel playersContextViewModel;
-    private PlayersPitchersViewModel playersPitchersViewModel;
+    private ProgressDialog progressDialog;
 
     public static PlayersPitchersFragment newInstance() {
         PlayersPitchersFragment fragment = new PlayersPitchersFragment();
@@ -69,22 +72,42 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
         super.onCreate(savedInstanceState);
 
         Context activity = getActivity();
-        ClutchWinApplication app = (ClutchWinApplication)activity.getApplicationContext();
-        playersContextViewModel = app.getPlayersContextViewModel();
-        playersPitchersViewModel = app.getPlayersPitchersViewModel();
 
-        if(playersPitchersViewModel.ITEMS.isEmpty() && !playersPitchersViewModel.getIsBusy()) {
+        PlayersPitchersCacheAsyncTask cacheTask;
+        cacheTask = (PlayersPitchersCacheAsyncTask)getApp().getTask(Config.PP_CacheFileKey);
+
+        PlayersPitchersAsyncTask serviceTask;
+        serviceTask = (PlayersPitchersAsyncTask)getApp().getTask(Config.PP_SvcTaskKey);
+
+        if(getPitchersViewModel().ITEMS.isEmpty() && !getPitchersViewModel().getIsBusy()) {
 
             if(Helpers.checkFileExists(activity, Config.PP_CacheFileKey)) {
-                onCacheComplete = new CacheCompleteImpl();
-                PlayersPitchersCacheAsyncTask cacheAsyncTask = new PlayersPitchersCacheAsyncTask(activity, playersPitchersViewModel);
-                cacheAsyncTask.setOnCompleteListener(onCacheComplete);
+                PlayersPitchersCacheAsyncTask cacheAsyncTask = new PlayersPitchersCacheAsyncTask();
+
+                getApp().registerTask(Config.PP_CacheFileKey, cacheAsyncTask);
+                cacheAsyncTask.setOnCompleteListener(this);
+                getPitchersViewModel().setIsBusy(true);
+                getProgressDialog().show();
                 cacheAsyncTask.execute();
+
             }
         }
 
         mAdapter = new ArrayAdapter<PlayersPitchersViewModel.Row>(activity,
-                android.R.layout.simple_list_item_1, android.R.id.text1, playersPitchersViewModel.ITEMS);
+                android.R.layout.simple_list_item_1, android.R.id.text1, getPitchersViewModel().ITEMS);
+
+        // Hook back up to running tasks if this fragment was recreated in the middle of a running task
+        if(cacheTask != null){
+            getProgressDialog().show();
+            cacheTask.setOnCompleteListener(this);
+        }
+        if(serviceTask != null){
+            getProgressDialog().show();
+            serviceTask.setOnCompleteListener(this);
+        }
+        if(cacheTask == null && serviceTask == null){
+            getPitchersViewModel().setIsBusy(false);
+        }
     }
 
     @Override
@@ -122,8 +145,8 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
     public void onDetach() {
         super.onDetach();
         mListener = null;
-        onServiceComplete = null;
-        onCacheComplete = null;
+        // kill any progress dialogs if we are being destroyed
+        dismissProgressDialog();
     }
 
     @Override
@@ -131,7 +154,7 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            mListener.onPlayersPitchersInteraction(playersPitchersViewModel.ITEMS.get(position).getRetroId());
+            mListener.onPlayersPitchersInteraction(getPitchersViewModel().ITEMS.get(position).getRetroId());
         }
     }
 
@@ -159,18 +182,88 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
         public void onPlayersPitchersInteractionFail(String type);
     }
 
+    @Override
+    public void onPlayersPitcherServiceComplete(List<PlayersPitchersViewModel.Row> result){
+        PlayersPitchersAsyncTask task;
+        task = (PlayersPitchersAsyncTask)getApp().getTask(Config.PP_SvcTaskKey);
+        if(task != null){
+            task.setOnCompleteListener(null);
+        }
+        getApp().unregisterTask(Config.PP_SvcTaskKey);
+
+        getPitchersViewModel().updateList(result);
+        ((ArrayAdapter) mAdapter).notifyDataSetChanged();
+        getPitchersViewModel().setIsBusy(false);
+        dismissProgressDialog();
+    }
+
+    @Override
+    public void onPlayersPitcherServiceFailure(){
+        PlayersPitchersAsyncTask task;
+        task = (PlayersPitchersAsyncTask)getApp().getTask(Config.PP_SvcTaskKey);
+        if(task != null){
+            task.setOnCompleteListener(null);
+        }
+        getApp().unregisterTask(Config.PP_SvcTaskKey);
+
+        getPitchersViewModel().setIsBusy(false);
+        dismissProgressDialog();
+
+        if (null != mListener) {
+            // Notify the active callbacks interface (the activity, if the
+            // fragment is attached to one) that a failure has happened.
+            mListener.onPlayersPitchersInteractionFail("");
+        }
+    }
+
+    @Override
+    public void onPlayersPitchersCacheComplete(List<PlayersPitchersViewModel.Row> result){
+        PlayersPitchersCacheAsyncTask cacheAsyncTask;
+        cacheAsyncTask = (PlayersPitchersCacheAsyncTask)getApp().getTask(Config.PP_CacheFileKey);
+        if(cacheAsyncTask != null){
+            cacheAsyncTask.setOnCompleteListener(null);
+        }
+        getApp().unregisterTask(Config.PP_CacheFileKey);
+
+        getPitchersViewModel().updateList(result);
+        ((ArrayAdapter) mAdapter).notifyDataSetChanged();
+        getPitchersViewModel().setIsBusy(false);
+        dismissProgressDialog();
+    }
+
+    @Override
+    public void onPlayersPitchersCacheFailure(){
+        PlayersPitchersCacheAsyncTask cacheAsyncTask;
+        cacheAsyncTask = (PlayersPitchersCacheAsyncTask)getApp().getTask(Config.PP_CacheFileKey);
+        if(cacheAsyncTask != null){
+            cacheAsyncTask.setOnCompleteListener(null);
+        }
+        getApp().unregisterTask(Config.PP_CacheFileKey);
+        getPitchersViewModel().setIsBusy(false);
+        dismissProgressDialog();
+
+        if (null != mListener) {
+            // Notify the active callbacks interface (the activity, if the
+            // fragment is attached to one) that a failure has happened.
+            mListener.onPlayersPitchersInteractionFail("");
+        }
+    }
+
     public void onShowedFragment(){
 
         boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
 
-        if(playersContextViewModel.shouldExecuteLoadPitchers(netAvailable) && !playersPitchersViewModel.getIsBusy()) {
+        if(getContextViewModel().shouldExecuteLoadPitchers(netAvailable) && !getPitchersViewModel().getIsBusy()) {
             if(netAvailable) {
                 setEmptyText(getString(R.string.no_search_results));
-                onServiceComplete = new ServiceCompleteImpl();
-                PlayersPitchersAsyncTask task = new PlayersPitchersAsyncTask(getActivity(), playersContextViewModel,
-                        playersPitchersViewModel);
-                task.setOnCompleteListener(onServiceComplete);
+                PlayersPitchersAsyncTask task = new PlayersPitchersAsyncTask();
+
+                getApp().registerTask(Config.PP_SvcTaskKey, task);
+                task.setOnCompleteListener(this);
+                getPitchersViewModel().setIsBusy(true);
+                getProgressDialog().show();
                 task.execute();
+
             } else {
                 if (null != mListener) {
                     mListener.onPlayersPitchersInteractionFail(Config.NoInternet);
@@ -183,30 +276,32 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
         }
     }
 
-    private class ServiceCompleteImpl implements PlayersPitchersAsyncTask.OnLoadCompleteListener {
-        @Override
-        public void onComplete(){
-            ((ArrayAdapter) mAdapter).notifyDataSetChanged();
-        }
-        @Override
-        public void onFailure(){
-            if (null != mListener) {
-                // Notify the active callbacks interface (the activity, if the
-                // fragment is attached to one) that a failure has happened.
-                mListener.onPlayersPitchersInteractionFail("");
-            }
-        }
+    private ClutchWinApplication getApp(){
+        return ClutchWinApplication.getInstance();
     }
 
-    private class CacheCompleteImpl implements PlayersPitchersCacheAsyncTask.OnLoadCompleteListener {
-        @Override
-        public void onComplete(){ ((ArrayAdapter) mAdapter).notifyDataSetChanged(); }
-        @Override
-        public void onFailure(){
-            if (null != mListener) {
-                // Notify the active callbacks interface (the activity, if the
-                // fragment is attached to one) that a failure has happened.
-                mListener.onPlayersPitchersInteractionFail("");
+    private PlayersContextViewModel getContextViewModel(){
+        return ClutchWinApplication.getPlayersContextViewModel();
+    }
+
+    private PlayersPitchersViewModel getPitchersViewModel(){
+        return ClutchWinApplication.getPlayersPitchersViewModel();
+    }
+
+    private ProgressDialog getProgressDialog(){
+        if(progressDialog == null) {
+            progressDialog = new ProgressDialog(getActivity());
+            progressDialog.setMessage(getString(R.string.loading));
+            progressDialog.setIndeterminate(true);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        }
+        return progressDialog;
+    }
+
+    private void dismissProgressDialog() {
+        if(progressDialog != null){
+            if(progressDialog.isShowing()){
+                progressDialog.dismiss();
             }
         }
     }

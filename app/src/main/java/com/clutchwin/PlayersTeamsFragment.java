@@ -1,6 +1,7 @@
 package com.clutchwin;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -20,6 +21,8 @@ import com.clutchwin.service.PlayersTeamsAsyncTask;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
 import com.clutchwin.viewmodels.PlayersTeamsViewModel;
 
+import java.util.List;
+
 /**
  * A fragment representing a list of Items.
  * <p />
@@ -29,11 +32,12 @@ import com.clutchwin.viewmodels.PlayersTeamsViewModel;
  * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
  * interface.
  */
-public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItemClickListener {
+public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItemClickListener,
+        PlayersTeamsAsyncTask.OnLoadCompleteListener,
+        PlayersTeamsCacheAsyncTask.OnLoadCompleteListener {
 
     private OnFragmentInteractionListener mListener;
-    private ServiceCompleteImpl onServiceComplete;
-    private CacheCompleteImpl onCacheComplete;
+
     /**
      * The fragment's ListView/GridView.
      */
@@ -44,12 +48,10 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
      * Views.
      */
     private PlayersTeamsAdapter mAdapter;
-
     /**
-     * The view models for this fragment
+     * Progress dialog for the cache and service async background tasks.
      */
-    private PlayersContextViewModel playersContextViewModel;
-    private PlayersTeamsViewModel playersTeamsViewModel;
+    private ProgressDialog progressDialog;
 
     public static PlayersTeamsFragment newInstance() {
         PlayersTeamsFragment fragment = new PlayersTeamsFragment();
@@ -68,26 +70,50 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
         super.onCreate(savedInstanceState);
 
         Context activity = getActivity();
-        ClutchWinApplication app = (ClutchWinApplication)activity.getApplicationContext();
-        playersContextViewModel = app.getPlayersContextViewModel();
-        playersTeamsViewModel = app.getPlayersTeamsViewModel();
 
-        if(playersTeamsViewModel.ITEMS.isEmpty() && !playersTeamsViewModel.getIsBusy()) {
+        PlayersTeamsCacheAsyncTask cacheTask;
+        cacheTask = (PlayersTeamsCacheAsyncTask) getApp().getTask(Config.PT_CacheFileKey);
+
+        PlayersTeamsAsyncTask serviceTask;
+        serviceTask = (PlayersTeamsAsyncTask) getApp().getTask(Config.PT_SvcTaskKey);
+
+        if(getTeamsViewModel().ITEMS.isEmpty() && !getTeamsViewModel().getIsBusy()) {
 
             if(Helpers.checkFileExists(activity, Config.PT_CacheFileKey)) {
-                onCacheComplete = new CacheCompleteImpl();
-                PlayersTeamsCacheAsyncTask cacheAsyncTask = new PlayersTeamsCacheAsyncTask(activity, playersTeamsViewModel);
-                cacheAsyncTask.setOnCompleteListener(onCacheComplete);
+                PlayersTeamsCacheAsyncTask cacheAsyncTask = new PlayersTeamsCacheAsyncTask();
+
+                getApp().registerTask(Config.PT_CacheFileKey, cacheAsyncTask);
+                cacheAsyncTask.setOnCompleteListener(this);
+                getTeamsViewModel().setIsBusy(true);
+                getProgressDialog().show();
                 cacheAsyncTask.execute();
+
             } else {
-                initiateServiceCall(false);
+                if(serviceTask == null) {
+                    initiateServiceCall(false);
+                }
             }
         } else {
-            initiateServiceCall(false);
+            if(serviceTask == null) {
+                initiateServiceCall(false);
+            }
         }
 
         mAdapter = new PlayersTeamsAdapter(activity,
-                R.layout.listview_teamsfranchises_row, playersTeamsViewModel.ITEMS);
+                R.layout.listview_teamsfranchises_row, getTeamsViewModel().ITEMS);
+
+        // Hook back up to running tasks if this fragment was recreated in the middle of a running task
+        if (cacheTask != null) {
+            getProgressDialog().show();
+            cacheTask.setOnCompleteListener(this);
+        }
+        if (serviceTask != null) {
+            getProgressDialog().show();
+            serviceTask.setOnCompleteListener(this);
+        }
+        if(cacheTask == null && serviceTask == null){
+            getTeamsViewModel().setIsBusy(false);
+        }
     }
 
     @Override
@@ -125,8 +151,8 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
     public void onDetach() {
         super.onDetach();
         mListener = null;
-        onServiceComplete = null;
-        onCacheComplete = null;
+        // kill any progress dialogs if we are being destroyed
+        dismissProgressDialog();
     }
 
     @Override
@@ -134,7 +160,7 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            mListener.onPlayersTeamsInteraction(playersTeamsViewModel.ITEMS.get(position).getTeamId());
+            mListener.onPlayersTeamsInteraction(getTeamsViewModel().ITEMS.get(position).getTeamId());
         }
     }
 
@@ -162,17 +188,85 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
         public void onPlayersTeamsInteractionFail(String type);
     }
 
+    @Override
+    public void onPlayersTeamsServiceComplete(List<PlayersTeamsViewModel.Team> result) {
+        PlayersTeamsAsyncTask task;
+        task = (PlayersTeamsAsyncTask) getApp().getTask(Config.PT_SvcTaskKey);
+        if (task != null) {
+            task.setOnCompleteListener(null);
+        }
+        getApp().unregisterTask(Config.PT_SvcTaskKey);
+
+        getTeamsViewModel().updateList(result);
+        mAdapter.notifyDataSetChanged();
+        getTeamsViewModel().setIsBusy(false);
+        dismissProgressDialog();
+
+        getApp().setHasLoadedSeasonsOnce(true);
+    }
+
+    @Override
+    public void onPlayersTeamsServiceFailure() {
+        PlayersTeamsAsyncTask task;
+        task = (PlayersTeamsAsyncTask) getApp().getTask(Config.PT_SvcTaskKey);
+        if (task != null) {
+            task.setOnCompleteListener(null);
+        }
+        getApp().unregisterTask(Config.PT_SvcTaskKey);
+
+        getTeamsViewModel().setIsBusy(false);
+        dismissProgressDialog();
+
+        if (null != mListener) {
+            // Notify the active callbacks interface (the activity, if the
+            // fragment is attached to one) that a failure has happened.
+            mListener.onPlayersTeamsInteractionFail("");
+        }
+    }
+
+    @Override
+    public void onPlayersTeamsCacheComplete(List<PlayersTeamsViewModel.Team> result) {
+        PlayersTeamsCacheAsyncTask cacheAsyncTask;
+        cacheAsyncTask = (PlayersTeamsCacheAsyncTask) getApp().getTask(Config.PT_CacheFileKey);
+        if (cacheAsyncTask != null) {
+            cacheAsyncTask.setOnCompleteListener(null);
+        }
+        getApp().unregisterTask(Config.PT_CacheFileKey);
+
+        getTeamsViewModel().updateList(result);
+        mAdapter.notifyDataSetChanged();
+        getTeamsViewModel().setIsBusy(false);
+        dismissProgressDialog();
+    }
+
+    @Override
+    public void onPlayersTeamsCacheFailure() {
+        PlayersTeamsCacheAsyncTask cacheAsyncTask;
+        cacheAsyncTask = (PlayersTeamsCacheAsyncTask) getApp().getTask(Config.PT_CacheFileKey);
+        if (cacheAsyncTask != null) {
+            cacheAsyncTask.setOnCompleteListener(null);
+        }
+        getApp().unregisterTask(Config.PT_CacheFileKey);
+        getTeamsViewModel().setIsBusy(false);
+        dismissProgressDialog();
+        //if any failure occurs loading cache, just call the service for fresh teams
+        initiateServiceCall(true);
+    }
+
     private void initiateServiceCall(boolean force){
 
         boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
 
-        if(playersContextViewModel.shouldExecuteLoadTeams(netAvailable) || force) {
+        if(getContextViewModel().shouldExecuteLoadTeams(netAvailable) || force) {
             if(netAvailable) {
-                onServiceComplete = new ServiceCompleteImpl();
-                PlayersTeamsAsyncTask task = new PlayersTeamsAsyncTask(getActivity(), playersContextViewModel,
-                        playersTeamsViewModel);
-                task.setOnCompleteListener(onServiceComplete);
+                PlayersTeamsAsyncTask task = new PlayersTeamsAsyncTask();
+
+                getApp().registerTask(Config.PT_SvcTaskKey, task);
+                task.setOnCompleteListener(this);
+                getTeamsViewModel().setIsBusy(true);
+                getProgressDialog().show();
                 task.execute();
+
             } else {
                 if (null != mListener) {
                     // Notify the active callbacks interface (the activity, if the
@@ -183,28 +277,33 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
         }
     }
 
-    private class ServiceCompleteImpl implements PlayersTeamsAsyncTask.OnLoadCompleteListener {
-        @Override
-        public void onComplete(){
-            mAdapter.notifyDataSetChanged();
-        }
-        @Override
-        public void onFailure(){
-            if (null != mListener) {
-                // Notify the active callbacks interface (the activity, if the
-                // fragment is attached to one) that a failure has happened.
-                mListener.onPlayersTeamsInteractionFail("");
-            }
-        }
+    private ClutchWinApplication getApp(){
+        return ClutchWinApplication.getInstance();
     }
 
-    private class CacheCompleteImpl implements PlayersTeamsCacheAsyncTask.OnLoadCompleteListener {
-        @Override
-        public void onComplete(){ mAdapter.notifyDataSetChanged(); }
-        @Override
-        public void onFailure(){
-            //if any failure occurs loading cache, just call the service for fresh seasons
-            initiateServiceCall(true);
+    private PlayersContextViewModel getContextViewModel(){
+        return ClutchWinApplication.getPlayersContextViewModel();
+    }
+
+    private PlayersTeamsViewModel getTeamsViewModel(){
+        return ClutchWinApplication.getPlayersTeamsViewModel();
+    }
+
+    private ProgressDialog getProgressDialog(){
+        if(progressDialog == null) {
+            progressDialog = new ProgressDialog(getActivity());
+            progressDialog.setMessage(getString(R.string.loading));
+            progressDialog.setIndeterminate(true);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        }
+        return progressDialog;
+    }
+
+    private void dismissProgressDialog() {
+        if (progressDialog != null) {
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
         }
     }
 }
