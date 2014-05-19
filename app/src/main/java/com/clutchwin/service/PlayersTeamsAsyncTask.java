@@ -1,11 +1,9 @@
 package com.clutchwin.service;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.clutchwin.R;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
@@ -18,35 +16,24 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-public class PlayersTeamsAsyncTask extends AsyncTask<Void, Void, Void> {
+public class PlayersTeamsAsyncTask extends AsyncTask<Void, Void, List<PlayersTeamsViewModel.Team>> {
 
-    private ProgressDialog progressDialog;
     private Context context;
     private OnLoadCompleteListener onCompleteListener;
     private PlayersContextViewModel playersContextViewModel;
-    private PlayersTeamsViewModel playersTeamsViewModel;
 
-    public PlayersTeamsAsyncTask(Context inContext, PlayersContextViewModel inContextViewModel,
-                                 PlayersTeamsViewModel inViewModel){
+    public PlayersTeamsAsyncTask(Context inContext, PlayersContextViewModel inContextViewModel){
         context = inContext;
         playersContextViewModel = inContextViewModel;
-        playersTeamsViewModel = inViewModel;
     }
 
     @Override
-    protected void onPreExecute(){
-        progressDialog = new ProgressDialog(context);
-        progressDialog.setMessage(context.getString(R.string.loading));
-        progressDialog.setIndeterminate(true);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progressDialog.show();
-    }
+    protected List<PlayersTeamsViewModel.Team> doInBackground(Void... params) {
 
-    @Override
-    protected Void doInBackground(Void... params) {
+        List<PlayersTeamsViewModel.Team> teamList = null;
+
         try {
 
-            playersTeamsViewModel.setIsBusy(true);
             //http://clutchwin.com/api/v1/teams.json?
             final String baseUrl = Config.Teams;
             StringBuffer finalUrl = new StringBuffer(baseUrl);
@@ -55,38 +42,34 @@ public class PlayersTeamsAsyncTask extends AsyncTask<Void, Void, Void> {
 
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            List<PlayersTeamsViewModel.Team> teamList;
             teamList = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), PlayersTeamsViewModel.Team[].class));
 
             try {
-                Helpers.writeListToInternalStorage(teamList, context, Config.PT_CacheFileKey);
+                if(teamList != null && teamList.size() > 0 ) {
+                    Helpers.writeListToInternalStorage(teamList, context, Config.PT_CacheFileKey);
+                }
             } catch (IOException e) {
                 Log.e("PlayersTeamsAsyncTask::writeListToInternalStorage", e.getMessage(), e);
             }
 
-            playersTeamsViewModel.updateList(teamList);
-
         } catch (Exception e) {
             Log.e("PlayersTeamsAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
-                onCompleteListener.onFailure();
+                onCompleteListener.onPlayersTeamsServiceFailure();
             }
+
+            context = null;
         }
-        return null;
+        return teamList;
     }
 
     @Override
-    protected void onPostExecute(Void result) {
-        if(progressDialog != null){
-            if(progressDialog.isShowing()){
-                progressDialog.dismiss();
-            }
-        }
+    protected void onPostExecute(List<PlayersTeamsViewModel.Team> results) {
         if(onCompleteListener != null){
-            onCompleteListener.onComplete();
+            onCompleteListener.onPlayersTeamsServiceComplete(results);
         }
 
-        playersTeamsViewModel.setIsBusy(false);
+        context = null;
     }
 
     public void setOnCompleteListener(OnLoadCompleteListener inOnCompleteListener){
@@ -94,7 +77,7 @@ public class PlayersTeamsAsyncTask extends AsyncTask<Void, Void, Void> {
     }
 
     public interface OnLoadCompleteListener {
-        public void onComplete();
-        public void onFailure();
+        public void onPlayersTeamsServiceComplete(List<PlayersTeamsViewModel.Team> results);
+        public void onPlayersTeamsServiceFailure();
     }
 }

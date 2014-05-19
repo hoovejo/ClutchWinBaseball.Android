@@ -17,7 +17,6 @@ import com.clutchwin.cachetasks.TeamsOpponentsCacheAsyncTask;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
-import com.clutchwin.service.TeamsOpponentsAsyncTask;
 import com.clutchwin.viewmodels.TeamsContextViewModel;
 import com.clutchwin.viewmodels.TeamsFranchisesViewModel;
 import com.clutchwin.viewmodels.TeamsOpponentsViewModel;

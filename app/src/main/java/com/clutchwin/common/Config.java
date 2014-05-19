@@ -8,6 +8,7 @@ public class Config {
     public static final String PY_CacheFileKey = "playersYears.json";
     public static final String PT_CacheFileKey = "playersTeams.json";
     public static final String PB_CacheFileKey = "playersBatters.json";
+    public static final String PB_SvcTaskKey = "playersBatters.svc";
     public static final String PP_CacheFileKey = "playersPitchers.json";
     public static final String PR_CacheFileKey = "playersResults.json";
     public static final String PDD_CacheFileKey = "playersDrillDown.json";

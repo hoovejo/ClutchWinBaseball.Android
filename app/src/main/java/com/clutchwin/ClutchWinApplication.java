@@ -1,7 +1,7 @@
 package com.clutchwin;
 
 import android.app.Application;
-import android.content.res.Configuration;
+import android.os.AsyncTask;
 
 import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.PlayersBattersViewModel;
@@ -17,17 +17,14 @@ import com.clutchwin.viewmodels.TeamsFranchisesViewModel;
 import com.clutchwin.viewmodels.TeamsOpponentsViewModel;
 import com.clutchwin.viewmodels.TeamsResultsViewModel;
 
+import java.util.HashMap;
+
 public class ClutchWinApplication extends Application {
 
     private static ClutchWinApplication singleton;
 
-    public ClutchWinApplication getInstance(){
+    public static ClutchWinApplication getInstance(){
         return singleton;
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
     }
 
     @Override
@@ -39,25 +36,39 @@ public class ClutchWinApplication extends Application {
         Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread thread, Throwable ex) {
-                try{
-                    Helpers.purgeAllCacheFiles(getApplicationContext());
-                } catch (Exception e){}
+            try{
+                Helpers.purgeAllCacheFiles(getApplicationContext());
+            } catch (Exception e){}
 
-                // carry on with prior flow
-                subclass.uncaughtException(thread, ex);
+            // carry on with prior flow
+            subclass.uncaughtException(thread, ex);
             }
         });
     }
 
-    @Override
-    public void onLowMemory() {
-        super.onLowMemory();
+    private HashMap<String, AsyncTask<?,?,?>> tasks = null;
+
+    public void registerTask(String tag, AsyncTask<?,?,?> task) {
+        if(tasks == null ){
+            tasks = new HashMap<String, AsyncTask<?,?,?>>();
+        }
+        tasks.put(tag, task);
     }
 
-    @Override
-    public void onTerminate() {
-        super.onTerminate();
+    public void unregisterTask(String tag) {
+        if(tasks == null ){
+            tasks = new HashMap<String, AsyncTask<?,?,?>>();
+        }
+        tasks.remove(tag);
     }
+
+    public AsyncTask<?,?,?> getTask(String tag) {
+        if(tasks == null ){
+            tasks = new HashMap<String, AsyncTask<?,?,?>>();
+        }
+        return tasks.get(tag);
+    }
+
 
     private boolean hasLoadedFranchisesOncePerSession = false;
     public boolean getHasLoadedFranchisesOnce() { return hasLoadedFranchisesOncePerSession; }

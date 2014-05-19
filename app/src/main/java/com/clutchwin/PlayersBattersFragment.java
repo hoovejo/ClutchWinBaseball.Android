@@ -1,6 +1,7 @@
 package com.clutchwin;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -19,7 +20,8 @@ import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.service.PlayersBattersAsyncTask;
 import com.clutchwin.viewmodels.PlayersBattersViewModel;
-import com.clutchwin.viewmodels.PlayersContextViewModel;
+
+import java.util.List;
 
 /**
  * A fragment representing a list of Items.
@@ -30,46 +32,29 @@ import com.clutchwin.viewmodels.PlayersContextViewModel;
  * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
  * interface.
  */
-public class PlayersBattersFragment extends Fragment implements AbsListView.OnItemClickListener {
+public class PlayersBattersFragment extends Fragment implements AbsListView.OnItemClickListener,
+        PlayersBattersAsyncTask.OnLoadCompleteListener,
+        PlayersBattersCacheAsyncTask.OnLoadCompleteListener {
 
     private OnFragmentInteractionListener mListener;
-    private ServiceCompleteImpl onServiceComplete;
-    private CacheCompleteImpl onCacheComplete;
     /**
      * The fragment's ListView/GridView.
      */
     private AbsListView mListView;
-
     /**
      * The Adapter which will be used to populate the ListView/GridView with
      * Views.
      */
     private ListAdapter mAdapter;
-
     /**
-     * The view models for this fragment
+     * Progress dialog for the cache and service async background tasks.
      */
-    private PlayersContextViewModel playersContextViewModel;
-    private PlayersBattersViewModel playersBattersViewModel;
-
-    private static PlayersBattersFragment _instance;
-    public static PlayersBattersFragment Instance() {
-        if(_instance == null){
-            _instance = new PlayersBattersFragment();
-        }
-        return _instance;
-    }
+    private ProgressDialog progressDialog;
 
     public static PlayersBattersFragment newInstance() {
-        _instance = new PlayersBattersFragment();
-        return _instance;
+        PlayersBattersFragment fragment = new PlayersBattersFragment();
+        return fragment;
     }
-
-    /**
-     * Dynamic buttons
-     */
-    private Button yearButton;
-    private Button teamButton;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -83,26 +68,55 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
         super.onCreate(savedInstanceState);
 
         Context activity = getActivity();
-        ClutchWinApplication app = (ClutchWinApplication)activity.getApplicationContext();
-        playersContextViewModel = app.getPlayersContextViewModel();
-        playersBattersViewModel = app.getPlayersBattersViewModel();
 
-        if(playersBattersViewModel.ITEMS.isEmpty() && !playersBattersViewModel.getIsBusy()) {
+        progressDialog = new ProgressDialog(activity);
+        progressDialog.setMessage(activity.getString(R.string.loading));
+        progressDialog.setIndeterminate(true);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 
-            if(Helpers.checkFileExists(activity, Config.PB_CacheFileKey)) {
-                onCacheComplete = new CacheCompleteImpl();
-                PlayersBattersCacheAsyncTask cacheAsyncTask = new PlayersBattersCacheAsyncTask(activity, playersBattersViewModel);
-                cacheAsyncTask.setOnCompleteListener(onCacheComplete);
+        PlayersBattersCacheAsyncTask cacheTask;
+        cacheTask = (PlayersBattersCacheAsyncTask)ClutchWinApplication.getInstance().getTask(Config.PB_CacheFileKey);
+
+        PlayersBattersAsyncTask serviceTask;
+        serviceTask = (PlayersBattersAsyncTask)ClutchWinApplication.getInstance().getTask(Config.PB_SvcTaskKey);
+
+        if(ClutchWinApplication.getPlayersBattersViewModel().ITEMS.isEmpty() &&
+                !ClutchWinApplication.getPlayersBattersViewModel().getIsBusy()) {
+
+            if(cacheTask == null && Helpers.checkFileExists(activity, Config.PB_CacheFileKey)) {
+
+                PlayersBattersCacheAsyncTask cacheAsyncTask = new PlayersBattersCacheAsyncTask(activity);
+
+                ClutchWinApplication.getInstance().registerTask(Config.PB_CacheFileKey, cacheAsyncTask);
+                cacheAsyncTask.setOnCompleteListener(this);
+                ClutchWinApplication.getPlayersBattersViewModel().setIsBusy(true);
+                progressDialog.show();
                 cacheAsyncTask.execute();
+
             } else {
+                if(serviceTask == null) {
+                    initiateServiceCall(false);
+                }
+            }
+
+        }else {
+            if(serviceTask == null) {
                 initiateServiceCall(false);
             }
-        }else {
-            initiateServiceCall(false);
         }
 
         mAdapter = new ArrayAdapter<PlayersBattersViewModel.Batter>(activity,
-                android.R.layout.simple_list_item_1, android.R.id.text1, playersBattersViewModel.ITEMS);
+                android.R.layout.simple_list_item_1, android.R.id.text1,
+                ClutchWinApplication.getPlayersBattersViewModel().ITEMS);
+
+        if(cacheTask != null){
+            progressDialog.show();
+            cacheTask.setOnCompleteListener(this);
+        }
+        if(serviceTask != null){
+            progressDialog.show();
+            serviceTask.setOnCompleteListener(this);
+        }
     }
 
     @Override
@@ -117,8 +131,8 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
 
-        yearButton = (Button) view.findViewById(R.id.btnYears);
-        String year = playersContextViewModel.getYearId();
+        Button yearButton = (Button) view.findViewById(R.id.btnYears);
+        String year = ClutchWinApplication.getPlayersContextViewModel().getYearId();
         if(year != null && year.length() >= 1){
             yearButton.setText(year + " >");
         }
@@ -128,13 +142,13 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
             }
         });
 
-        teamButton = (Button) view.findViewById(R.id.btnTeams);
-        String team = playersContextViewModel.getTeamId();
+        Button teamButton = (Button) view.findViewById(R.id.btnTeams);
+        String team = ClutchWinApplication.getPlayersContextViewModel().getTeamId();
         if(team != null && team.length() >= 1){
             teamButton.setText(team + " >");
         }
 
-        String yearId = playersContextViewModel.getYearId();
+        String yearId = ClutchWinApplication.getPlayersContextViewModel().getYearId();
         if(yearId != null && yearId.length() > 0) {
             teamButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
@@ -166,8 +180,8 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
     public void onDetach() {
         super.onDetach();
         mListener = null;
-        onServiceComplete = null;
-        onCacheComplete = null;
+
+        dismissProgressDialog();
     }
 
     @Override
@@ -175,7 +189,7 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            mListener.onPlayersBattersInteraction(playersBattersViewModel.ITEMS.get(position).getRetroPlayerId());
+            mListener.onPlayersBattersInteraction(ClutchWinApplication.getPlayersBattersViewModel().ITEMS.get(position).getRetroPlayerId());
         }
     }
 
@@ -207,18 +221,76 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
         public void onGoToTeamsInteraction();
     }
 
+    @Override
+    public void onBatterServiceComplete(List<PlayersBattersViewModel.Batter> result){
+        PlayersBattersAsyncTask task;
+        task = (PlayersBattersAsyncTask)ClutchWinApplication.getInstance().getTask(Config.PB_SvcTaskKey);
+        if(task != null){
+            task.setOnCompleteListener(null);
+        }
+        ClutchWinApplication.getInstance().unregisterTask(Config.PB_SvcTaskKey);
+
+        ClutchWinApplication.getPlayersBattersViewModel().updateList(result);
+        ((ArrayAdapter) mAdapter).notifyDataSetChanged();
+        ClutchWinApplication.getPlayersBattersViewModel().setIsBusy(false);
+        dismissProgressDialog();
+    }
+
+    @Override
+    public void onBatterServiceFailure(){
+        if (null != mListener) {
+            // Notify the active callbacks interface (the activity, if the
+            // fragment is attached to one) that a failure has happened.
+            mListener.onPlayersBattersInteractionFail("");
+        }
+        dismissProgressDialog();
+    }
+
+    @Override
+    public void onBatterCacheComplete(List<PlayersBattersViewModel.Batter> result){
+        PlayersBattersCacheAsyncTask cacheAsyncTask;
+        cacheAsyncTask = (PlayersBattersCacheAsyncTask)ClutchWinApplication.getInstance().getTask(Config.PB_CacheFileKey);
+        if(cacheAsyncTask != null){
+            cacheAsyncTask.setOnCompleteListener(null);
+        }
+        ClutchWinApplication.getInstance().unregisterTask(Config.PB_CacheFileKey);
+
+        ClutchWinApplication.getPlayersBattersViewModel().updateList(result);
+        ((ArrayAdapter) mAdapter).notifyDataSetChanged();
+        ClutchWinApplication.getPlayersBattersViewModel().setIsBusy(false);
+        dismissProgressDialog();
+    }
+
+    @Override
+    public void onBatterCacheFailure(){
+        PlayersBattersCacheAsyncTask cacheAsyncTask;
+        cacheAsyncTask = (PlayersBattersCacheAsyncTask)ClutchWinApplication.getInstance().getTask(Config.PB_CacheFileKey);
+        if(cacheAsyncTask != null){
+            cacheAsyncTask.setOnCompleteListener(null);
+        }
+        ClutchWinApplication.getInstance().unregisterTask(Config.PB_CacheFileKey);
+        dismissProgressDialog();
+        //if any failure occurs loading cache, just call the service for fresh seasons
+        initiateServiceCall(true);
+    }
+
     private void initiateServiceCall(boolean force){
 
         boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
 
-        if(playersContextViewModel.shouldExecuteLoadBatters(netAvailable) || force) {
+        if(ClutchWinApplication.getPlayersContextViewModel().shouldExecuteLoadBatters(netAvailable) || force) {
             if(netAvailable) {
                 setEmptyText(getString(R.string.no_search_results));
-                onServiceComplete = new ServiceCompleteImpl();
-                PlayersBattersAsyncTask task = new PlayersBattersAsyncTask(getActivity(), playersContextViewModel,
-                        playersBattersViewModel);
-                task.setOnCompleteListener(onServiceComplete);
+
+                PlayersBattersAsyncTask task = new PlayersBattersAsyncTask(getActivity(),
+                        ClutchWinApplication.getPlayersContextViewModel());
+
+                ClutchWinApplication.getInstance().registerTask(Config.PB_SvcTaskKey, task);
+                task.setOnCompleteListener(this);
+                ClutchWinApplication.getPlayersBattersViewModel().setIsBusy(true);
+                progressDialog.show();
                 task.execute();
+
             } else {
                 if (null != mListener) {
                     mListener.onPlayersBattersInteractionFail(Config.NoInternet);
@@ -227,28 +299,11 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
         }
     }
 
-    private class ServiceCompleteImpl implements PlayersBattersAsyncTask.OnLoadCompleteListener {
-        @Override
-        public void onComplete(){
-            ((ArrayAdapter) mAdapter).notifyDataSetChanged();
-        }
-        @Override
-        public void onFailure(){
-            if (null != mListener) {
-                // Notify the active callbacks interface (the activity, if the
-                // fragment is attached to one) that a failure has happened.
-                mListener.onPlayersBattersInteractionFail("");
+    private void dismissProgressDialog() {
+        if(progressDialog != null){
+            if(progressDialog.isShowing()){
+                progressDialog.dismiss();
             }
-        }
-    }
-
-    private class CacheCompleteImpl implements PlayersBattersCacheAsyncTask.OnLoadCompleteListener {
-        @Override
-        public void onComplete(){ ((ArrayAdapter) mAdapter).notifyDataSetChanged(); }
-        @Override
-        public void onFailure(){
-            //if any failure occurs loading cache, just call the service for fresh seasons
-            initiateServiceCall(true);
         }
     }
 }

@@ -1,11 +1,9 @@
 package com.clutchwin.service;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.clutchwin.R;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.PlayersYearsViewModel;
@@ -17,32 +15,22 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-public class PlayersYearsAsyncTask extends AsyncTask<Void, Void, Void> {
+public class PlayersYearsAsyncTask extends AsyncTask<Void, Void, List<PlayersYearsViewModel.Year>> {
 
-    private ProgressDialog progressDialog;
     private Context context;
     private OnLoadCompleteListener onCompleteListener;
-    private PlayersYearsViewModel playersYearsViewModel;
 
-    public PlayersYearsAsyncTask(Context inContext, PlayersYearsViewModel inViewModel){
+    public PlayersYearsAsyncTask(Context inContext){
         context = inContext;
-        playersYearsViewModel = inViewModel;
     }
 
     @Override
-    protected void onPreExecute(){
-        progressDialog = new ProgressDialog(context);
-        progressDialog.setMessage(context.getString(R.string.loading));
-        progressDialog.setIndeterminate(true);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progressDialog.show();
-    }
+    protected List<PlayersYearsViewModel.Year> doInBackground(Void... params) {
 
-    @Override
-    protected Void doInBackground(Void... params) {
+        List<PlayersYearsViewModel.Year> yearList = null;
+
         try {
 
-            playersYearsViewModel.setIsBusy(true);
             //http://clutchwin.com/api/v1/seasons.json?
             //access_token=abc
             final String baseUrl = Config.Years;
@@ -51,38 +39,34 @@ public class PlayersYearsAsyncTask extends AsyncTask<Void, Void, Void> {
 
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            List<PlayersYearsViewModel.Year> yearList;
             yearList = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), PlayersYearsViewModel.Year[].class));
 
             try {
-                Helpers.writeListToInternalStorage(yearList, context, Config.PY_CacheFileKey);
+                if(yearList != null && yearList.size() > 0) {
+                    Helpers.writeListToInternalStorage(yearList, context, Config.PY_CacheFileKey);
+                }
             } catch (IOException e) {
                 Log.e("PlayersYearsAsyncTask::writeListToInternalStorage", e.getMessage(), e);
             }
 
-            playersYearsViewModel.updateList(yearList);
-
         } catch (Exception e) {
             Log.e("PlayersYearsAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
-                onCompleteListener.onFailure();
+                onCompleteListener.onPlayersYearsServiceFailure();
             }
+
+            context = null;
         }
-        return null;
+        return yearList;
     }
 
     @Override
-    protected void onPostExecute(Void result) {
-        if(progressDialog != null){
-            if(progressDialog.isShowing()){
-                progressDialog.dismiss();
-            }
-        }
+    protected void onPostExecute(List<PlayersYearsViewModel.Year> results) {
         if(onCompleteListener != null){
-            onCompleteListener.onComplete();
+            onCompleteListener.onPlayersYearsServiceComplete(results);
         }
 
-        playersYearsViewModel.setIsBusy(false);
+        context = null;
     }
 
     public void setOnCompleteListener(OnLoadCompleteListener inOnCompleteListener){
@@ -90,8 +74,8 @@ public class PlayersYearsAsyncTask extends AsyncTask<Void, Void, Void> {
     }
 
     public interface OnLoadCompleteListener {
-        public void onComplete();
-        public void onFailure();
+        public void onPlayersYearsServiceComplete(List<PlayersYearsViewModel.Year> results);
+        public void onPlayersYearsServiceFailure();
     }
 }
 

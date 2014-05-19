@@ -18,16 +18,14 @@ import org.json.JSONArray;
 import java.lang.reflect.Type;
 import java.util.List;
 
-public class PlayersBattersCacheAsyncTask extends AsyncTask<Void, Void, Void> {
+public class PlayersBattersCacheAsyncTask extends AsyncTask<Void, Void, List<PlayersBattersViewModel.Batter>> {
 
     private ProgressDialog progressDialog;
     private Context context;
     private OnLoadCompleteListener onCompleteListener;
-    private PlayersBattersViewModel playersBattersViewModel;
 
-    public PlayersBattersCacheAsyncTask(Context inContext, PlayersBattersViewModel inViewModel){
+    public PlayersBattersCacheAsyncTask(Context inContext){
         context = inContext;
-        playersBattersViewModel = inViewModel;
     }
 
     @Override
@@ -40,39 +38,42 @@ public class PlayersBattersCacheAsyncTask extends AsyncTask<Void, Void, Void> {
     }
 
     @Override
-    protected Void doInBackground(Void... params) {
-        Object outObject;
-        try {
+    protected List<PlayersBattersViewModel.Batter> doInBackground(Void... params) {
 
-            playersBattersViewModel.setIsBusy(true);
+        List<PlayersBattersViewModel.Batter> list = null;
+        Object outObject;
+
+        try {
 
             outObject = Helpers.readObjectFromInternalStorage(context, Config.PB_CacheFileKey);
             Gson gson = new GsonBuilder().create();
             JSONArray jsonArray = new JSONArray(outObject.toString());
             Type listType = new TypeToken<List<PlayersBattersViewModel.Batter>>(){}.getType();
-            List<PlayersBattersViewModel.Batter> list = gson.fromJson(jsonArray.toString(), listType);
-            playersBattersViewModel.updateList(list);
+            list = gson.fromJson(jsonArray.toString(), listType);
 
         } catch (Exception e) {
             Log.e("PlayersBattersCacheAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
-                onCompleteListener.onFailure();
+                onCompleteListener.onBatterCacheFailure();
             }
+
+            context = null;
         }
-        return null;
+        return list;
     }
 
     @Override
-    protected void onPostExecute(Void result) {
+    protected void onPostExecute(List<PlayersBattersViewModel.Batter> result) {
         if(progressDialog != null){
             if(progressDialog.isShowing()){
                 progressDialog.dismiss();
             }
         }
         if(onCompleteListener != null){
-            onCompleteListener.onComplete();
+            onCompleteListener.onBatterCacheComplete(result);
         }
-        playersBattersViewModel.setIsBusy(false);
+
+        context = null;
     }
 
     public void setOnCompleteListener(OnLoadCompleteListener inOnCompleteListener){
@@ -80,8 +81,8 @@ public class PlayersBattersCacheAsyncTask extends AsyncTask<Void, Void, Void> {
     }
 
     public interface OnLoadCompleteListener {
-        public void onComplete();
-        public void onFailure();
+        public void onBatterCacheComplete(List<PlayersBattersViewModel.Batter> result);
+        public void onBatterCacheFailure();
     }
 }
 

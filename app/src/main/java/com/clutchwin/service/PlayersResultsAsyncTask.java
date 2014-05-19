@@ -1,11 +1,9 @@
 package com.clutchwin.service;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.clutchwin.R;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
@@ -18,35 +16,24 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-public class PlayersResultsAsyncTask extends AsyncTask<Void, Void, Void> {
+public class PlayersResultsAsyncTask extends AsyncTask<Void, Void, List<PlayersResultsViewModel.PlayersResult>> {
 
-    private ProgressDialog progressDialog;
     private Context context;
     private OnLoadCompleteListener onCompleteListener;
     private PlayersContextViewModel playersContextViewModel;
-    private PlayersResultsViewModel playersResultsViewModel;
 
-    public PlayersResultsAsyncTask(Context inContext, PlayersContextViewModel inContextViewModel,
-                                   PlayersResultsViewModel inViewModel){
+    public PlayersResultsAsyncTask(Context inContext, PlayersContextViewModel inContextViewModel){
         context = inContext;
         playersContextViewModel = inContextViewModel;
-        playersResultsViewModel = inViewModel;
     }
 
     @Override
-    protected void onPreExecute(){
-        progressDialog = new ProgressDialog(context);
-        progressDialog.setMessage(context.getString(R.string.loading));
-        progressDialog.setIndeterminate(true);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progressDialog.show();
-    }
+    protected List<PlayersResultsViewModel.PlayersResult> doInBackground(Void... params) {
 
-    @Override
-    protected Void doInBackground(Void... params) {
+        List<PlayersResultsViewModel.PlayersResult> playersResults = null;
+
         try {
 
-            playersResultsViewModel.setIsBusy(true);
             //http://clutchwin.com/api/v1/events/summary.json?
             //&access_token=abc&bat_id=aybae001&pit_id=parkj001&group=season
             final String baseUrl = Config.PlayerPlayerSearch;
@@ -58,38 +45,35 @@ public class PlayersResultsAsyncTask extends AsyncTask<Void, Void, Void> {
 
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            List<PlayersResultsViewModel.PlayersResult> playersResults;
             playersResults = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), PlayersResultsViewModel.PlayersResult[].class));
 
             try {
-                Helpers.writeListToInternalStorage(playersResults, context, Config.PR_CacheFileKey);
+                if(playersResults != null && playersResults.size() > 0) {
+                    Helpers.writeListToInternalStorage(playersResults, context, Config.PR_CacheFileKey);
+                }
             } catch (IOException e) {
                 Log.e("PlayersResultsAsyncTask::writeListToInternalStorage", e.getMessage(), e);
             }
 
-            playersResultsViewModel.updateList(playersResults);
-
         } catch (Exception e) {
             Log.e("PlayersResultsAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
-                onCompleteListener.onFailure();
+                onCompleteListener.onPlayersResultsServiceFailure();
             }
+
+            context = null;
         }
-        return null;
+        return playersResults;
     }
 
     @Override
-    protected void onPostExecute(Void result) {
-        if(progressDialog != null){
-            if(progressDialog.isShowing()){
-                progressDialog.dismiss();
-            }
-        }
+    protected void onPostExecute(List<PlayersResultsViewModel.PlayersResult> results) {
+
         if(onCompleteListener != null){
-            onCompleteListener.onComplete();
+            onCompleteListener.onPlayersResultsServiceComplete(results);
         }
 
-        playersResultsViewModel.setIsBusy(false);
+        context = null;
     }
 
     public void setOnCompleteListener(OnLoadCompleteListener inOnCompleteListener){
@@ -97,7 +81,7 @@ public class PlayersResultsAsyncTask extends AsyncTask<Void, Void, Void> {
     }
 
     public interface OnLoadCompleteListener {
-        public void onComplete();
-        public void onFailure();
+        public void onPlayersResultsServiceComplete(List<PlayersResultsViewModel.PlayersResult> results);
+        public void onPlayersResultsServiceFailure();
     }
 }

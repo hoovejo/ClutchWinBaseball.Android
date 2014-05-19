@@ -1,11 +1,9 @@
 package com.clutchwin.service;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.clutchwin.R;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
@@ -18,35 +16,24 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-public class PlayersDrillDownAsyncTask extends AsyncTask<Void, Void, Void> {
+public class PlayersDrillDownAsyncTask extends AsyncTask<Void, Void, List<PlayersDrillDownViewModel.PlayersDrillDown>> {
 
-    private ProgressDialog progressDialog;
     private Context context;
     private OnLoadCompleteListener onCompleteListener;
     private PlayersContextViewModel playersContextViewModel;
-    private PlayersDrillDownViewModel playersDrillDownViewModel;
 
-    public PlayersDrillDownAsyncTask(Context inContext, PlayersContextViewModel inContextViewModel,
-                                     PlayersDrillDownViewModel inViewModel){
+    public PlayersDrillDownAsyncTask(Context inContext, PlayersContextViewModel inContextViewModel){
         context = inContext;
         playersContextViewModel = inContextViewModel;
-        playersDrillDownViewModel = inViewModel;
     }
 
     @Override
-    protected void onPreExecute(){
-        progressDialog = new ProgressDialog(context);
-        progressDialog.setMessage(context.getString(R.string.loading));
-        progressDialog.setIndeterminate(true);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progressDialog.show();
-    }
+    protected List<PlayersDrillDownViewModel.PlayersDrillDown> doInBackground(Void... params) {
 
-    @Override
-    protected Void doInBackground(Void... params) {
+        List<PlayersDrillDownViewModel.PlayersDrillDown> playersDrillDownResults = null;
+
         try {
 
-            playersDrillDownViewModel.setIsBusy(true);
             //http://clutchwin.com/api/v1/events/summary.json?
             //&access_token=abc&bat_id=aybae001&pit_id=parkj001&season=2013&group=game_date
             final String baseUrl = Config.PlayerPlayerYearSearch;
@@ -59,38 +46,35 @@ public class PlayersDrillDownAsyncTask extends AsyncTask<Void, Void, Void> {
 
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            List<PlayersDrillDownViewModel.PlayersDrillDown> playersDrillDownResults;
             playersDrillDownResults = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), PlayersDrillDownViewModel.PlayersDrillDown[].class));
 
             try {
-                Helpers.writeListToInternalStorage(playersDrillDownResults, context, Config.PDD_CacheFileKey);
+                if(playersDrillDownResults != null && playersDrillDownResults.size() > 0) {
+                    Helpers.writeListToInternalStorage(playersDrillDownResults, context, Config.PDD_CacheFileKey);
+                }
             } catch (IOException e) {
                 Log.e("PlayersDrillDownCacheAsyncTask::writeListToInternalStorage", e.getMessage(), e);
             }
 
-            playersDrillDownViewModel.updateList(playersDrillDownResults);
-
         } catch (Exception e) {
             Log.e("PlayersDrillDownCacheAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
-                onCompleteListener.onFailure();
+                onCompleteListener.onPlayerDrillDownServiceFailure();
             }
+
+            context = null;
         }
-        return null;
+        return playersDrillDownResults;
     }
 
     @Override
-    protected void onPostExecute(Void result) {
-        if(progressDialog != null){
-            if(progressDialog.isShowing()){
-                progressDialog.dismiss();
-            }
-        }
+    protected void onPostExecute(List<PlayersDrillDownViewModel.PlayersDrillDown> results) {
+
         if(onCompleteListener != null){
-            onCompleteListener.onComplete();
+            onCompleteListener.onPlayerDrillDownServiceComplete(results);
         }
 
-        playersDrillDownViewModel.setIsBusy(false);
+        context = null;
     }
 
     public void setOnCompleteListener(OnLoadCompleteListener inOnCompleteListener){
@@ -98,8 +82,8 @@ public class PlayersDrillDownAsyncTask extends AsyncTask<Void, Void, Void> {
     }
 
     public interface OnLoadCompleteListener {
-        public void onComplete();
-        public void onFailure();
+        public void onPlayerDrillDownServiceComplete(List<PlayersDrillDownViewModel.PlayersDrillDown> results);
+        public void onPlayerDrillDownServiceFailure();
     }
 }
 
