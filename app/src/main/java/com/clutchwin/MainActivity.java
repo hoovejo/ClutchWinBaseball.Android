@@ -17,7 +17,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
      * The serialization (saved instance state) Bundle key representing the
      * current dropdown position.
      */
-    private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
+    //private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -46,29 +46,21 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
      */
     ViewPager mViewPager;
 
-    /**
-     * The view models for this activity
-     */
-    private TeamsContextViewModel teamsContextViewModel;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_teamsfeature);
 
-        ClutchWinApplication app = (ClutchWinApplication)getApplicationContext();
-        teamsContextViewModel = app.getTeamsContextViewModel();
-
         //if cache file exists and we have a new instance, then rehydrate from cache
-        if(Helpers.checkFileExists(this, Config.TC_CacheFileKey) && !teamsContextViewModel.getIsHydratedObject()){
+        if(Helpers.checkFileExists(this, Config.TC_CacheFileKey) && !getContextViewModel().getIsHydratedObject()){
             Object outObject;
             try {
                 outObject = Helpers.readObjectFromInternalStorage(Config.TC_CacheFileKey);
                 Gson gson = new GsonBuilder().create();
-                teamsContextViewModel = gson.fromJson(outObject.toString(), TeamsContextViewModel.class);
-                teamsContextViewModel.setIsHydratedObject(true);
-                app.setHydratedTeamsContextViewModel(teamsContextViewModel);
+                TeamsContextViewModel vm = gson.fromJson(outObject.toString(), TeamsContextViewModel.class);
+                vm.setIsHydratedObject(true);
+                ClutchWinApplication.setHydratedTeamsContextViewModel(vm);
             } catch (IOException e) {
                 Log.e("TeamsFeatureActivity::onCreate", e.getMessage(), e);
             } catch (ClassNotFoundException e) {
@@ -117,10 +109,10 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
 
     @Override
     public void onTeamsFranchisesInteraction(String id) {
-        teamsContextViewModel.setFranchiseId(id);
+        getContextViewModel().setFranchiseId(id);
 
         try {
-            Helpers.updateFileState(teamsContextViewModel, this, Config.TC_CacheFileKey);
+            Helpers.updateFileState(getContextViewModel(), this, Config.TC_CacheFileKey);
         } catch (IOException e) {
             Log.e("TeamsFeatureActivity::onTeamsFranchisesInteraction", e.getMessage(), e);
         }
@@ -140,10 +132,10 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
 
     @Override
     public void onTeamsOpponentsInteraction(String id) {
-        teamsContextViewModel.setOpponentId(id);
+        getContextViewModel().setOpponentId(id);
 
         try {
-            Helpers.updateFileState(teamsContextViewModel, this, Config.TC_CacheFileKey);
+            Helpers.updateFileState(getContextViewModel(), this, Config.TC_CacheFileKey);
         } catch (IOException e) {
             Log.e("TeamsFeatureActivity::onTeamsOpponentsInteraction", e.getMessage(), e);
         }
@@ -162,10 +154,10 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
 
     @Override
     public void onTeamsResultsInteraction(String id) {
-        teamsContextViewModel.setYearId(id);
+        getContextViewModel().setYearId(id);
 
         try {
-            Helpers.updateFileState(teamsContextViewModel, this, Config.TC_CacheFileKey);
+            Helpers.updateFileState(getContextViewModel(), this, Config.TC_CacheFileKey);
         } catch (IOException e) {
             Log.e("TeamsFeatureActivity::onTeamsResultsInteraction", e.getMessage(), e);
         }
@@ -185,7 +177,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
     @Override
     public void onTeamsDrillDownInteraction(String id) {
         try {
-            Helpers.updateFileState(teamsContextViewModel, this, Config.TC_CacheFileKey);
+            Helpers.updateFileState(getContextViewModel(), this, Config.TC_CacheFileKey);
         } catch (IOException e) {
             Log.e("TeamsFeatureActivity::onTeamsDrillDownInteraction", e.getMessage(), e);
         }
@@ -322,4 +314,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
         }
     }
 
+    private TeamsContextViewModel getContextViewModel(){
+        return ClutchWinApplication.getTeamsContextViewModel();
+    }
 }

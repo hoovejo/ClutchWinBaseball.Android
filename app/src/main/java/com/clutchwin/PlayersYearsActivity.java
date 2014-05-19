@@ -29,8 +29,7 @@ public class PlayersYearsActivity extends FragmentActivity implements PlayersYea
 
     @Override
     public void onPlayersYearsInteraction(String id) {
-        ClutchWinApplication app = (ClutchWinApplication)getApplicationContext();
-        PlayersContextViewModel playersContextViewModel = app.getPlayersContextViewModel();
+        PlayersContextViewModel playersContextViewModel = ClutchWinApplication.getPlayersContextViewModel();
         playersContextViewModel.setYearId(id);
 
         try {

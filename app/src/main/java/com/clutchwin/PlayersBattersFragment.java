@@ -230,7 +230,7 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
         getApp().unregisterTask(Config.PB_SvcTaskKey);
 
         getBattersViewModel().updateList(result);
-        ((ArrayAdapter) mAdapter).notifyDataSetChanged();
+        ((ArrayAdapter<?>) mAdapter).notifyDataSetChanged();
         getBattersViewModel().setIsBusy(false);
         dismissProgressDialog();
     }
@@ -264,7 +264,7 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
         getApp().unregisterTask(Config.PB_CacheFileKey);
 
         getBattersViewModel().updateList(result);
-        ((ArrayAdapter) mAdapter).notifyDataSetChanged();
+        ((ArrayAdapter<?>) mAdapter).notifyDataSetChanged();
         getBattersViewModel().setIsBusy(false);
         dismissProgressDialog();
     }

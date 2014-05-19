@@ -45,10 +45,6 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
      * The {@link ViewPager} that will host the section contents.
      */
     ViewPager mViewPager;
-    /**
-     * The view models for this activity
-     */
-    private PlayersContextViewModel playersContextViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,18 +52,15 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
 
         setContentView(R.layout.activity_playersfeature);
 
-        ClutchWinApplication app = (ClutchWinApplication)getApplicationContext();
-        playersContextViewModel = app.getPlayersContextViewModel();
-
         //if cache file exists and we have a new instance, then rehydrate from cache
-        if(Helpers.checkFileExists(this, Config.PC_CacheFileKey) && !playersContextViewModel.getIsHydratedObject()){
+        if(Helpers.checkFileExists(this, Config.PC_CacheFileKey) && !getContextViewModel().getIsHydratedObject()){
             Object outObject;
             try {
                 outObject = Helpers.readObjectFromInternalStorage(Config.PC_CacheFileKey);
                 Gson gson = new GsonBuilder().create();
-                playersContextViewModel = gson.fromJson(outObject.toString(), PlayersContextViewModel.class);
-                playersContextViewModel.setIsHydratedObject(true);
-                app.setHydratedPlayersContextViewModel(playersContextViewModel);
+                PlayersContextViewModel vm = gson.fromJson(outObject.toString(), PlayersContextViewModel.class);
+                vm.setIsHydratedObject(true);
+                ClutchWinApplication.setHydratedPlayersContextViewModel(vm);
             } catch (IOException e) {
                 Log.e("PlayersFeatureActivity::onCreate", e.getMessage(), e);
             } catch (ClassNotFoundException e) {
@@ -132,10 +125,10 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
 
     @Override
     public void onPlayersBattersInteraction(String id) {
-        playersContextViewModel.setBatterId(id);
+        getContextViewModel().setBatterId(id);
 
         try {
-            Helpers.updateFileState(playersContextViewModel, this, Config.PC_CacheFileKey);
+            Helpers.updateFileState(getContextViewModel(), this, Config.PC_CacheFileKey);
         } catch (IOException e) {
             Log.e("PlayersFeatureActivity::onPlayersBattersInteraction", e.getMessage(), e);
         }
@@ -154,10 +147,10 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
 
     @Override
     public void onPlayersPitchersInteraction(String id) {
-        playersContextViewModel.setPitcherId(id);
+        getContextViewModel().setPitcherId(id);
 
         try {
-            Helpers.updateFileState(playersContextViewModel, this, Config.PC_CacheFileKey);
+            Helpers.updateFileState(getContextViewModel(), this, Config.PC_CacheFileKey);
         } catch (IOException e) {
             Log.e("PlayersFeatureActivity::onPlayersPitchersInteraction", e.getMessage(), e);
         }
@@ -176,10 +169,10 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
 
     @Override
     public void onPlayersResultsInteraction(String id) {
-        playersContextViewModel.setResultYearId(id);
+        getContextViewModel().setResultYearId(id);
 
         try {
-            Helpers.updateFileState(playersContextViewModel, this, Config.PC_CacheFileKey);
+            Helpers.updateFileState(getContextViewModel(), this, Config.PC_CacheFileKey);
         } catch (IOException e) {
             Log.e("PlayersFeatureActivity::onPlayersResultsInteraction", e.getMessage(), e);
         }
@@ -199,7 +192,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
     @Override
     public void onPlayersDrillDownInteraction(String id) {
         try {
-            Helpers.updateFileState(playersContextViewModel, this, Config.PC_CacheFileKey);
+            Helpers.updateFileState(getContextViewModel(), this, Config.PC_CacheFileKey);
         } catch (IOException e) {
             Log.e("PlayersFeatureActivity::onPlayersDrillDownInteraction", e.getMessage(), e);
         }
@@ -330,4 +323,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
         }
     }
 
+    private PlayersContextViewModel getContextViewModel(){
+        return ClutchWinApplication.getPlayersContextViewModel();
+    }
 }

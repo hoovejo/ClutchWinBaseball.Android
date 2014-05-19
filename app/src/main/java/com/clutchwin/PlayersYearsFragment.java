@@ -197,7 +197,7 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
          getApp().unregisterTask(Config.PY_SvcTaskKey);
 
          getYearsViewModel().updateList(result);
-         ((ArrayAdapter) mAdapter).notifyDataSetChanged();
+         ((ArrayAdapter<?>) mAdapter).notifyDataSetChanged();
          getYearsViewModel().setIsBusy(false);
          dismissProgressDialog();
 
@@ -233,7 +233,7 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
          getApp().unregisterTask(Config.PY_CacheFileKey);
 
          getYearsViewModel().updateList(result);
-         ((ArrayAdapter) mAdapter).notifyDataSetChanged();
+         ((ArrayAdapter<?>) mAdapter).notifyDataSetChanged();
          getYearsViewModel().setIsBusy(false);
          dismissProgressDialog();
      }

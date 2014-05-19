@@ -192,7 +192,7 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
         getApp().unregisterTask(Config.PP_SvcTaskKey);
 
         getPitchersViewModel().updateList(result);
-        ((ArrayAdapter) mAdapter).notifyDataSetChanged();
+        ((ArrayAdapter<?>) mAdapter).notifyDataSetChanged();
         getPitchersViewModel().setIsBusy(false);
         dismissProgressDialog();
     }
@@ -226,7 +226,7 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
         getApp().unregisterTask(Config.PP_CacheFileKey);
 
         getPitchersViewModel().updateList(result);
-        ((ArrayAdapter) mAdapter).notifyDataSetChanged();
+        ((ArrayAdapter<?>) mAdapter).notifyDataSetChanged();
         getPitchersViewModel().setIsBusy(false);
         dismissProgressDialog();
     }
@@ -272,7 +272,7 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
         } else {
             //likely new session and tabbed to pitchers tab
             setEmptyText(getString(R.string.select_batter_first));
-            ((ArrayAdapter) mAdapter).notifyDataSetChanged();
+            ((ArrayAdapter<?>) mAdapter).notifyDataSetChanged();
         }
     }
 
