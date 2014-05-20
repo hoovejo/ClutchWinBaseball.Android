@@ -2,7 +2,16 @@ package com.clutchwin.common;
 
 public class Config {
 
+    public static final String MustImplement = "must implement OnFragmentInteractionListener";
+
     public static final String NoInternet = "Internet";
+    /**
+     * The serialization (saved instance state) Bundle key representing the
+     * current dropdown position.
+     */
+    public static final String PREF_FILE_NAME = "PrefFile";
+    public static final String TEAMS_SELECTED_NAVIGATION_ITEM = "teams_selected_nav";
+    public static final String PLAYERS_SELECTED_NAVIGATION_ITEM = "players_selected_nav";
 
     public static final String PC_CacheFileKey = "playersContextViewModel.json";
     public static final String PY_CacheFileKey = "playersYears.json";

@@ -135,8 +135,7 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
         try {
             mListener = (OnFragmentInteractionListener) activity;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + activity.getString(R.string.must_implement));
+            throw new ClassCastException(activity.toString() + Config.MustImplement);
         }
     }
 

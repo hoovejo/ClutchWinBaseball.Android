@@ -138,8 +138,7 @@ public class TeamsResultsFragment extends Fragment implements AbsListView.OnItem
         try {
             mListener = (OnFragmentInteractionListener) activity;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + activity.getString(R.string.must_implement));
+            throw new ClassCastException(activity.toString() + Config.MustImplement);
         }
     }
 

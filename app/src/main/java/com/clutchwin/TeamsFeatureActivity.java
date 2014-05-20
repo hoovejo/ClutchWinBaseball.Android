@@ -3,6 +3,7 @@ package com.clutchwin;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -47,6 +48,19 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
     ViewPager mViewPager;
 
     @Override
+    public void onPause(){
+        super.onPause();
+        // Store values between instances here
+        SharedPreferences preferences = getSharedPreferences(Config.PREF_FILE_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        int navIndex = getSupportActionBar().getSelectedNavigationIndex();
+        editor.putString(Config.TEAMS_SELECTED_NAVIGATION_ITEM, Integer.toString(navIndex));
+        editor.commit();
+    }
+
+    boolean isRestartingActivity = false;
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -86,7 +100,14 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
         mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
-                actionBar.setSelectedNavigationItem(position);
+
+                if(isRestartingActivity) return;
+
+                int navIndex = actionBar.getSelectedNavigationIndex();
+                if(navIndex != position) {
+                    // handle swipes
+                    actionBar.setSelectedNavigationItem(position);
+                }
                 Fragment fragment = (Fragment) mSectionsPagerAdapter.instantiateItem(mViewPager, position);
                 if(fragment instanceof IOnShowFragment) {
                     ((IOnShowFragment) fragment).onShowedFragment();
@@ -104,6 +125,21 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
                     actionBar.newTab()
                             .setText(mSectionsPagerAdapter.getPageTitle(i))
                             .setTabListener(this));
+        }
+
+        SharedPreferences preferences = getSharedPreferences(Config.PREF_FILE_NAME, MODE_PRIVATE);
+        String prefPosition = preferences.getString(Config.TEAMS_SELECTED_NAVIGATION_ITEM, null);
+        if (prefPosition != null){
+            int position = Integer.parseInt(prefPosition);
+
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString(Config.TEAMS_SELECTED_NAVIGATION_ITEM, String.valueOf(999));
+            editor.commit();
+
+            if(position > 0 && position < 999){
+                isRestartingActivity = true;
+                actionBar.setSelectedNavigationItem(position);
+            }
         }
     }
 

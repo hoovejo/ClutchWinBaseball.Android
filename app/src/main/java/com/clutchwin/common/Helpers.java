@@ -1,6 +1,7 @@
 package com.clutchwin.common;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
@@ -84,6 +85,12 @@ public class Helpers {
         context.deleteFile(Config.PP_CacheFileKey);
         context.deleteFile(Config.PR_CacheFileKey);
         context.deleteFile(Config.PDD_CacheFileKey);
+
+        SharedPreferences preferences = context.getSharedPreferences(Config.PREF_FILE_NAME, 0);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(Config.TEAMS_SELECTED_NAVIGATION_ITEM, String.valueOf(999));
+        editor.putString(Config.PLAYERS_SELECTED_NAVIGATION_ITEM, String.valueOf(999));
+        editor.commit();
 
     }
 }
