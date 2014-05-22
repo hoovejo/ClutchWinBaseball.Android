@@ -99,7 +99,7 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
             }
         }
 
-        mAdapter = new ArrayAdapter<PlayersPitchersViewModel.Row>(activity,
+        mAdapter = new ArrayAdapter<PlayersPitchersViewModel.Pitcher>(activity,
                 android.R.layout.simple_list_item_1, android.R.id.text1, getPitchersViewModel().ITEMS);
 
         // Hook back up to running tasks if this fragment was recreated in the middle of a running task
@@ -185,7 +185,7 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
     }
 
     @Override
-    public void onPlayersPitcherServiceComplete(List<PlayersPitchersViewModel.Row> result){
+    public void onPlayersPitcherServiceComplete(List<PlayersPitchersViewModel.Pitcher> result){
         PlayersPitchersAsyncTask task;
         task = (PlayersPitchersAsyncTask)getApp().getTask(Config.PP_SvcTaskKey);
         if(task != null){
@@ -219,7 +219,7 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
     }
 
     @Override
-    public void onPlayersPitchersCacheComplete(List<PlayersPitchersViewModel.Row> result){
+    public void onPlayersPitchersCacheComplete(List<PlayersPitchersViewModel.Pitcher> result){
         PlayersPitchersCacheAsyncTask cacheAsyncTask;
         cacheAsyncTask = (PlayersPitchersCacheAsyncTask)getApp().getTask(Config.PP_CacheFileKey);
         if(cacheAsyncTask != null){

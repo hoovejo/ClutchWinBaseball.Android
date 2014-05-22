@@ -45,7 +45,7 @@ public class Config {
     public static final String TeamIdKey = "&team_abbr=";
     public static final String FranchiseSearchKeyValue = "&group=season,team_abbr,opp_abbr&fieldset=basic";
     public static final String SeasonIdKey = "&season=";
-    public static final String FranchiseYearSearchKeyValue = "&fieldset=basic";
+    public static final String FieldSetBasicKeyValue = "&fieldset=basic";
 
     public static final String BatterIdKey = "&bat_id=";
     public static final String PitcherIdKey = "&pit_id=";
@@ -63,7 +63,7 @@ public class Config {
     public static final String Years = "http://clutchwin.com/api/v1/seasons.json?";
     public static final String Teams = "http://clutchwin.com/api/v1/teams.json?";
     public static final String RosterSearch = "http://clutchwin.com/api/v1/players.json?";
-    public static final String OpponentsForBatter = "http://versus.skeenshare.com/search/opponents_for_batter/";
+    public static final String OpponentsForBatter = "http://clutchwin.com/api/v1/opponents/pitchers.json?";
     public static final String PlayerPlayerSearch = "http://clutchwin.com/api/v1/events/summary.json?";
     public static final String PlayerPlayerYearSearch = "http://clutchwin.com/api/v1/events/summary.json?";
 

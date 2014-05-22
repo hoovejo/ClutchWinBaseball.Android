@@ -15,16 +15,16 @@ import org.json.JSONArray;
 import java.lang.reflect.Type;
 import java.util.List;
 
-public class PlayersPitchersCacheAsyncTask extends AsyncTask<Void, Void, List<PlayersPitchersViewModel.Row> > {
+public class PlayersPitchersCacheAsyncTask extends AsyncTask<Void, Void, List<PlayersPitchersViewModel.Pitcher> > {
 
     private OnLoadCompleteListener onCompleteListener;
 
     public PlayersPitchersCacheAsyncTask() {}
 
     @Override
-    protected List<PlayersPitchersViewModel.Row> doInBackground(Void... params) {
+    protected List<PlayersPitchersViewModel.Pitcher> doInBackground(Void... params) {
 
-        List<PlayersPitchersViewModel.Row> list = null;
+        List<PlayersPitchersViewModel.Pitcher> list = null;
         Object outObject;
 
         try {
@@ -32,7 +32,7 @@ public class PlayersPitchersCacheAsyncTask extends AsyncTask<Void, Void, List<Pl
             outObject = Helpers.readObjectFromInternalStorage(Config.PP_CacheFileKey);
             Gson gson = new GsonBuilder().create();
             JSONArray jsonArray = new JSONArray(outObject.toString());
-            Type listType = new TypeToken<List<PlayersPitchersViewModel.Row>>(){}.getType();
+            Type listType = new TypeToken<List<PlayersPitchersViewModel.Pitcher>>(){}.getType();
             list = gson.fromJson(jsonArray.toString(), listType);
 
         } catch (Exception e) {
@@ -45,7 +45,7 @@ public class PlayersPitchersCacheAsyncTask extends AsyncTask<Void, Void, List<Pl
     }
 
     @Override
-    protected void onPostExecute(List<PlayersPitchersViewModel.Row> result) {
+    protected void onPostExecute(List<PlayersPitchersViewModel.Pitcher> result) {
 
         if(onCompleteListener != null){
             if(result == null) {
@@ -61,7 +61,7 @@ public class PlayersPitchersCacheAsyncTask extends AsyncTask<Void, Void, List<Pl
     }
 
     public interface OnLoadCompleteListener {
-        public void onPlayersPitchersCacheComplete(List<PlayersPitchersViewModel.Row> list);
+        public void onPlayersPitchersCacheComplete(List<PlayersPitchersViewModel.Pitcher> list);
         public void onPlayersPitchersCacheFailure();
     }
 }

@@ -39,7 +39,7 @@ public class TeamsDrillDownAsyncTask extends AsyncTask<Void, Void, List<TeamsDri
                     .append(ClutchWinApplication.getTeamsContextViewModel().getOpponentId())
                     .append(Config.SeasonIdKey)
                     .append(ClutchWinApplication.getTeamsContextViewModel().getYearId())
-                    .append(Config.FranchiseYearSearchKeyValue);
+                    .append(Config.FieldSetBasicKeyValue);
 
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());

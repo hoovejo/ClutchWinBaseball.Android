@@ -12,35 +12,38 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
-public class PlayersPitchersAsyncTask extends AsyncTask<Void, Void, List<PlayersPitchersViewModel.Row>> {
+public class PlayersPitchersAsyncTask extends AsyncTask<Void, Void, List<PlayersPitchersViewModel.Pitcher>> {
 
     private OnLoadCompleteListener onCompleteListener;
 
     public PlayersPitchersAsyncTask() {}
 
     @Override
-    protected List<PlayersPitchersViewModel.Row> doInBackground(Void... params) {
+    protected List<PlayersPitchersViewModel.Pitcher> doInBackground(Void... params) {
 
-        PlayersPitchersViewModel.PitchersResult result = null;
+        List<PlayersPitchersViewModel.Pitcher> list = null;
 
         try {
-
-            //"http://versus.skeenshare.com/search/opponents_for_batter/aybae001/2013.json";
+            //http://clutchwin.com/api/v1/opponents/pitchers.json?
             final String baseUrl = Config.OpponentsForBatter;
             StringBuffer finalUrl = new StringBuffer(baseUrl);
-            finalUrl.append(ClutchWinApplication.getPlayersContextViewModel().getBatterId())
-                    .append(Config.Slash)
+            finalUrl.append(Config.AccessTokenKey).append(Config.AccessTokenValue)
+                    .append(Config.BatterIdKey)
+                    .append(ClutchWinApplication.getPlayersContextViewModel().getBatterId())
+                    .append(Config.SeasonIdKey)
                     .append(ClutchWinApplication.getPlayersContextViewModel().getYearId())
-                    .append(Config.JsonSuffix);
+                    .append(Config.FieldSetBasicKeyValue);
+
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            result = restTemplate.getForObject(finalUrl.toString(), PlayersPitchersViewModel.PitchersResult.class);
+            list = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), PlayersPitchersViewModel.Pitcher[].class));
 
             try {
-                if(result.rows != null && result.rows.size() > 0) {
-                    Helpers.writeListToInternalStorage(result.rows, Config.PP_CacheFileKey);
+                if(list != null && list.size() > 0) {
+                    Helpers.writeListToInternalStorage(list, Config.PP_CacheFileKey);
                 }
             } catch (IOException e) {
                 Log.e("PlayersPitchersAsyncTask::writeListToInternalStorage", e.getMessage(), e);
@@ -52,11 +55,11 @@ public class PlayersPitchersAsyncTask extends AsyncTask<Void, Void, List<Players
                 onCompleteListener.onPlayersPitcherServiceFailure();
             }
         }
-        return result.rows;
+        return list;
     }
 
     @Override
-    protected void onPostExecute(List<PlayersPitchersViewModel.Row> result) {
+    protected void onPostExecute(List<PlayersPitchersViewModel.Pitcher> result) {
 
         if(onCompleteListener != null){
             onCompleteListener.onPlayersPitcherServiceComplete(result);
@@ -68,7 +71,7 @@ public class PlayersPitchersAsyncTask extends AsyncTask<Void, Void, List<Players
     }
 
     public interface OnLoadCompleteListener {
-        public void onPlayersPitcherServiceComplete(List<PlayersPitchersViewModel.Row> result);
+        public void onPlayersPitcherServiceComplete(List<PlayersPitchersViewModel.Pitcher> result);
         public void onPlayersPitcherServiceFailure();
     }
 }

@@ -2,6 +2,7 @@ package com.clutchwin.viewmodels;
 
 import com.clutchwin.common.Config;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
@@ -15,69 +16,47 @@ public class PlayersPitchersViewModel {
     public boolean getIsBusy() { return _isBusy; }
     public void setIsBusy(boolean b) { _isBusy = b; }
 
-    public List<PlayersPitchersViewModel.Row> ITEMS = new ArrayList<PlayersPitchersViewModel.Row>();
+    public List<PlayersPitchersViewModel.Pitcher> ITEMS = new ArrayList<PlayersPitchersViewModel.Pitcher>();
 
-    private void addItem(PlayersPitchersViewModel.Row item) {
+    private void addItem(PlayersPitchersViewModel.Pitcher item) {
         ITEMS.add(item);
     }
 
-    public void updateList(List<PlayersPitchersViewModel.Row> pitcherList) {
+    public void updateList(List<PlayersPitchersViewModel.Pitcher> pitcherList) {
         ITEMS.clear();
-        for (PlayersPitchersViewModel.Row pitcher : pitcherList) {
+        for (PlayersPitchersViewModel.Pitcher pitcher : pitcherList) {
             addItem(pitcher);
         }
 
-        Collections.sort(ITEMS, new Comparator<PlayersPitchersViewModel.Row>() {
-            public int compare(PlayersPitchersViewModel.Row o1, PlayersPitchersViewModel.Row o2) {
+        Collections.sort(ITEMS, new Comparator<PlayersPitchersViewModel.Pitcher>() {
+            public int compare(PlayersPitchersViewModel.Pitcher o1, PlayersPitchersViewModel.Pitcher o2) {
                 return o1.getFirstName().compareTo(o2.getFirstName());
             }
         });
     }
 
     /**
-     * PitchersResult model
+     * Pitcher model
      */
-    public static class PitchersResult {
-        @JsonCreator
-        public PitchersResult(@JsonProperty("fieldnames") List<FieldNames> fieldNames, @JsonProperty("rows") List<Row> rows)
-        {
-            this.fieldNames = fieldNames;
-            this.rows = rows;
-        }
-        public List<FieldNames> fieldNames;
-        public List<Row> rows;
-    }
-
-    public static class FieldNames {
-        @JsonCreator
-        public FieldNames(@JsonProperty("name") String name)
-        {
-            this.name = name;
-        }
-
-        private String name;
-        public String getName() { return this.name; }
-        public void setName(String name) { this.name = name; }
-    }
-
-    public static class Row {
-        @JsonCreator
-        public Row(@JsonProperty("first_name") String firstName,
-                   @JsonProperty("last_name") String lastName,
-                   @JsonProperty("retro_id") String retroId)
-        {
-            this.firstName = firstName;
-            this.lastName = lastName;
-            this.retroId = retroId;
-        }
-
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Pitcher {
         private String firstName;
         private String lastName;
-        private String retroId;
+        private String playerId;
+
+        @JsonCreator
+        public Pitcher(@JsonProperty("first_name") String first_name,
+                      @JsonProperty("last_name") String last_name,
+                      @JsonProperty("player_id") String player_id)
+        {
+            this.firstName =  (first_name==null)? "":first_name;
+            this.lastName = (last_name==null)? "":last_name;
+            this.playerId = (player_id==null)? "":player_id;
+        }
 
         public String getFirstName() { return firstName; }
         public String getRetroId() {
-            return this.retroId;
+            return this.playerId;
         }
 
         @Override
