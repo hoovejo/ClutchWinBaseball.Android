@@ -28,11 +28,13 @@ public class PlayersPitchersViewModel {
             addItem(pitcher);
         }
 
-        Collections.sort(ITEMS, new Comparator<PlayersPitchersViewModel.Pitcher>() {
-            public int compare(PlayersPitchersViewModel.Pitcher o1, PlayersPitchersViewModel.Pitcher o2) {
-                return o1.getFirstName().compareTo(o2.getFirstName());
-            }
-        });
+        try {
+            Collections.sort(ITEMS, new Comparator<PlayersPitchersViewModel.Pitcher>() {
+                public int compare(PlayersPitchersViewModel.Pitcher o1, PlayersPitchersViewModel.Pitcher o2) {
+                    return o1.getFirstName().compareTo(o2.getFirstName());
+                }
+            });
+        } catch (Exception e){}
     }
 
     /**

@@ -36,5 +36,8 @@
     <string name="select_team_first">select team</string>
     <string name="select_opponent_first">select opponent</string>
     <string name="t_select_result_first">select result</string>
+    <string name="main_discover">Discover how your favorite baseball teams or players perform against their rivals.</string>
+    <string name="main_welcome">Welcome!</string>
+    <string name="main_title">ClutchWin baseball</string>
 
 </resources>

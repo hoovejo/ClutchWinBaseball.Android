@@ -44,6 +44,8 @@ public class PlayersPitchersAsyncTask extends AsyncTask<Void, Void, List<Players
             try {
                 if(list != null && list.size() > 0) {
                     Helpers.writeListToInternalStorage(list, Config.PP_CacheFileKey);
+                } else {
+                    Helpers.deleteCacheFile(Config.PP_CacheFileKey);
                 }
             } catch (IOException e) {
                 Log.e("PlayersPitchersAsyncTask::writeListToInternalStorage", e.getMessage(), e);

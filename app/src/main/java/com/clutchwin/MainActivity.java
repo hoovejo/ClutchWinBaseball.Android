@@ -37,8 +37,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
-            case R.id.action_settings:
-                return true;
+            //case R.id.action_settings:
+            //    return true;
             case R.id.action_team:
                 return navigateToTeams();
             case R.id.action_player:

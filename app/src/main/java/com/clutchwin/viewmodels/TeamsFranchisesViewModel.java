@@ -27,11 +27,13 @@ public class TeamsFranchisesViewModel {
             addItem(franchise);
         }
 
-        Collections.sort(ITEMS, new Comparator<Franchise>() {
-            public int compare(Franchise o1, Franchise o2) {
-                return o1.getLocation().compareTo(o2.getLocation());
-            }
-        });
+        try {
+            Collections.sort(ITEMS, new Comparator<Franchise>() {
+                public int compare(Franchise o1, Franchise o2) {
+                    return o1.getLocation().compareTo(o2.getLocation());
+                }
+            });
+        } catch (Exception e){}
     }
 
     /**

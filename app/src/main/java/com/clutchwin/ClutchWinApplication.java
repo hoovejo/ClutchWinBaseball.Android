@@ -1,9 +1,11 @@
 package com.clutchwin;
 
 import android.app.Application;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 
-import com.clutchwin.common.Helpers;
+import com.bugsense.trace.BugSenseHandler;
+import com.clutchwin.common.Config;
 import com.clutchwin.viewmodels.PlayersBattersViewModel;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
 import com.clutchwin.viewmodels.PlayersDrillDownViewModel;
@@ -32,6 +34,9 @@ public class ClutchWinApplication extends Application {
         super.onCreate();
         singleton = this;
 
+        BugSenseHandler.initAndStartSession(this, "d1b1bd96");
+
+        /*
         final Thread.UncaughtExceptionHandler subclass = Thread.currentThread().getUncaughtExceptionHandler();
         Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
@@ -44,6 +49,12 @@ public class ClutchWinApplication extends Application {
             subclass.uncaughtException(thread, ex);
             }
         });
+        */
+        SharedPreferences preferences = getSharedPreferences(Config.PREF_FILE_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(Config.TEAMS_SELECTED_NAVIGATION_ITEM, String.valueOf(999));
+        editor.putString(Config.PLAYERS_SELECTED_NAVIGATION_ITEM, String.valueOf(999));
+        editor.commit();
     }
 
     private HashMap<String, AsyncTask<?,?,?>> tasks = null;

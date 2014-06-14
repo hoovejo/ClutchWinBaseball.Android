@@ -40,6 +40,8 @@ public class PlayersYearsAsyncTask extends AsyncTask<Void, Void, List<PlayersYea
             try {
                 if(list != null && list.size() > 0) {
                     Helpers.writeListToInternalStorage(list, Config.PY_CacheFileKey);
+                } else {
+                    Helpers.deleteCacheFile(Config.PY_CacheFileKey);
                 }
             } catch (IOException e) {
                 Log.e("PlayersYearsAsyncTask::writeListToInternalStorage", e.getMessage(), e);

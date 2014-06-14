@@ -69,6 +69,13 @@ public class Helpers {
         return returnValue;
     }
 
+    // called from the svc background async tasks...use case is to delete previous
+    // cache file if new svc call contains no results.
+    public static void deleteCacheFile(String fileName){
+        Context appContext = ClutchWinApplication.getInstance().getApplicationContext();
+        appContext.deleteFile(fileName);
+    }
+
     //called from ClutchWinApplication passing in the app context from UnhandledException handler
     // injected using the decorator pattern
     public static void purgeAllCacheFiles(Context context){

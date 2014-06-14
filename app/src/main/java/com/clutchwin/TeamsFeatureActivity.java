@@ -58,6 +58,15 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
         editor.commit();
     }
 
+    @Override
+    public void onBackPressed()
+    {
+        Intent i = new Intent(this, MainActivity.class);
+        startActivity(i);
+        this.finish();
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+    }
+
     boolean isRestartingActivity = false;
 
     @Override
@@ -242,14 +251,14 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
-            case R.id.action_settings:
-                return true;
+            //case R.id.action_settings:
+            //    return true;
             case R.id.action_home:
                 return navigateToHome();
             case R.id.action_player:
                 return navigateToPlayers();
             default:
-                return super.onOptionsItemSelected(item);
+                return navigateToHome();
         }
     }
 

@@ -28,11 +28,13 @@ public class PlayersBattersViewModel {
             addItem(batter);
         }
 
-        Collections.sort(ITEMS, new Comparator<Batter>() {
-            public int compare(Batter o1, Batter o2) {
-                return o1.getFirstName().compareTo(o2.getFirstName());
-            }
-        });
+        try {
+            Collections.sort(ITEMS, new Comparator<Batter>() {
+                public int compare(Batter o1, Batter o2) {
+                    return o1.getFirstName().compareTo(o2.getFirstName());
+                }
+            });
+        } catch (Exception e){}
     }
 
     /**

@@ -26,10 +26,12 @@ public class TeamsOpponentsViewModel {
             }
         }
 
-        Collections.sort(ITEMS, new Comparator<TeamsFranchisesViewModel.Franchise>() {
-            public int compare(TeamsFranchisesViewModel.Franchise o1, TeamsFranchisesViewModel.Franchise o2) {
-                return o1.getLocation().compareTo(o2.getLocation());
-            }
-        });
+        try {
+            Collections.sort(ITEMS, new Comparator<TeamsFranchisesViewModel.Franchise>() {
+                public int compare(TeamsFranchisesViewModel.Franchise o1, TeamsFranchisesViewModel.Franchise o2) {
+                    return o1.getLocation().compareTo(o2.getLocation());
+                }
+            });
+        } catch (Exception e){}
     }
 }

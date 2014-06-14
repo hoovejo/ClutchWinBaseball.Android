@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.view.MenuItem;
 
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
@@ -25,6 +26,24 @@ public class PlayersTeamsActivity extends FragmentActivity implements PlayersTea
                     .add(R.id.container, PlayersTeamsFragment.newInstance())
                     .commit();
         }
+    }
+
+    @Override
+    public boolean onMenuItemSelected (int featureId, MenuItem item) {
+        Intent i = new Intent(this, PlayersFeatureActivity.class);
+        startActivity(i);
+        this.finish();
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        return true;
+    }
+
+    @Override
+    public void onBackPressed()
+    {
+        Intent i = new Intent(this, PlayersFeatureActivity.class);
+        startActivity(i);
+        this.finish();
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     @Override

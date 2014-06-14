@@ -45,6 +45,8 @@ public class TeamsResultsAsyncTask extends AsyncTask<Void, Void, List<TeamsResul
             try {
                 if(list != null && list.size() > 0) {
                     Helpers.writeListToInternalStorage(list, Config.TR_CacheFileKey);
+                } else {
+                    Helpers.deleteCacheFile(Config.TR_CacheFileKey);
                 }
             } catch (IOException e) {
                 Log.e("TeamsResultsAsyncTask::writeListToInternalStorage", e.getMessage(), e);

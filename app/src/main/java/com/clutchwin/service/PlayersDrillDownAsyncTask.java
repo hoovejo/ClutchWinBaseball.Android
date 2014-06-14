@@ -35,8 +35,8 @@ public class PlayersDrillDownAsyncTask extends AsyncTask<Void, Void, List<Player
             finalUrl.append(Config.AccessTokenKey).append(Config.AccessTokenValue)
                     .append(Config.BatterIdKey)
                     .append(ClutchWinApplication.getPlayersContextViewModel().getBatterId())
-                    .append(Config.PitcherIdKey
-                    ).append(ClutchWinApplication.getPlayersContextViewModel().getPitcherId())
+                    .append(Config.PitcherIdKey)
+                    .append(ClutchWinApplication.getPlayersContextViewModel().getPitcherId())
                     .append(Config.SeasonIdKey)
                     .append(ClutchWinApplication.getPlayersContextViewModel().getResultYearId())
                     .append(Config.GroupGameDateKeyValue);
@@ -48,6 +48,8 @@ public class PlayersDrillDownAsyncTask extends AsyncTask<Void, Void, List<Player
             try {
                 if(list != null && list.size() > 0) {
                     Helpers.writeListToInternalStorage(list, Config.PDD_CacheFileKey);
+                } else {
+                    Helpers.deleteCacheFile(Config.PDD_CacheFileKey);
                 }
             } catch (IOException e) {
                 Log.e("PlayersDrillDownCacheAsyncTask::writeListToInternalStorage", e.getMessage(), e);

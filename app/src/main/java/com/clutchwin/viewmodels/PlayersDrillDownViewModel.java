@@ -27,11 +27,13 @@ public class PlayersDrillDownViewModel {
             addItem(item);
         }
 
-        Collections.sort(ITEMS, new Comparator<PlayersDrillDownViewModel.PlayersDrillDown>() {
-            public int compare(PlayersDrillDownViewModel.PlayersDrillDown o1, PlayersDrillDownViewModel.PlayersDrillDown o2) {
-                return o2.getGameDate().compareTo(o1.getGameDate());
-            }
-        });
+        try {
+            Collections.sort(ITEMS, new Comparator<PlayersDrillDownViewModel.PlayersDrillDown>() {
+                public int compare(PlayersDrillDownViewModel.PlayersDrillDown o1, PlayersDrillDownViewModel.PlayersDrillDown o2) {
+                    return o2.getGameDate().compareTo(o1.getGameDate());
+                }
+            });
+        } catch (Exception e){}
     }
 
     /**

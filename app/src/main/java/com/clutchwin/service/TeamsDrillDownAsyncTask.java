@@ -47,7 +47,9 @@ public class TeamsDrillDownAsyncTask extends AsyncTask<Void, Void, List<TeamsDri
 
             try {
                 if(list != null && list.size() > 0) {
-                    Helpers.writeListToInternalStorage(list, Config.TDD_CacheFileKey);
+                    Helpers.writeListToInternalStorage(list, Config.TF_CacheFileKey);
+                } else {
+                    Helpers.deleteCacheFile(Config.TF_CacheFileKey);
                 }
             } catch (IOException e) {
                 Log.e("TeamsDrillDownAsyncTask::writeListToInternalStorage", e.getMessage(), e);

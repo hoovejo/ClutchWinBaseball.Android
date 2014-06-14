@@ -39,6 +39,8 @@ public class TeamsFranchisesAsyncTask extends AsyncTask<Void, Void, List<TeamsFr
             try {
                 if(list != null && list.size() > 0 ) {
                     Helpers.writeListToInternalStorage(list, Config.TF_CacheFileKey);
+                } else {
+                    Helpers.deleteCacheFile(Config.TF_CacheFileKey);
                 }
             } catch (IOException e) {
                 Log.e("TeamsFranchisesAsyncTask::writeListToInternalStorage", e.getMessage(), e);
