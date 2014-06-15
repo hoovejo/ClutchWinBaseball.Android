@@ -38,7 +38,8 @@ public class Config {
 
 
     public static final String AccessTokenKey = "&access_token=";
-    public static final String AccessTokenValue = "joe";
+    public static final String AccessTokenValue = "bf0a9b612fcdba499d98ed720a02c3da";
+    public static final String BugSenseTokenValue = "d1b1bd96";
 
     public static final String FranchiseIdKey = "&franchise_abbr=";
     public static final String OpponentIdKey = "&opp_franchise_abbr=";
@@ -53,8 +54,6 @@ public class Config {
     public static final String GroupGameDateKeyValue = "&group=game_date";
 
     public static final String Space = " ";
-    public static final String Slash = "/";
-    public static final String JsonSuffix = ".json";
 
     public static final String Franchise = "http://clutchwin.com/api/v1/franchises.json?";
     public static final String FranchiseSearch = "http://clutchwin.com/api/v1/games/for_team/summary.json?";

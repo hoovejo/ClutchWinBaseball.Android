@@ -34,7 +34,7 @@ public class ClutchWinApplication extends Application {
         super.onCreate();
         singleton = this;
 
-        BugSenseHandler.initAndStartSession(this, "d1b1bd96");
+        BugSenseHandler.initAndStartSession(this, Config.BugSenseTokenValue);
 
         /*
         final Thread.UncaughtExceptionHandler subclass = Thread.currentThread().getUncaughtExceptionHandler();
