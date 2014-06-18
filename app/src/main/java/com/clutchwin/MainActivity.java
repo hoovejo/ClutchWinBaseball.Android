@@ -11,6 +11,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+
 public class MainActivity extends ActionBarActivity implements ActionBar.OnNavigationListener {
 
     @Override
@@ -103,12 +107,54 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         public PlaceholderFragment() {
         }
 
+        private AdView adView;
+
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
+            adView = (AdView)rootView.findViewById(R.id.adView);
+            adView.setAdListener(new AdListener() {
+                     /**
+                      * Called when an ad is clicked and about to return to the application.
+                      */
+                     @Override
+                     public void onAdClosed() {
+                     }
+
+                     /**
+                      * Called when an ad failed to load.
+                      */
+                     @Override
+                     public void onAdFailedToLoad(int error) {
+                     }
+                 });
+
+            AdRequest adRequest = new AdRequest.Builder()
+                    .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                    .addTestDevice("INSERT_YOUR_HASHED_DEVICE_ID_HERE")
+                    .build();
+            adView.loadAd(adRequest);
             return rootView;
         }
-    }
 
+        @Override
+        public void onPause() {
+            adView.pause();
+            super.onPause();
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+            adView.resume();
+        }
+
+        @Override
+        public void onDestroy() {
+            adView.destroy();
+            super.onDestroy();
+        }
+    }
 }
