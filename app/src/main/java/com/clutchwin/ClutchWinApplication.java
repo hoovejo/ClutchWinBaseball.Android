@@ -93,9 +93,6 @@ public class ClutchWinApplication extends Application {
      * All teams context view models
      */
     private static TeamsContextViewModel _teamsContextViewModel;
-    public static void setHydratedTeamsContextViewModel(TeamsContextViewModel model) {
-        _teamsContextViewModel = model;
-    }
 
     public static TeamsContextViewModel getTeamsContextViewModel() {
         if(_teamsContextViewModel == null){
@@ -140,9 +137,6 @@ public class ClutchWinApplication extends Application {
      * All players context view models
      */
     private static PlayersContextViewModel _playersContextViewModel;
-    public static void setHydratedPlayersContextViewModel(PlayersContextViewModel model) {
-        _playersContextViewModel = model;
-    }
 
     public static PlayersContextViewModel getPlayersContextViewModel() {
         if(_playersContextViewModel == null){

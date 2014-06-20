@@ -12,18 +12,13 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.clutchwin.common.Config;
-import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.viewmodels.TeamsContextViewModel;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
-import java.io.IOException;
 import java.util.Locale;
 
 public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar.TabListener,
@@ -75,6 +70,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
 
         setContentView(R.layout.activity_teamsfeature);
 
+        /*
         //if cache file exists and we have a new instance, then rehydrate from cache
         if(Helpers.checkFileExists(this, Config.TC_CacheFileKey) && !getContextViewModel().getIsHydratedObject()){
             Object outObject;
@@ -90,6 +86,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
                 Log.e("TeamsFeatureActivity::onCreate", e.getMessage(), e);
             }
         }
+        */
 
         // Set up the action bar.
         final ActionBar actionBar = getSupportActionBar();
@@ -110,7 +107,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
             @Override
             public void onPageSelected(int position) {
 
-                if(isRestartingActivity) return;
+                if(isRestartingActivity) { isRestartingActivity = false; return; }
 
                 int navIndex = actionBar.getSelectedNavigationIndex();
                 if(navIndex != position) {
@@ -156,11 +153,13 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
     public void onTeamsFranchisesInteraction(String id) {
         getContextViewModel().setFranchiseId(id);
 
+        /*
         try {
             Helpers.updateFileState(getContextViewModel(), this, Config.TC_CacheFileKey);
         } catch (IOException e) {
             Log.e("TeamsFeatureActivity::onTeamsFranchisesInteraction", e.getMessage(), e);
         }
+        */
 
         getSupportActionBar().setSelectedNavigationItem(1);
     }
@@ -179,11 +178,13 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
     public void onTeamsOpponentsInteraction(String id) {
         getContextViewModel().setOpponentId(id);
 
+        /*
         try {
             Helpers.updateFileState(getContextViewModel(), this, Config.TC_CacheFileKey);
         } catch (IOException e) {
             Log.e("TeamsFeatureActivity::onTeamsOpponentsInteraction", e.getMessage(), e);
         }
+        */
 
         getSupportActionBar().setSelectedNavigationItem(2);
     }
@@ -201,11 +202,13 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
     public void onTeamsResultsInteraction(String id) {
         getContextViewModel().setYearId(id);
 
+        /*
         try {
             Helpers.updateFileState(getContextViewModel(), this, Config.TC_CacheFileKey);
         } catch (IOException e) {
             Log.e("TeamsFeatureActivity::onTeamsResultsInteraction", e.getMessage(), e);
         }
+        */
 
         getSupportActionBar().setSelectedNavigationItem(3);
     }
@@ -221,11 +224,13 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
 
     @Override
     public void onTeamsDrillDownInteraction(String id) {
+        /*
         try {
             Helpers.updateFileState(getContextViewModel(), this, Config.TC_CacheFileKey);
         } catch (IOException e) {
             Log.e("TeamsFeatureActivity::onTeamsDrillDownInteraction", e.getMessage(), e);
         }
+        */
     }
 
     @Override
@@ -280,7 +285,7 @@ public class TeamsFeatureActivity extends ActionBarActivity implements ActionBar
     private void showMessage(String message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(message);
-        builder.setPositiveButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(getString(R.string.button_continue), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();

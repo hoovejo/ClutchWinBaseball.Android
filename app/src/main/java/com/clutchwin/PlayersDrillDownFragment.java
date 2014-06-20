@@ -14,7 +14,6 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.clutchwin.adapters.PlayersDrillDownAdapter;
-import com.clutchwin.cachetasks.PlayersDrillDownCacheAsyncTask;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
@@ -35,7 +34,6 @@ import java.util.List;
   */
 public class PlayersDrillDownFragment extends Fragment implements AbsListView.OnItemClickListener,
          PlayersDrillDownAsyncTask.OnLoadCompleteListener,
-         PlayersDrillDownCacheAsyncTask.OnLoadCompleteListener,
          IOnShowFragment {
 
     private OnFragmentInteractionListener mListener;
@@ -73,42 +71,50 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
 
         Context activity = getActivity();
 
-        PlayersDrillDownCacheAsyncTask cacheTask;
-        cacheTask = (PlayersDrillDownCacheAsyncTask) getApp().getTask(Config.PDD_CacheFileKey);
+        mAdapter = new PlayersDrillDownAdapter(activity,
+                R.layout.listview_playersdrilldown_row, getDrillDownViewModel().ITEMS);
 
         PlayersDrillDownAsyncTask serviceTask;
         serviceTask = (PlayersDrillDownAsyncTask) getApp().getTask(Config.PDD_SvcTaskKey);
 
-        // if we are constructing and have no active tasks in the background, ensure no other orphan
-        // tasks left the viewModel as busy on an orientation change
-        if (cacheTask == null && serviceTask == null) {
-            getDrillDownViewModel().setIsBusy(false);
-        }
-
-        if (getDrillDownViewModel().ITEMS.isEmpty() && !getDrillDownViewModel().getIsBusy()) {
-
-            if (Helpers.checkFileExists(activity, Config.PDD_CacheFileKey)) {
-                PlayersDrillDownCacheAsyncTask cacheAsyncTask = new PlayersDrillDownCacheAsyncTask();
-
-                getApp().registerTask(Config.PDD_CacheFileKey, cacheAsyncTask);
-                cacheAsyncTask.setOnCompleteListener(this);
-                getDrillDownViewModel().setIsBusy(true);
-                getProgressDialog().show();
-                cacheAsyncTask.execute();
-            }
-        }
-
-        mAdapter = new PlayersDrillDownAdapter(activity,
-                R.layout.listview_playersdrilldown_row, getDrillDownViewModel().ITEMS);
-
         // Hook back up to running tasks if this fragment was recreated in the middle of a running task
-        if (cacheTask != null) {
-            getProgressDialog().show();
-            cacheTask.setOnCompleteListener(this);
-        }
         if (serviceTask != null) {
             getProgressDialog().show();
             serviceTask.setOnCompleteListener(this);
+        } else {
+            // if we are constructing and have no active tasks in the background, ensure no other orphan
+            // tasks left the viewModel as busy on an orientation change
+            getDrillDownViewModel().setIsBusy(false);
+
+            if(getDrillDownViewModel().ITEMS.isEmpty() ) {
+                initiateServiceCall();
+            }
+        }
+    }
+
+    private void initiateServiceCall(){
+        boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
+
+        if (getContextViewModel().playersDrillDownServiceCallAllowed()) {
+            if (netAvailable) {
+                setEmptyText(getString(R.string.no_search_results));
+                PlayersDrillDownAsyncTask task = new PlayersDrillDownAsyncTask();
+
+                getApp().registerTask(Config.PDD_SvcTaskKey, task);
+                task.setOnCompleteListener(this);
+                getDrillDownViewModel().setIsBusy(true);
+                getProgressDialog().show();
+                task.execute();
+
+            } else {
+                if (null != mListener) {
+                    mListener.onPlayersDrillDownInteractionFail(Config.NoInternet);
+                }
+            }
+        } else {
+            //likely new session and tabbed to results tab
+            setEmptyText(getString(R.string.p_select_results_first));
+            mAdapter.notifyDataSetChanged();
         }
     }
 
@@ -122,9 +128,16 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
         ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
 
         TextView emptyText = (TextView) view.findViewById(android.R.id.empty);
-        emptyText.setText(getString(R.string.no_search_results));
-        mListView.setEmptyView(emptyText);
-        emptyText.setVisibility(TextView.INVISIBLE);
+
+        if(getDrillDownViewModel().ITEMS.isEmpty() ) {
+            emptyText.setText(getString(R.string.p_select_results_first));
+            mListView.setEmptyView(emptyText);
+            emptyText.setVisibility(TextView.VISIBLE);
+        } else {
+            emptyText.setText(getString(R.string.no_search_results));
+            mListView.setEmptyView(emptyText);
+            emptyText.setVisibility(TextView.INVISIBLE);
+        }
 
         return view;
     }
@@ -143,6 +156,13 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
     public void onDetach() {
         super.onDetach();
         mListener = null;
+
+        PlayersDrillDownAsyncTask task;
+        task = (PlayersDrillDownAsyncTask) getApp().getTask(Config.PDD_SvcTaskKey);
+        if (task != null) {
+            task.setOnCompleteListener(null);
+        }
+
         // kill any progress dialogs if we are being destroyed
         dismissProgressDialog();
     }
@@ -162,10 +182,12 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
      * to supply the text it should use.
      */
     public void setEmptyText(CharSequence emptyText) {
-        View emptyView = mListView.getEmptyView();
+        if(mListView != null) {
+            View emptyView = mListView.getEmptyView();
 
-        if (emptyText instanceof String) {
-            ((TextView) emptyView).setText(emptyText);
+            if (emptyText instanceof String) {
+                ((TextView) emptyView).setText(emptyText);
+            }
         }
     }
 
@@ -215,44 +237,11 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
         }
     }
 
-    @Override
-    public void onPlayersDrillDownCacheComplete(List<PlayersDrillDownViewModel.PlayersDrillDown> result) {
-        PlayersDrillDownCacheAsyncTask cacheAsyncTask;
-        cacheAsyncTask = (PlayersDrillDownCacheAsyncTask) getApp().getTask(Config.PDD_CacheFileKey);
-        if (cacheAsyncTask != null) {
-            cacheAsyncTask.setOnCompleteListener(null);
-        }
-        getApp().unregisterTask(Config.PDD_CacheFileKey);
-
-        getDrillDownViewModel().updateList(result);
-        mAdapter.notifyDataSetChanged();
-        getDrillDownViewModel().setIsBusy(false);
-        dismissProgressDialog();
-    }
-
-    @Override
-    public void onPlayersDrillDownCacheFailure() {
-        PlayersDrillDownCacheAsyncTask cacheAsyncTask;
-        cacheAsyncTask = (PlayersDrillDownCacheAsyncTask) getApp().getTask(Config.PDD_CacheFileKey);
-        if (cacheAsyncTask != null) {
-            cacheAsyncTask.setOnCompleteListener(null);
-        }
-        getApp().unregisterTask(Config.PDD_CacheFileKey);
-        getDrillDownViewModel().setIsBusy(false);
-        dismissProgressDialog();
-
-        if (null != mListener) {
-            // Notify the active callbacks interface (the activity, if the
-            // fragment is attached to one) that a failure has happened.
-            mListener.onPlayersDrillDownInteractionFail("");
-        }
-    }
-
     public void onShowedFragment() {
 
         boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
 
-        if (getContextViewModel().shouldExecutePlayersDrillDownSearch(netAvailable) && !getDrillDownViewModel().getIsBusy()) {
+        if (!getDrillDownViewModel().getIsBusy() && getContextViewModel().shouldExecutePlayersDrillDownSearch(netAvailable) ) {
             if (netAvailable) {
                 setEmptyText(getString(R.string.no_search_results));
                 PlayersDrillDownAsyncTask task = new PlayersDrillDownAsyncTask();

@@ -4,13 +4,11 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.clutchwin.common.Config;
-import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.TeamsFranchisesViewModel;
 
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -36,6 +34,7 @@ public class TeamsFranchisesAsyncTask extends AsyncTask<Void, Void, List<TeamsFr
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
             list = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), TeamsFranchisesViewModel.Franchise[].class));
 
+            /*
             try {
                 if(list != null && list.size() > 0 ) {
                     Helpers.writeListToInternalStorage(list, Config.TF_CacheFileKey);
@@ -45,6 +44,7 @@ public class TeamsFranchisesAsyncTask extends AsyncTask<Void, Void, List<TeamsFr
             } catch (IOException e) {
                 Log.e("TeamsFranchisesAsyncTask::writeListToInternalStorage", e.getMessage(), e);
             }
+            */
 
         } catch (Exception e) {
             Log.e("TeamsFranchisesAsyncTask::doInBackground", e.getMessage(), e);

@@ -5,14 +5,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 import android.view.MenuItem;
 
 import com.clutchwin.common.Config;
-import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
-
-import java.io.IOException;
 
 public class PlayersTeamsActivity extends FragmentActivity implements PlayersTeamsFragment.OnFragmentInteractionListener {
 
@@ -52,11 +48,13 @@ public class PlayersTeamsActivity extends FragmentActivity implements PlayersTea
         playersContextViewModel.setTeamId(id);
         playersContextViewModel.setVoteLoadBatters(true);
 
+        /*
         try {
             Helpers.updateFileState(playersContextViewModel, this, Config.PC_CacheFileKey);
         } catch (IOException e) {
             Log.e("PlayersTeamsActivity::onPlayersTeamsInteraction", e.getMessage(), e);
         }
+        */
 
         Intent i = new Intent(this, PlayersFeatureActivity.class);
         startActivity(i);
@@ -77,11 +75,12 @@ public class PlayersTeamsActivity extends FragmentActivity implements PlayersTea
     private void showMessage(String message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(message);
-        builder.setPositiveButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(getString(R.string.button_continue), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
             }
         });
+        builder.show();
     }
 }

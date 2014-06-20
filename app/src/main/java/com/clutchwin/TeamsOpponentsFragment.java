@@ -14,15 +14,12 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.clutchwin.adapters.TeamsFranchisesAdapter;
-import com.clutchwin.cachetasks.TeamsOpponentsCacheAsyncTask;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.viewmodels.TeamsContextViewModel;
 import com.clutchwin.viewmodels.TeamsFranchisesViewModel;
 import com.clutchwin.viewmodels.TeamsOpponentsViewModel;
-
-import java.util.List;
 
 /**
  * A fragment representing a list of Items.
@@ -34,7 +31,6 @@ import java.util.List;
  * interface.
  */
 public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnItemClickListener,
-        TeamsOpponentsCacheAsyncTask.OnLoadCompleteListener,
         IOnShowFragment {
 
     private OnFragmentInteractionListener mListener;
@@ -72,39 +68,9 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
 
         Context activity = getActivity();
 
-        TeamsOpponentsCacheAsyncTask cacheTask;
-        cacheTask = (TeamsOpponentsCacheAsyncTask) getApp().getTask(Config.TO_CacheTaskKey);
-
-        // if we are constructing and have no active tasks in the background, ensure no other orphan
-        // tasks left the viewModel as busy on an orientation change
-        if(cacheTask == null){
-            getOpponentsViewModel().setIsBusy(false);
-        }
-
-        if(getOpponentsViewModel().ITEMS.isEmpty() &&
-                !getOpponentsViewModel().getIsBusy()
-                && getContextViewModel().getFranchiseId() != null) {
-
-            if(Helpers.checkFileExists(activity, Config.TF_CacheFileKey)) {
-                TeamsOpponentsCacheAsyncTask cacheAsyncTask = new TeamsOpponentsCacheAsyncTask();
-
-                getApp().registerTask(Config.TO_CacheTaskKey, cacheAsyncTask);
-                cacheAsyncTask.setOnCompleteListener(this);
-                getOpponentsViewModel().setIsBusy(true);
-                getProgressDialog().show();
-                cacheAsyncTask.execute();
-            }
-        }
-
         mAdapter = new TeamsFranchisesAdapter(activity,
                 R.layout.listview_teamsfranchises_row,
                 getOpponentsViewModel().ITEMS);
-
-        // Hook back up to running tasks if this fragment was recreated in the middle of a running task
-        if (cacheTask != null) {
-            getProgressDialog().show();
-             cacheTask.setOnCompleteListener(this);
-        }
     }
 
     @Override
@@ -120,9 +86,16 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
         mListView.setOnItemClickListener(this);
 
         TextView emptyText = (TextView) view.findViewById(android.R.id.empty);
-        emptyText.setText(getString(R.string.no_search_results));
-        mListView.setEmptyView(emptyText);
-        emptyText.setVisibility(TextView.INVISIBLE);
+
+        if(getOpponentsViewModel().ITEMS.isEmpty() ) {
+            emptyText.setText(getString(R.string.select_team_first));
+            mListView.setEmptyView(emptyText);
+            emptyText.setVisibility(TextView.VISIBLE);
+        } else {
+            emptyText.setText(getString(R.string.no_search_results));
+            mListView.setEmptyView(emptyText);
+            emptyText.setVisibility(TextView.INVISIBLE);
+        }
 
         return view;
     }
@@ -161,10 +134,12 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
      * to supply the text it should use.
      */
     public void setEmptyText(CharSequence emptyText) {
-        View emptyView = mListView.getEmptyView();
+        if(mListView != null) {
+            View emptyView = mListView.getEmptyView();
 
-        if (emptyText instanceof String) {
-            ((TextView) emptyView).setText(emptyText);
+            if (emptyText instanceof String) {
+                ((TextView) emptyView).setText(emptyText);
+            }
         }
     }
 
@@ -179,49 +154,17 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
         public void onTeamsOpponentsInteractionFail(String type);
     }
 
-    @Override
-    public void onTeamsOpponentsCacheComplete(List<TeamsFranchisesViewModel.Franchise> result) {
-        TeamsOpponentsCacheAsyncTask cacheAsyncTask;
-        cacheAsyncTask = (TeamsOpponentsCacheAsyncTask) getApp().getTask(Config.TO_CacheTaskKey);
-        if (cacheAsyncTask != null) {
-            cacheAsyncTask.setOnCompleteListener(null);
-        }
-        getApp().unregisterTask(Config.TO_CacheTaskKey);
-
-        getOpponentsViewModel().filterList(
-                result,
-                getContextViewModel().getFranchiseId());
-
-        mAdapter.notifyDataSetChanged();
-        getOpponentsViewModel().setIsBusy(false);
-        dismissProgressDialog();
-    }
-
-    @Override
-    public void onTeamsOpponentsCacheFailure() {
-        TeamsOpponentsCacheAsyncTask cacheAsyncTask;
-        cacheAsyncTask = (TeamsOpponentsCacheAsyncTask) getApp().getTask(Config.TO_CacheTaskKey);
-        if (cacheAsyncTask != null) {
-            cacheAsyncTask.setOnCompleteListener(null);
-        }
-        getApp().unregisterTask(Config.TO_CacheTaskKey);
-        dismissProgressDialog();
-        if (null != mListener) {
-             // Notify the active callbacks interface (the activity, if the
-             // fragment is attached to one) that a failure has happened.
-             mListener.onTeamsOpponentsInteractionFail("");
-         }
-    }
-
     public void onShowedFragment(){
 
         boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
 
-        if(getContextViewModel().shouldFilterOpponents(netAvailable) &&
-                !getOpponentsViewModel().getIsBusy()) {
+        if(!getOpponentsViewModel().getIsBusy() &&
+            !getFranchisesViewModel().ITEMS.isEmpty() &&
+            getContextViewModel().shouldFilterOpponents(netAvailable)) {
 
             if(netAvailable) {
 
+                setEmptyText(getString(R.string.no_search_results));
                 getOpponentsViewModel().setIsBusy(true);
                 getOpponentsViewModel().filterList(getFranchisesViewModel().ITEMS,
                         getContextViewModel().getFranchiseId());

@@ -1,20 +1,15 @@
 package com.clutchwin.common;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
 import com.clutchwin.ClutchWinApplication;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+
 
 public class Helpers {
 
@@ -24,6 +19,7 @@ public class Helpers {
         return networkInfo != null;
     }
 
+    /*
     // private - already passed in the app context
     private static void writeObjectInInternalStorage(Context context, String filename, Object object) throws IOException {
         FileOutputStream fileOutputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
@@ -32,12 +28,15 @@ public class Helpers {
         objectOutputStream.close();
         fileOutputStream.close();
     }
+    */
 
     public static Object readObjectFromInternalStorage(String filename) throws IOException, ClassNotFoundException{
         Context appContext = ClutchWinApplication.getInstance().getApplicationContext();
         FileInputStream fileInputStream = appContext.openFileInput(filename);
         return new ObjectInputStream(fileInputStream).readObject();
     }
+
+    /*
 
     public static void updateFileState(Object object, Context context, String fileName) throws IOException{
         Context appContext = context.getApplicationContext();
@@ -100,4 +99,5 @@ public class Helpers {
         editor.commit();
 
     }
+    */
 }

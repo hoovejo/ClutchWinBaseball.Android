@@ -5,14 +5,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 import android.view.MenuItem;
 
 import com.clutchwin.common.Config;
-import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
-
-import java.io.IOException;
 
 public class PlayersYearsActivity extends FragmentActivity implements PlayersYearsFragment.OnFragmentInteractionListener {
 
@@ -51,11 +47,13 @@ public class PlayersYearsActivity extends FragmentActivity implements PlayersYea
         PlayersContextViewModel playersContextViewModel = ClutchWinApplication.getPlayersContextViewModel();
         playersContextViewModel.setYearId(id);
 
+        /*
         try {
             Helpers.updateFileState(playersContextViewModel, this, Config.PC_CacheFileKey);
         } catch (IOException e) {
             Log.e("PlayersYearsActivity::onPlayersYearsInteraction", e.getMessage(), e);
         }
+        */
 
         Intent i = new Intent(this, PlayersFeatureActivity.class);
         startActivity(i);
@@ -76,11 +74,12 @@ public class PlayersYearsActivity extends FragmentActivity implements PlayersYea
     private void showMessage(String message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(message);
-        builder.setPositiveButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(getString(R.string.button_continue), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
             }
         });
+        builder.show();
     }
 }

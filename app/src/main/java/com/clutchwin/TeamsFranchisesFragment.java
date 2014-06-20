@@ -14,7 +14,6 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.clutchwin.adapters.TeamsFranchisesAdapter;
-import com.clutchwin.cachetasks.TeamsFranchisesCacheAsyncTask;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.service.TeamsFranchisesAsyncTask;
@@ -33,8 +32,7 @@ import java.util.List;
  * interface.
  */
 public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnItemClickListener,
-        TeamsFranchisesAsyncTask.OnLoadCompleteListener,
-        TeamsFranchisesCacheAsyncTask.OnLoadCompleteListener {
+        TeamsFranchisesAsyncTask.OnLoadCompleteListener {
 
     private OnFragmentInteractionListener mListener;
 
@@ -71,52 +69,44 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
 
         Context activity = getActivity();
 
-        if (!getApp().getHasLoadedFranchisesOnce()) {
-            initiateServiceCall();
-        }
-
-        TeamsFranchisesCacheAsyncTask cacheTask;
-        cacheTask = (TeamsFranchisesCacheAsyncTask) getApp().getTask(Config.TF_CacheFileKey);
+        mAdapter = new TeamsFranchisesAdapter(activity, R.layout.listview_teamsfranchises_row,
+                getFranchisesViewModel().ITEMS);
 
         TeamsFranchisesAsyncTask serviceTask;
         serviceTask = (TeamsFranchisesAsyncTask) getApp().getTask(Config.TF_SvcTaskKey);
 
-        // if we are constructing and have no active tasks in the background, ensure no other orphan
-        // tasks left the viewModel as busy on an orientation change
-        if(cacheTask == null && serviceTask == null){
-            getFranchisesViewModel().setIsBusy(false);
-        }
-
-        if (getFranchisesViewModel().ITEMS.isEmpty() && !getFranchisesViewModel().getIsBusy()) {
-
-            if (Helpers.checkFileExists(activity, Config.TF_CacheFileKey)) {
-                TeamsFranchisesCacheAsyncTask cacheAsyncTask = new TeamsFranchisesCacheAsyncTask();
-
-                getApp().registerTask(Config.TF_CacheFileKey, cacheAsyncTask);
-                cacheAsyncTask.setOnCompleteListener(this);
-                getFranchisesViewModel().setIsBusy(true);
-                getProgressDialog().show();
-                cacheAsyncTask.execute();
-
-            } else {
-                if (serviceTask == null) {
-                    initiateServiceCall();
-                }
-            }
-        }
-
-        mAdapter = new TeamsFranchisesAdapter(activity,
-                R.layout.listview_teamsfranchises_row,
-                getFranchisesViewModel().ITEMS);
-
         // Hook back up to running tasks if this fragment was recreated in the middle of a running task
-        if (cacheTask != null) {
-            getProgressDialog().show();
-            cacheTask.setOnCompleteListener(this);
-        }
         if (serviceTask != null) {
             getProgressDialog().show();
             serviceTask.setOnCompleteListener(this);
+        } else {
+            // if we are constructing and have no active tasks in the background, ensure no other orphan
+            // tasks left the viewModel as busy on an orientation change
+            getFranchisesViewModel().setIsBusy(false);
+
+            if (!getApp().getHasLoadedFranchisesOnce() || getFranchisesViewModel().ITEMS.isEmpty() ) {
+                initiateServiceCall();
+            }
+        }
+    }
+
+    private void initiateServiceCall() {
+
+        boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
+
+        if (netAvailable) {
+            TeamsFranchisesAsyncTask task = new TeamsFranchisesAsyncTask();
+
+            getApp().registerTask(Config.TF_SvcTaskKey, task);
+            task.setOnCompleteListener(this);
+            getFranchisesViewModel().setIsBusy(true);
+            getProgressDialog().show();
+            task.execute();
+
+        } else {
+            if (null != mListener) {
+                mListener.onTeamsFranchisesInteractionFail(Config.NoInternet);
+            }
         }
     }
 
@@ -154,6 +144,13 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
     public void onDetach() {
         super.onDetach();
         mListener = null;
+
+        TeamsFranchisesAsyncTask task;
+        task = (TeamsFranchisesAsyncTask) getApp().getTask(Config.TF_SvcTaskKey);
+        if (task != null) {
+            task.setOnCompleteListener(null);
+        }
+
         // kill any progress dialogs if we are being destroyed
         dismissProgressDialog();
     }
@@ -174,10 +171,12 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
      * to supply the text it should use.
      */
     public void setEmptyText(CharSequence emptyText) {
-        View emptyView = mListView.getEmptyView();
+        if(mListView != null) {
+            View emptyView = mListView.getEmptyView();
 
-        if (emptyText instanceof TextView) {
-            ((TextView) emptyView).setText(emptyText);
+            if (emptyText instanceof String) {
+                ((TextView) emptyView).setText(emptyText);
+            }
         }
     }
 
@@ -226,55 +225,6 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that a failure has happened.
             mListener.onTeamsFranchisesInteractionFail("");
-        }
-    }
-
-    @Override
-    public void onTeamsFranchisesCacheComplete(List<TeamsFranchisesViewModel.Franchise> result) {
-        TeamsFranchisesCacheAsyncTask cacheAsyncTask;
-        cacheAsyncTask = (TeamsFranchisesCacheAsyncTask) getApp().getTask(Config.TF_CacheFileKey);
-        if (cacheAsyncTask != null) {
-            cacheAsyncTask.setOnCompleteListener(null);
-        }
-        getApp().unregisterTask(Config.TF_CacheFileKey);
-
-        getFranchisesViewModel().updateList(result);
-        mAdapter.notifyDataSetChanged();
-        getFranchisesViewModel().setIsBusy(false);
-        dismissProgressDialog();
-    }
-
-    @Override
-    public void onTeamsFranchisesCacheFailure() {
-        TeamsFranchisesCacheAsyncTask cacheAsyncTask;
-        cacheAsyncTask = (TeamsFranchisesCacheAsyncTask) getApp().getTask(Config.TF_CacheFileKey);
-        if (cacheAsyncTask != null) {
-            cacheAsyncTask.setOnCompleteListener(null);
-        }
-        getApp().unregisterTask(Config.TF_CacheFileKey);
-        getFranchisesViewModel().setIsBusy(false);
-        dismissProgressDialog();
-        //if any failure occurs loading cache, just call the service for fresh franchises
-        initiateServiceCall();
-    }
-
-    private void initiateServiceCall() {
-
-        boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
-
-        if (netAvailable) {
-            TeamsFranchisesAsyncTask task = new TeamsFranchisesAsyncTask();
-
-            getApp().registerTask(Config.TF_SvcTaskKey, task);
-            task.setOnCompleteListener(this);
-            getFranchisesViewModel().setIsBusy(true);
-            getProgressDialog().show();
-            task.execute();
-
-        } else {
-            if (null != mListener) {
-                mListener.onTeamsFranchisesInteractionFail(Config.NoInternet);
-            }
         }
     }
 

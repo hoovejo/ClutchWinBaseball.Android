@@ -5,13 +5,11 @@ import android.util.Log;
 
 import com.clutchwin.ClutchWinApplication;
 import com.clutchwin.common.Config;
-import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.PlayersBattersViewModel;
 
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -40,6 +38,7 @@ public class PlayersBattersAsyncTask extends AsyncTask<Void, Void, List<PlayersB
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
             list = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), PlayersBattersViewModel.Batter[].class));
 
+            /*
             try {
                 if(list != null && list.size() > 0) {
                     Helpers.writeListToInternalStorage(list, Config.PB_CacheFileKey);
@@ -49,6 +48,7 @@ public class PlayersBattersAsyncTask extends AsyncTask<Void, Void, List<PlayersB
             } catch (IOException e) {
                 Log.e("PlayersBattersAsyncTask::writeListToInternalStorage", e.getMessage(), e);
             }
+            */
 
         } catch (Exception e) {
             Log.e("PlayersBattersAsyncTask::doInBackground", e.getMessage(), e);

@@ -15,7 +15,6 @@ import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-import com.clutchwin.cachetasks.PlayersBattersCacheAsyncTask;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.service.PlayersBattersAsyncTask;
@@ -34,8 +33,7 @@ import java.util.List;
  * interface.
  */
 public class PlayersBattersFragment extends Fragment implements AbsListView.OnItemClickListener,
-        PlayersBattersAsyncTask.OnLoadCompleteListener,
-        PlayersBattersCacheAsyncTask.OnLoadCompleteListener {
+        PlayersBattersAsyncTask.OnLoadCompleteListener{
 
     private OnFragmentInteractionListener mListener;
     /**
@@ -70,54 +68,48 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
 
         Context activity = getActivity();
 
-        PlayersBattersCacheAsyncTask cacheTask;
-        cacheTask = (PlayersBattersCacheAsyncTask)getApp().getTask(Config.PB_CacheFileKey);
-
-        PlayersBattersAsyncTask serviceTask;
-        serviceTask = (PlayersBattersAsyncTask)getApp().getTask(Config.PB_SvcTaskKey);
-
-        // if we are constructing and have no active tasks in the background, ensure no other orphan
-        // tasks left the viewModel as busy on an orientation change
-        if(cacheTask == null && serviceTask == null){
-            getBattersViewModel().setIsBusy(false);
-        }
-
-        if(getBattersViewModel().ITEMS.isEmpty() && !getBattersViewModel().getIsBusy()) {
-
-            if(cacheTask == null && Helpers.checkFileExists(activity, Config.PB_CacheFileKey)) {
-
-                PlayersBattersCacheAsyncTask cacheAsyncTask = new PlayersBattersCacheAsyncTask();
-
-                getApp().registerTask(Config.PB_CacheFileKey, cacheAsyncTask);
-                cacheAsyncTask.setOnCompleteListener(this);
-                getBattersViewModel().setIsBusy(true);
-                getProgressDialog().show();
-                cacheAsyncTask.execute();
-
-            } else {
-                if(serviceTask == null) {
-                    initiateServiceCall(false);
-                }
-            }
-
-        }else {
-            if(serviceTask == null) {
-                initiateServiceCall(false);
-            }
-        }
-
         mAdapter = new ArrayAdapter<PlayersBattersViewModel.Batter>(activity,
                 android.R.layout.simple_list_item_1, android.R.id.text1,
                 getBattersViewModel().ITEMS);
 
+        PlayersBattersAsyncTask serviceTask;
+        serviceTask = (PlayersBattersAsyncTask)getApp().getTask(Config.PB_SvcTaskKey);
+
         // Hook back up to running tasks if this fragment was recreated in the middle of a running task
-        if(cacheTask != null){
-            getProgressDialog().show();
-            cacheTask.setOnCompleteListener(this);
-        }
-        if(serviceTask != null){
+        if (serviceTask != null) {
             getProgressDialog().show();
             serviceTask.setOnCompleteListener(this);
+        } else {
+
+            // if we are constructing and have no active tasks in the background, ensure no other orphan
+            // tasks left the viewModel as busy on an orientation change
+            getBattersViewModel().setIsBusy(false);
+
+            initiateServiceCall();
+        }
+    }
+
+    private void initiateServiceCall(){
+
+        boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
+
+        if(getContextViewModel().shouldExecuteLoadBatters(netAvailable)) {
+            if(netAvailable) {
+                setEmptyText(getString(R.string.no_search_results));
+
+                PlayersBattersAsyncTask task = new PlayersBattersAsyncTask();
+
+                getApp().registerTask(Config.PB_SvcTaskKey, task);
+                task.setOnCompleteListener(this);
+                getBattersViewModel().setIsBusy(true);
+                getProgressDialog().show();
+                task.execute();
+
+            } else {
+                if (null != mListener) {
+                    mListener.onPlayersBattersInteractionFail(Config.NoInternet);
+                }
+            }
         }
     }
 
@@ -160,9 +152,16 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
         }
 
         TextView emptyText = (TextView) view.findViewById(android.R.id.empty);
-        emptyText.setText(getString(R.string.select_season_team));
-        mListView.setEmptyView(emptyText);
-        //emptyText.setVisibility(TextView.INVISIBLE);
+
+        if(getBattersViewModel().ITEMS.isEmpty() ) {
+            emptyText.setText(getString(R.string.select_season_team));
+            mListView.setEmptyView(emptyText);
+            emptyText.setVisibility(TextView.VISIBLE);
+        } else {
+            emptyText.setText(getString(R.string.no_search_results));
+            mListView.setEmptyView(emptyText);
+            emptyText.setVisibility(TextView.INVISIBLE);
+        }
 
         return view;
     }
@@ -181,6 +180,13 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
     public void onDetach() {
         super.onDetach();
         mListener = null;
+
+        PlayersBattersAsyncTask task;
+        task = (PlayersBattersAsyncTask)getApp().getTask(Config.PB_SvcTaskKey);
+        if(task != null){
+            task.setOnCompleteListener(null);
+        }
+
         // kill any progress dialogs if we are being destroyed
         dismissProgressDialog();
     }
@@ -253,59 +259,6 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that a failure has happened.
             mListener.onPlayersBattersInteractionFail("");
-        }
-    }
-
-    @Override
-    public void onPlayersBattersCacheComplete(List<PlayersBattersViewModel.Batter> result){
-        PlayersBattersCacheAsyncTask cacheAsyncTask;
-        cacheAsyncTask = (PlayersBattersCacheAsyncTask)getApp().getTask(Config.PB_CacheFileKey);
-        if(cacheAsyncTask != null){
-            cacheAsyncTask.setOnCompleteListener(null);
-        }
-        getApp().unregisterTask(Config.PB_CacheFileKey);
-
-        getBattersViewModel().updateList(result);
-        ((ArrayAdapter<?>) mAdapter).notifyDataSetChanged();
-        getBattersViewModel().setIsBusy(false);
-        dismissProgressDialog();
-    }
-
-    @Override
-    public void onPlayersBattersCacheFailure(){
-        PlayersBattersCacheAsyncTask cacheAsyncTask;
-        cacheAsyncTask = (PlayersBattersCacheAsyncTask)getApp().getTask(Config.PB_CacheFileKey);
-        if(cacheAsyncTask != null){
-            cacheAsyncTask.setOnCompleteListener(null);
-        }
-        getApp().unregisterTask(Config.PB_CacheFileKey);
-        getBattersViewModel().setIsBusy(false);
-        dismissProgressDialog();
-        //if any failure occurs loading cache, just call the service for fresh seasons
-        initiateServiceCall(true);
-    }
-
-    private void initiateServiceCall(boolean force){
-
-        boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
-
-        if(getContextViewModel().shouldExecuteLoadBatters(netAvailable) || force) {
-            if(netAvailable) {
-                setEmptyText(getString(R.string.no_search_results));
-
-                PlayersBattersAsyncTask task = new PlayersBattersAsyncTask();
-
-                getApp().registerTask(Config.PB_SvcTaskKey, task);
-                task.setOnCompleteListener(this);
-                getBattersViewModel().setIsBusy(true);
-                getProgressDialog().show();
-                task.execute();
-
-            } else {
-                if (null != mListener) {
-                    mListener.onPlayersBattersInteractionFail(Config.NoInternet);
-                }
-            }
         }
     }
 

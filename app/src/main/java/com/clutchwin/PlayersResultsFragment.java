@@ -14,7 +14,6 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.clutchwin.adapters.PlayersResultsAdapter;
-import com.clutchwin.cachetasks.PlayersResultsCacheAsyncTask;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
@@ -35,7 +34,6 @@ import java.util.List;
   */
 public class PlayersResultsFragment extends Fragment implements AbsListView.OnItemClickListener,
          PlayersResultsAsyncTask.OnLoadCompleteListener,
-         PlayersResultsCacheAsyncTask.OnLoadCompleteListener,
          IOnShowFragment {
 
      private OnFragmentInteractionListener mListener;
@@ -73,44 +71,53 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
 
          Context activity = getActivity();
 
-         PlayersResultsCacheAsyncTask cacheTask;
-         cacheTask = (PlayersResultsCacheAsyncTask)getApp().getTask(Config.PR_CacheFileKey);
+         mAdapter = new PlayersResultsAdapter(activity,
+                 R.layout.listview_playersresults_row, getResultsViewModel().ITEMS);
 
          PlayersResultsAsyncTask serviceTask;
          serviceTask = (PlayersResultsAsyncTask)getApp().getTask(Config.PR_SvcTaskKey);
 
-         // if we are constructing and have no active tasks in the background, ensure no other orphan
-         // tasks left the viewModel as busy on an orientation change
-         if(cacheTask == null && serviceTask == null){
+         // Hook back up to running tasks if this fragment was recreated in the middle of a running task
+         if (serviceTask != null) {
+             getProgressDialog().show();
+             serviceTask.setOnCompleteListener(this);
+         } else {
+
+             // if we are constructing and have no active tasks in the background, ensure no other orphan
+             // tasks left the viewModel as busy on an orientation change
              getResultsViewModel().setIsBusy(false);
-         }
 
-         if(getResultsViewModel().ITEMS.isEmpty() && !getResultsViewModel().getIsBusy()) {
-
-             if(Helpers.checkFileExists(activity, Config.PR_CacheFileKey)) {
-                 PlayersResultsCacheAsyncTask cacheAsyncTask = new PlayersResultsCacheAsyncTask();
-
-                 getApp().registerTask(Config.PR_CacheFileKey, cacheAsyncTask);
-                 cacheAsyncTask.setOnCompleteListener(this);
-                 getResultsViewModel().setIsBusy(true);
-                 getProgressDialog().show();
-                 cacheAsyncTask.execute();
+             if(getResultsViewModel().ITEMS.isEmpty() ) {
+                 initiateServiceCall();
              }
          }
-
-         mAdapter = new PlayersResultsAdapter(activity,
-                 R.layout.listview_playersresults_row, getResultsViewModel().ITEMS);
-
-         // Hook back up to running tasks if this fragment was recreated in the middle of a running task
-         if(cacheTask != null){
-             getProgressDialog().show();
-              cacheTask.setOnCompleteListener(this);
-         }
-         if(serviceTask != null){
-             getProgressDialog().show();
-              serviceTask.setOnCompleteListener(this);
-         }
      }
+
+    private void initiateServiceCall(){
+        boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
+
+        if(getContextViewModel().playersResultsServiceCallAllowed()) {
+            if(netAvailable) {
+                setEmptyText(getString(R.string.no_search_results));
+                PlayersResultsAsyncTask task = new PlayersResultsAsyncTask();
+
+                getApp().registerTask(Config.PR_SvcTaskKey, task);
+                task.setOnCompleteListener(this);
+                getResultsViewModel().setIsBusy(true);
+                getProgressDialog().show();
+                task.execute();
+
+            } else {
+                if (null != mListener) {
+                    mListener.onPlayersResultsInteractionFail(Config.NoInternet);
+                }
+            }
+        } else {
+            //likely new session and tabbed to results tab
+            setEmptyText(getString(R.string.select_pitcher_first));
+            mAdapter.notifyDataSetChanged();
+        }
+    }
 
      @Override
      public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -125,9 +132,16 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
          mListView.setOnItemClickListener(this);
 
          TextView emptyText = (TextView) view.findViewById(android.R.id.empty);
-         emptyText.setText(getString(R.string.no_search_results));
-         mListView.setEmptyView(emptyText);
-         emptyText.setVisibility(TextView.INVISIBLE);
+
+         if(getResultsViewModel().ITEMS.isEmpty() ) {
+             emptyText.setText(getString(R.string.select_pitcher_first));
+             mListView.setEmptyView(emptyText);
+             emptyText.setVisibility(TextView.VISIBLE);
+         } else {
+             emptyText.setText(getString(R.string.no_search_results));
+             mListView.setEmptyView(emptyText);
+             emptyText.setVisibility(TextView.INVISIBLE);
+         }
 
          return view;
      }
@@ -146,6 +160,13 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
      public void onDetach() {
          super.onDetach();
          mListener = null;
+
+         PlayersResultsAsyncTask task;
+         task = (PlayersResultsAsyncTask)getApp().getTask(Config.PR_SvcTaskKey);
+         if(task != null){
+             task.setOnCompleteListener(null);
+         }
+
          // kill any progress dialogs if we are being destroyed
          dismissProgressDialog();
      }
@@ -167,10 +188,12 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
       * to supply the text it should use.
       */
      public void setEmptyText(CharSequence emptyText) {
-         View emptyView = mListView.getEmptyView();
+         if(mListView != null) {
+             View emptyView = mListView.getEmptyView();
 
-         if (emptyText instanceof String) {
-             ((TextView) emptyView).setText(emptyText);
+             if (emptyText instanceof String) {
+                 ((TextView) emptyView).setText(emptyText);
+             }
          }
      }
 
@@ -219,44 +242,11 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
          }
      }
 
-     @Override
-     public void onPlayersResultsCacheComplete(List<PlayersResultsViewModel.PlayersResult> result){
-         PlayersResultsCacheAsyncTask cacheAsyncTask;
-         cacheAsyncTask = (PlayersResultsCacheAsyncTask)getApp().getTask(Config.PR_CacheFileKey);
-         if(cacheAsyncTask != null){
-             cacheAsyncTask.setOnCompleteListener(null);
-         }
-         getApp().unregisterTask(Config.PR_CacheFileKey);
-
-         getResultsViewModel().updateList(result);
-         mAdapter.notifyDataSetChanged();
-         getResultsViewModel().setIsBusy(false);
-         dismissProgressDialog();
-     }
-
-     @Override
-     public void onPlayersResultsCacheFailure(){
-         PlayersResultsCacheAsyncTask cacheAsyncTask;
-         cacheAsyncTask = (PlayersResultsCacheAsyncTask)getApp().getTask(Config.PR_CacheFileKey);
-         if(cacheAsyncTask != null){
-             cacheAsyncTask.setOnCompleteListener(null);
-         }
-         getApp().unregisterTask(Config.PR_CacheFileKey);
-         getResultsViewModel().setIsBusy(false);
-         dismissProgressDialog();
-
-         if (null != mListener) {
-             // Notify the active callbacks interface (the activity, if the
-             // fragment is attached to one) that a failure has happened.
-             mListener.onPlayersResultsInteractionFail("");
-         }
-     }
-
      public void onShowedFragment(){
 
          boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
 
-         if(getContextViewModel().shouldExecutePlayerResultsSearch(netAvailable) && !getResultsViewModel().getIsBusy()) {
+         if(!getResultsViewModel().getIsBusy() && getContextViewModel().shouldExecutePlayerResultsSearch(netAvailable)) {
              if(netAvailable) {
                  setEmptyText(getString(R.string.no_search_results));
                  PlayersResultsAsyncTask task = new PlayersResultsAsyncTask();

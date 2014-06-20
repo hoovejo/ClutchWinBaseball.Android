@@ -14,7 +14,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-import com.clutchwin.cachetasks.PlayersYearsCacheAsyncTask;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.service.PlayersYearsAsyncTask;
@@ -32,8 +31,7 @@ import java.util.List;
   * interface.
   */
 public class PlayersYearsFragment extends Fragment implements AbsListView.OnItemClickListener,
-         PlayersYearsAsyncTask.OnLoadCompleteListener,
-         PlayersYearsCacheAsyncTask.OnLoadCompleteListener {
+         PlayersYearsAsyncTask.OnLoadCompleteListener {
 
      private OnFragmentInteractionListener mListener;
 
@@ -70,53 +68,48 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
 
          Context activity = getActivity();
 
-         if (!getApp().getHasLoadedSeasonsOnce()) {
-             initiateServiceCall();
-         }
-
-         PlayersYearsCacheAsyncTask cacheTask;
-         cacheTask = (PlayersYearsCacheAsyncTask) getApp().getTask(Config.PY_CacheFileKey);
+         mAdapter = new ArrayAdapter<PlayersYearsViewModel.Year>(activity,
+                 android.R.layout.simple_list_item_1, android.R.id.text1, getYearsViewModel().ITEMS);
 
          PlayersYearsAsyncTask serviceTask;
          serviceTask = (PlayersYearsAsyncTask) getApp().getTask(Config.PY_SvcTaskKey);
 
-         // if we are constructing and have no active tasks in the background, ensure no other orphan
-         // tasks left the viewModel as busy on an orientation change
-         if(cacheTask == null && serviceTask == null){
-             getYearsViewModel().setIsBusy(false);
-         }
-
-         if(getYearsViewModel().ITEMS.isEmpty() && !getYearsViewModel().getIsBusy()) {
-
-             if(Helpers.checkFileExists(activity, Config.PY_CacheFileKey)) {
-                 PlayersYearsCacheAsyncTask cacheAsyncTask = new PlayersYearsCacheAsyncTask();
-
-                 getApp().registerTask(Config.PY_CacheFileKey, cacheAsyncTask);
-                 cacheAsyncTask.setOnCompleteListener(this);
-                 getYearsViewModel().setIsBusy(true);
-                 getProgressDialog().show();
-                 cacheAsyncTask.execute();
-
-             } else {
-                 if(serviceTask == null) {
-                     initiateServiceCall();
-                 }
-             }
-         }
-
-         mAdapter = new ArrayAdapter<PlayersYearsViewModel.Year>(activity,
-             android.R.layout.simple_list_item_1, android.R.id.text1, getYearsViewModel().ITEMS);
-
          // Hook back up to running tasks if this fragment was recreated in the middle of a running task
-         if (cacheTask != null) {
-             getProgressDialog().show();
-             cacheTask.setOnCompleteListener(this);
-         }
          if (serviceTask != null) {
              getProgressDialog().show();
              serviceTask.setOnCompleteListener(this);
+         } else {
+             // if we are constructing and have no active tasks in the background, ensure no other orphan
+             // tasks left the viewModel as busy on an orientation change
+             getYearsViewModel().setIsBusy(false);
+
+             if (!getApp().getHasLoadedSeasonsOnce() || getYearsViewModel().ITEMS.isEmpty() ) {
+                 initiateServiceCall();
+             }
          }
      }
+
+    private void initiateServiceCall() {
+
+        boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
+
+        if(netAvailable) {
+            PlayersYearsAsyncTask task = new PlayersYearsAsyncTask();
+
+            getApp().registerTask(Config.PY_SvcTaskKey, task);
+            task.setOnCompleteListener(this);
+            getYearsViewModel().setIsBusy(true);
+            getProgressDialog().show();
+            task.execute();
+
+        } else {
+            if (null != mListener) {
+                // Notify the active callbacks interface (the activity, if the
+                // fragment is attached to one) that a failure has happened.
+                mListener.onPlayersYearsInteractionFail(Config.NoInternet);
+            }
+        }
+    }
 
      @Override
      public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -152,6 +145,13 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
      public void onDetach() {
          super.onDetach();
          mListener = null;
+
+         PlayersYearsAsyncTask task;
+         task = (PlayersYearsAsyncTask) getApp().getTask(Config.PY_SvcTaskKey);
+         if (task != null) {
+             task.setOnCompleteListener(null);
+         }
+
          // kill any progress dialogs if we are being destroyed
          dismissProgressDialog();
      }
@@ -171,10 +171,12 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
       * to supply the text it should use.
       */
      public void setEmptyText(CharSequence emptyText) {
-         View emptyView = mListView.getEmptyView();
+         if(mListView != null) {
+             View emptyView = mListView.getEmptyView();
 
-         if (emptyText instanceof TextView) {
-             ((TextView) emptyView).setText(emptyText);
+             if (emptyText instanceof String) {
+                 ((TextView) emptyView).setText(emptyText);
+             }
          }
      }
 
@@ -222,57 +224,6 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
              // Notify the active callbacks interface (the activity, if the
              // fragment is attached to one) that a failure has happened.
              mListener.onPlayersYearsInteractionFail("");
-         }
-     }
-
-     @Override
-     public void onPlayersYearsCacheComplete(List<PlayersYearsViewModel.Year> result) {
-         PlayersYearsCacheAsyncTask cacheAsyncTask;
-         cacheAsyncTask = (PlayersYearsCacheAsyncTask) getApp().getTask(Config.PY_CacheFileKey);
-         if (cacheAsyncTask != null) {
-             cacheAsyncTask.setOnCompleteListener(null);
-         }
-         getApp().unregisterTask(Config.PY_CacheFileKey);
-
-         getYearsViewModel().updateList(result);
-         ((ArrayAdapter<?>) mAdapter).notifyDataSetChanged();
-         getYearsViewModel().setIsBusy(false);
-         dismissProgressDialog();
-     }
-
-     @Override
-     public void onPlayersYearsCacheFailure() {
-         PlayersYearsCacheAsyncTask cacheAsyncTask;
-         cacheAsyncTask = (PlayersYearsCacheAsyncTask) getApp().getTask(Config.PY_CacheFileKey);
-         if (cacheAsyncTask != null) {
-             cacheAsyncTask.setOnCompleteListener(null);
-         }
-         getApp().unregisterTask(Config.PY_CacheFileKey);
-         getYearsViewModel().setIsBusy(false);
-         dismissProgressDialog();
-         //if any failure occurs loading cache, just call the service for fresh franchises
-         initiateServiceCall();
-     }
-
-     private void initiateServiceCall(){
-
-         boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
-
-         if(netAvailable) {
-             PlayersYearsAsyncTask task = new PlayersYearsAsyncTask();
-
-             getApp().registerTask(Config.PY_SvcTaskKey, task);
-             task.setOnCompleteListener(this);
-             getYearsViewModel().setIsBusy(true);
-             getProgressDialog().show();
-             task.execute();
-
-         } else {
-             if (null != mListener) {
-                 // Notify the active callbacks interface (the activity, if the
-                 // fragment is attached to one) that a failure has happened.
-                 mListener.onPlayersYearsInteractionFail(Config.NoInternet);
-             }
          }
      }
 

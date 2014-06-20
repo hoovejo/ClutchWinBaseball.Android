@@ -72,6 +72,12 @@ public class PlayersContextViewModel {
 
     private String lastBatterId;
 
+    public boolean playersPitchersServiceCallAllowed(){
+        //needed for pitcher svc call
+        if(batterId == null || yearId == null) return false;
+        else return true;
+    }
+
     public boolean shouldExecuteLoadPitchers(boolean update){
         //needed for pitcher svc call
         if(batterId == null || yearId == null) return false;
@@ -90,6 +96,12 @@ public class PlayersContextViewModel {
 
     private String lastSearchBatterId;
     private String lastSearchPitcherId;
+
+    public boolean playersResultsServiceCallAllowed(){
+        //needed for results svc call
+        if(batterId == null || pitcherId == null) return false;
+        else return true;
+    }
 
     public boolean shouldExecutePlayerResultsSearch(boolean update){
         //needed for results svc call
@@ -112,6 +124,12 @@ public class PlayersContextViewModel {
     private String lastDrillDownBatterId;
     private String lastDrillDownPitcherId;
     private String lastDrillDownResultYearId;
+
+    public boolean playersDrillDownServiceCallAllowed(){
+        //needed for drillDown svc call
+        if(batterId == null || pitcherId == null || resultYearId == null) return false;
+        else return true;
+    }
 
     public boolean shouldExecutePlayersDrillDownSearch(boolean update){
         //needed for drillDown svc call

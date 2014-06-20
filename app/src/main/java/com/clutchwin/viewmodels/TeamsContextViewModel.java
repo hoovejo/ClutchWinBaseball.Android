@@ -41,6 +41,12 @@ public class TeamsContextViewModel {
     private String lastSearchFranchiseId;
     private String lastSearchOpponentId;
 
+    public boolean teamResultsServiceCallAllowed(){
+        //needed for team results svc call
+        if(franchiseId == null || opponentId == null) return false;
+        else return true;
+    }
+
     public boolean shouldExecuteTeamResultsSearch(boolean update){
         //needed for team results svc call
         if(franchiseId == null || opponentId == null) return false;
@@ -62,6 +68,12 @@ public class TeamsContextViewModel {
     private String lastDrillDownFranchiseId;
     private String lastDrillDownOpponentId;
     private String lastDrillDownYearId;
+
+    public boolean teamDrillDownServiceCallAllowed(){
+        //needed for team drill down svc call
+        if(franchiseId == null || opponentId == null || yearId == null) return false;
+        else return true;
+    }
 
     public boolean shouldExecuteTeamDrillDownSearch(boolean update){
         //needed for team results svc call

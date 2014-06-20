@@ -4,13 +4,11 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.clutchwin.common.Config;
-import com.clutchwin.common.Helpers;
 import com.clutchwin.viewmodels.PlayersYearsViewModel;
 
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -37,6 +35,7 @@ public class PlayersYearsAsyncTask extends AsyncTask<Void, Void, List<PlayersYea
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
             list = Arrays.asList(restTemplate.getForObject(finalUrl.toString(), PlayersYearsViewModel.Year[].class));
 
+            /*
             try {
                 if(list != null && list.size() > 0) {
                     Helpers.writeListToInternalStorage(list, Config.PY_CacheFileKey);
@@ -46,6 +45,7 @@ public class PlayersYearsAsyncTask extends AsyncTask<Void, Void, List<PlayersYea
             } catch (IOException e) {
                 Log.e("PlayersYearsAsyncTask::writeListToInternalStorage", e.getMessage(), e);
             }
+            */
 
         } catch (Exception e) {
             Log.e("PlayersYearsAsyncTask::doInBackground", e.getMessage(), e);

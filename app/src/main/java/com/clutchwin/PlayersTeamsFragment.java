@@ -14,7 +14,6 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.clutchwin.adapters.PlayersTeamsAdapter;
-import com.clutchwin.cachetasks.PlayersTeamsCacheAsyncTask;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.service.PlayersTeamsAsyncTask;
@@ -33,8 +32,7 @@ import java.util.List;
  * interface.
  */
 public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItemClickListener,
-        PlayersTeamsAsyncTask.OnLoadCompleteListener,
-        PlayersTeamsCacheAsyncTask.OnLoadCompleteListener {
+        PlayersTeamsAsyncTask.OnLoadCompleteListener {
 
     private OnFragmentInteractionListener mListener;
 
@@ -71,51 +69,54 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
 
         Context activity = getActivity();
 
-        PlayersTeamsCacheAsyncTask cacheTask;
-        cacheTask = (PlayersTeamsCacheAsyncTask) getApp().getTask(Config.PT_CacheFileKey);
+        mAdapter = new PlayersTeamsAdapter(activity,
+                R.layout.listview_teamsfranchises_row, getTeamsViewModel().ITEMS);
 
         PlayersTeamsAsyncTask serviceTask;
         serviceTask = (PlayersTeamsAsyncTask) getApp().getTask(Config.PT_SvcTaskKey);
 
-        // if we are constructing and have no active tasks in the background, ensure no other orphan
-        // tasks left the viewModel as busy on an orientation change
-        if(cacheTask == null && serviceTask == null){
-            getTeamsViewModel().setIsBusy(false);
-        }
-
-        if(getTeamsViewModel().ITEMS.isEmpty() && !getTeamsViewModel().getIsBusy()) {
-
-            if(Helpers.checkFileExists(activity, Config.PT_CacheFileKey)) {
-                PlayersTeamsCacheAsyncTask cacheAsyncTask = new PlayersTeamsCacheAsyncTask();
-
-                getApp().registerTask(Config.PT_CacheFileKey, cacheAsyncTask);
-                cacheAsyncTask.setOnCompleteListener(this);
-                getTeamsViewModel().setIsBusy(true);
-                getProgressDialog().show();
-                cacheAsyncTask.execute();
-
-            } else {
-                if(serviceTask == null) {
-                    initiateServiceCall(false);
-                }
-            }
-        } else {
-            if(serviceTask == null) {
-                initiateServiceCall(false);
-            }
-        }
-
-        mAdapter = new PlayersTeamsAdapter(activity,
-                R.layout.listview_teamsfranchises_row, getTeamsViewModel().ITEMS);
-
         // Hook back up to running tasks if this fragment was recreated in the middle of a running task
-        if (cacheTask != null) {
-            getProgressDialog().show();
-            cacheTask.setOnCompleteListener(this);
-        }
         if (serviceTask != null) {
             getProgressDialog().show();
             serviceTask.setOnCompleteListener(this);
+        } else {
+            // if we are constructing and have no active tasks in the background, ensure no other orphan
+            // tasks left the viewModel as busy on an orientation change
+            getTeamsViewModel().setIsBusy(false);
+
+            if (getTeamsViewModel().ITEMS.isEmpty()) {
+                initiateServiceCall();
+            }
+        }
+    }
+
+    private void initiateServiceCall(){
+
+        boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
+
+        if(getContextViewModel().shouldExecuteLoadTeams(netAvailable)) {
+            if(netAvailable) {
+
+                setEmptyText(getString(R.string.no_search_results));
+                PlayersTeamsAsyncTask task = new PlayersTeamsAsyncTask();
+
+                getApp().registerTask(Config.PT_SvcTaskKey, task);
+                task.setOnCompleteListener(this);
+                getTeamsViewModel().setIsBusy(true);
+                getProgressDialog().show();
+                task.execute();
+
+            } else {
+                if (null != mListener) {
+                    // Notify the active callbacks interface (the activity, if the
+                    // fragment is attached to one) that a failure has happened.
+                    mListener.onPlayersTeamsInteractionFail(Config.NoInternet);
+                }
+            }
+        }  else {
+            //should never happen, team button locked out till season selected
+            setEmptyText(getString(R.string.select_season));
+            mAdapter.notifyDataSetChanged();
         }
     }
 
@@ -132,9 +133,16 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
         mListView.setOnItemClickListener(this);
 
         TextView emptyText = (TextView) view.findViewById(android.R.id.empty);
-        emptyText.setText(getString(R.string.no_search_results));
-        mListView.setEmptyView(emptyText);
-        emptyText.setVisibility(TextView.INVISIBLE);
+
+        if(getTeamsViewModel().ITEMS.isEmpty() ) {
+            emptyText.setText(getString(R.string.select_season));
+            mListView.setEmptyView(emptyText);
+            emptyText.setVisibility(TextView.VISIBLE);
+        } else {
+            emptyText.setText(getString(R.string.no_search_results));
+            mListView.setEmptyView(emptyText);
+            emptyText.setVisibility(TextView.INVISIBLE);
+        }
 
         return view;
     }
@@ -153,6 +161,13 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
     public void onDetach() {
         super.onDetach();
         mListener = null;
+
+        PlayersTeamsAsyncTask task;
+        task = (PlayersTeamsAsyncTask) getApp().getTask(Config.PT_SvcTaskKey);
+        if (task != null) {
+            task.setOnCompleteListener(null);
+        }
+
         // kill any progress dialogs if we are being destroyed
         dismissProgressDialog();
     }
@@ -172,10 +187,12 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
      * to supply the text it should use.
      */
     public void setEmptyText(CharSequence emptyText) {
-        View emptyView = mListView.getEmptyView();
+        if(mListView != null) {
+            View emptyView = mListView.getEmptyView();
 
-        if (emptyText instanceof TextView) {
-            ((TextView) emptyView).setText(emptyText);
+            if (emptyText instanceof String) {
+                ((TextView) emptyView).setText(emptyText);
+            }
         }
     }
 
@@ -223,59 +240,6 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that a failure has happened.
             mListener.onPlayersTeamsInteractionFail("");
-        }
-    }
-
-    @Override
-    public void onPlayersTeamsCacheComplete(List<PlayersTeamsViewModel.Team> result) {
-        PlayersTeamsCacheAsyncTask cacheAsyncTask;
-        cacheAsyncTask = (PlayersTeamsCacheAsyncTask) getApp().getTask(Config.PT_CacheFileKey);
-        if (cacheAsyncTask != null) {
-            cacheAsyncTask.setOnCompleteListener(null);
-        }
-        getApp().unregisterTask(Config.PT_CacheFileKey);
-
-        getTeamsViewModel().updateList(result);
-        mAdapter.notifyDataSetChanged();
-        getTeamsViewModel().setIsBusy(false);
-        dismissProgressDialog();
-    }
-
-    @Override
-    public void onPlayersTeamsCacheFailure() {
-        PlayersTeamsCacheAsyncTask cacheAsyncTask;
-        cacheAsyncTask = (PlayersTeamsCacheAsyncTask) getApp().getTask(Config.PT_CacheFileKey);
-        if (cacheAsyncTask != null) {
-            cacheAsyncTask.setOnCompleteListener(null);
-        }
-        getApp().unregisterTask(Config.PT_CacheFileKey);
-        getTeamsViewModel().setIsBusy(false);
-        dismissProgressDialog();
-        //if any failure occurs loading cache, just call the service for fresh teams
-        initiateServiceCall(true);
-    }
-
-    private void initiateServiceCall(boolean force){
-
-        boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
-
-        if(getContextViewModel().shouldExecuteLoadTeams(netAvailable) || force) {
-            if(netAvailable) {
-                PlayersTeamsAsyncTask task = new PlayersTeamsAsyncTask();
-
-                getApp().registerTask(Config.PT_SvcTaskKey, task);
-                task.setOnCompleteListener(this);
-                getTeamsViewModel().setIsBusy(true);
-                getProgressDialog().show();
-                task.execute();
-
-            } else {
-                if (null != mListener) {
-                    // Notify the active callbacks interface (the activity, if the
-                    // fragment is attached to one) that a failure has happened.
-                    mListener.onPlayersTeamsInteractionFail(Config.NoInternet);
-                }
-            }
         }
     }
 

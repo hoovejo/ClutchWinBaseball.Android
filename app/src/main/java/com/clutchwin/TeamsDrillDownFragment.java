@@ -14,7 +14,6 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.clutchwin.adapters.TeamsDrillDownAdapter;
-import com.clutchwin.cachetasks.TeamsDrillDownCacheAsyncTask;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
@@ -35,7 +34,6 @@ import java.util.List;
   */
 public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnItemClickListener,
          TeamsDrillDownAsyncTask.OnLoadCompleteListener,
-         TeamsDrillDownCacheAsyncTask.OnLoadCompleteListener,
          IOnShowFragment {
 
      private OnFragmentInteractionListener mListener;
@@ -73,43 +71,50 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
 
          Context activity = getActivity();
 
-         TeamsDrillDownCacheAsyncTask cacheTask;
-         cacheTask = (TeamsDrillDownCacheAsyncTask) getApp().getTask(Config.TDD_CacheFileKey);
+         mAdapter = new TeamsDrillDownAdapter(activity, R.layout.listview_teamsdrilldown_row,
+                 getDrillDownViewModel().ITEMS);
 
          TeamsDrillDownAsyncTask serviceTask;
          serviceTask = (TeamsDrillDownAsyncTask) getApp().getTask(Config.TDD_SvcTaskKey);
 
-         // if we are constructing and have no active tasks in the background, ensure no other orphan
-         // tasks left the viewModel as busy on an orientation change
-         if(cacheTask == null && serviceTask == null){
-             getDrillDownViewModel().setIsBusy(false);
-         }
-
-         if(getDrillDownViewModel().ITEMS.isEmpty() && getDrillDownViewModel().getIsBusy()) {
-
-             if(Helpers.checkFileExists(activity, Config.TDD_CacheFileKey)) {
-                 TeamsDrillDownCacheAsyncTask cacheAsyncTask = new TeamsDrillDownCacheAsyncTask();
-
-                 getApp().registerTask(Config.TDD_CacheFileKey, cacheAsyncTask);
-                 cacheAsyncTask.setOnCompleteListener(this);
-                 getDrillDownViewModel().setIsBusy(true);
-                 getProgressDialog().show();
-                 cacheAsyncTask.execute();
-             }
-         }
-
-         mAdapter = new TeamsDrillDownAdapter(activity,
-                 R.layout.listview_teamsdrilldown_row,
-                 getDrillDownViewModel().ITEMS);
-
          // Hook back up to running tasks if this fragment was recreated in the middle of a running task
-         if (cacheTask != null) {
-             getProgressDialog().show();
-              cacheTask.setOnCompleteListener(this);
-         }
          if (serviceTask != null) {
              getProgressDialog().show();
-            serviceTask.setOnCompleteListener(this);
+             serviceTask.setOnCompleteListener(this);
+         } else {
+             // if we are constructing and have no active tasks in the background, ensure no other orphan
+             // tasks left the viewModel as busy on an orientation change
+             getDrillDownViewModel().setIsBusy(false);
+
+             if(getDrillDownViewModel().ITEMS.isEmpty()) {
+                 initiateServiceCall();
+             }
+         }
+     }
+
+     private void initiateServiceCall(){
+         boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
+
+         if (getContextViewModel().teamDrillDownServiceCallAllowed() ) {
+
+             if(netAvailable) {
+                 TeamsDrillDownAsyncTask task = new TeamsDrillDownAsyncTask();
+
+                 getApp().registerTask(Config.TDD_SvcTaskKey, task);
+                 task.setOnCompleteListener(this);
+                 getDrillDownViewModel().setIsBusy(true);
+                 getProgressDialog().show();
+                 task.execute();
+
+             } else {
+                 if (null != mListener) {
+                     mListener.onTeamsDrillDownInteractionFail(Config.NoInternet);
+                 }
+             }
+         } else {
+             //likely new session and tabbed to drillDown tab
+             setEmptyText(getString(R.string.t_select_result_first));
+             mAdapter.notifyDataSetChanged();
          }
      }
 
@@ -123,9 +128,16 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
          ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
 
          TextView emptyText = (TextView) view.findViewById(android.R.id.empty);
-         emptyText.setText(getString(R.string.no_search_results));
-         mListView.setEmptyView(emptyText);
-         emptyText.setVisibility(TextView.INVISIBLE);
+
+         if(getDrillDownViewModel().ITEMS.isEmpty() ) {
+             emptyText.setText(getString(R.string.t_select_result_first));
+             mListView.setEmptyView(emptyText);
+             emptyText.setVisibility(TextView.VISIBLE);
+         } else {
+             emptyText.setText(getString(R.string.no_search_results));
+             mListView.setEmptyView(emptyText);
+             emptyText.setVisibility(TextView.INVISIBLE);
+         }
 
          return view;
      }
@@ -144,6 +156,13 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
      public void onDetach() {
          super.onDetach();
          mListener = null;
+
+         TeamsDrillDownAsyncTask task;
+         task = (TeamsDrillDownAsyncTask) getApp().getTask(Config.TDD_SvcTaskKey);
+         if (task != null) {
+             task.setOnCompleteListener(null);
+         }
+
          // kill any progress dialogs if we are being destroyed
          dismissProgressDialog();
      }
@@ -159,10 +178,12 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
       * to supply the text it should use.
       */
      public void setEmptyText(CharSequence emptyText) {
-         View emptyView = mListView.getEmptyView();
+         if(mListView != null) {
+             View emptyView = mListView.getEmptyView();
 
-         if (emptyText instanceof String) {
-             ((TextView) emptyView).setText(emptyText);
+             if (emptyText instanceof String) {
+                 ((TextView) emptyView).setText(emptyText);
+             }
          }
      }
 
@@ -211,47 +232,15 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
          }
      }
 
-     @Override
-     public void onTeamsDrillDownCacheComplete(List<TeamsDrillDownViewModel.TeamsDrillDown> result) {
-         TeamsDrillDownCacheAsyncTask cacheAsyncTask;
-         cacheAsyncTask = (TeamsDrillDownCacheAsyncTask) getApp().getTask(Config.TDD_CacheFileKey);
-         if (cacheAsyncTask != null) {
-             cacheAsyncTask.setOnCompleteListener(null);
-         }
-         getApp().unregisterTask(Config.TDD_CacheFileKey);
-
-         getDrillDownViewModel().updateList(result);
-         mAdapter.notifyDataSetChanged();
-         getDrillDownViewModel().setIsBusy(false);
-         dismissProgressDialog();
-     }
-
-     @Override
-     public void onTeamsDrillDownCacheFailure() {
-         TeamsDrillDownCacheAsyncTask cacheAsyncTask;
-         cacheAsyncTask = (TeamsDrillDownCacheAsyncTask) getApp().getTask(Config.TDD_CacheFileKey);
-         if (cacheAsyncTask != null) {
-             cacheAsyncTask.setOnCompleteListener(null);
-         }
-         getApp().unregisterTask(Config.TDD_CacheFileKey);
-
-         getDrillDownViewModel().setIsBusy(false);
-         dismissProgressDialog();
-
-         if (null != mListener) {
-             // Notify the active callbacks interface (the activity, if the
-             // fragment is attached to one) that a failure has happened.
-             mListener.onTeamsDrillDownInteractionFail("");
-         }
-     }
-
      public void onShowedFragment(){
-
          boolean netAvailable = Helpers.isNetworkAvailable(getActivity());
 
-         if(getContextViewModel().shouldExecuteTeamDrillDownSearch(netAvailable) &&
-                 !getDrillDownViewModel().getIsBusy()) {
+         if(!getDrillDownViewModel().getIsBusy() &&
+                 getContextViewModel().shouldExecuteTeamDrillDownSearch(netAvailable) ) {
+
              if(netAvailable) {
+
+                 setEmptyText(getString(R.string.no_search_results));
                  TeamsDrillDownAsyncTask task = new TeamsDrillDownAsyncTask();
 
                  getApp().registerTask(Config.TDD_SvcTaskKey, task);
