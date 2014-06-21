@@ -14,6 +14,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.bugsense.trace.BugSenseHandler;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.service.PlayersYearsAsyncTask;
@@ -51,8 +52,7 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
      private ProgressDialog progressDialog;
 
      public static PlayersYearsFragment newInstance() {
-         PlayersYearsFragment fragment = new PlayersYearsFragment();
-         return fragment;
+         return new PlayersYearsFragment();
      }
 
      /**
@@ -118,7 +118,7 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
 
          // Set the adapter
          mListView = (AbsListView) view.findViewById(android.R.id.list);
-         ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
+         mListView.setAdapter(mAdapter);
 
          // Set OnItemClickListener so we can be notified on item clicks
          mListView.setOnItemClickListener(this);
@@ -175,7 +175,9 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
              View emptyView = mListView.getEmptyView();
 
              if (emptyText instanceof String) {
-                 ((TextView) emptyView).setText(emptyText);
+                 if (emptyView != null) {
+                     ((TextView) emptyView).setText(emptyText);
+                 }
              }
          }
      }
@@ -209,7 +211,7 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
      }
 
      @Override
-     public void onPlayersYearsServiceFailure() {
+     public void onPlayersYearsServiceFailure(Exception e) {
          PlayersYearsAsyncTask task;
          task = (PlayersYearsAsyncTask) getApp().getTask(Config.PY_SvcTaskKey);
          if (task != null) {
@@ -225,6 +227,7 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
              // fragment is attached to one) that a failure has happened.
              mListener.onPlayersYearsInteractionFail("");
          }
+         BugSenseHandler.sendException(e);
      }
 
      private ClutchWinApplication getApp(){

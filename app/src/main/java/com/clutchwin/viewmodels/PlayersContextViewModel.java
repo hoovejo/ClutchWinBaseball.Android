@@ -4,10 +4,6 @@ public class PlayersContextViewModel {
 
     public PlayersContextViewModel(){}
 
-    private transient boolean isHydratedObject = false;
-    public boolean getIsHydratedObject() { return isHydratedObject; }
-    public void setIsHydratedObject(boolean b) { isHydratedObject = b; }
-
     private String yearId;
     public String getYearId() { return yearId; }
     public void setYearId(String id) { yearId = id; }
@@ -35,11 +31,7 @@ public class PlayersContextViewModel {
         if(yearId == null) return false;
 
         boolean returnValue;
-        if(lastYearId == null || !lastYearId.equals(yearId)){
-            returnValue = true;
-        } else {
-            returnValue = false;
-        }
+        returnValue = lastYearId == null || !lastYearId.equals(yearId);
         if(update) {
             lastYearId = yearId;
         }
@@ -49,7 +41,7 @@ public class PlayersContextViewModel {
     private String lastTeamId;
     private boolean loadBatters;
     public void setVoteLoadBatters(boolean value) {
-        if(teamId != null && lastTeamId != teamId ) {
+        if(teamId != null && !teamId.equals(lastTeamId)) {
             loadBatters = value;
         }
     }
@@ -61,6 +53,7 @@ public class PlayersContextViewModel {
         boolean returnValue;
         if(loadBatters){
             returnValue = true;
+            loadBatters = false;
         } else {
             returnValue = false;
         }
@@ -74,8 +67,7 @@ public class PlayersContextViewModel {
 
     public boolean playersPitchersServiceCallAllowed(){
         //needed for pitcher svc call
-        if(batterId == null || yearId == null) return false;
-        else return true;
+        return !(batterId == null || yearId == null);
     }
 
     public boolean shouldExecuteLoadPitchers(boolean update){
@@ -83,11 +75,7 @@ public class PlayersContextViewModel {
         if(batterId == null || yearId == null) return false;
 
         boolean returnValue;
-        if(lastBatterId == null || !lastBatterId.equals(batterId)){
-            returnValue = true;
-        } else {
-            returnValue = false;
-        }
+        returnValue = lastBatterId == null || !lastBatterId.equals(batterId);
         if(update) {
             lastBatterId = batterId;
         }
@@ -99,8 +87,7 @@ public class PlayersContextViewModel {
 
     public boolean playersResultsServiceCallAllowed(){
         //needed for results svc call
-        if(batterId == null || pitcherId == null) return false;
-        else return true;
+        return !(batterId == null || pitcherId == null);
     }
 
     public boolean shouldExecutePlayerResultsSearch(boolean update){
@@ -108,12 +95,8 @@ public class PlayersContextViewModel {
         if(batterId == null || pitcherId == null) return false;
 
         boolean returnValue;
-        if(lastSearchBatterId == null || lastSearchPitcherId == null ||
-                !lastSearchBatterId.equals(batterId) || !lastSearchPitcherId.equals(pitcherId)){
-            returnValue = true;
-        } else {
-            returnValue = false;
-        }
+        returnValue = lastSearchBatterId == null || lastSearchPitcherId == null ||
+                !lastSearchBatterId.equals(batterId) || !lastSearchPitcherId.equals(pitcherId);
         if(update) {
             lastSearchBatterId = batterId;
             lastSearchPitcherId = pitcherId;
@@ -127,8 +110,7 @@ public class PlayersContextViewModel {
 
     public boolean playersDrillDownServiceCallAllowed(){
         //needed for drillDown svc call
-        if(batterId == null || pitcherId == null || resultYearId == null) return false;
-        else return true;
+        return !(batterId == null || pitcherId == null || resultYearId == null);
     }
 
     public boolean shouldExecutePlayersDrillDownSearch(boolean update){
@@ -136,14 +118,10 @@ public class PlayersContextViewModel {
         if(batterId == null || pitcherId == null || resultYearId == null) return false;
 
         boolean returnValue;
-        if(lastDrillDownBatterId == null || lastDrillDownPitcherId == null ||
+        returnValue = lastDrillDownBatterId == null || lastDrillDownPitcherId == null ||
                 lastDrillDownResultYearId == null ||
                 !lastDrillDownBatterId.equals(batterId) || !lastDrillDownPitcherId.equals(pitcherId) ||
-                !lastDrillDownResultYearId.equals(resultYearId) ){
-            returnValue = true;
-        } else {
-            returnValue = false;
-        }
+                !lastDrillDownResultYearId.equals(resultYearId);
         if(update) {
             lastDrillDownBatterId = batterId;
             lastDrillDownPitcherId = pitcherId;

@@ -1,5 +1,7 @@
 package com.clutchwin.viewmodels;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -32,6 +34,8 @@ public class TeamsOpponentsViewModel {
                     return o1.getLocation().compareTo(o2.getLocation());
                 }
             });
-        } catch (Exception e){}
+        } catch (Exception e){
+            Log.e("Sort error", e.getMessage(), e);
+        }
     }
 }

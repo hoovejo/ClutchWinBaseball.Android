@@ -1,5 +1,7 @@
 package com.clutchwin.viewmodels;
 
+import android.util.Log;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,7 +35,9 @@ public class TeamsFranchisesViewModel {
                     return o1.getLocation().compareTo(o2.getLocation());
                 }
             });
-        } catch (Exception e){}
+        } catch (Exception e){
+            Log.e("Sort error", e.getMessage(), e);
+        }
     }
 
     /**

@@ -28,7 +28,8 @@ public class PlayersYearsAsyncTask extends AsyncTask<Void, Void, List<PlayersYea
             //http://clutchwin.com/api/v1/seasons.json?
             //access_token=abc
             final String baseUrl = Config.Years;
-            StringBuffer finalUrl = new StringBuffer(baseUrl);
+            StringBuilder finalUrl;
+            finalUrl = new StringBuilder(baseUrl);
             finalUrl.append(Config.AccessTokenKey).append(Config.AccessTokenValue);
 
             RestTemplate restTemplate = new RestTemplate();
@@ -50,7 +51,7 @@ public class PlayersYearsAsyncTask extends AsyncTask<Void, Void, List<PlayersYea
         } catch (Exception e) {
             Log.e("PlayersYearsAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
-                onCompleteListener.onPlayersYearsServiceFailure();
+                onCompleteListener.onPlayersYearsServiceFailure(e);
             }
         }
         return list;
@@ -69,7 +70,7 @@ public class PlayersYearsAsyncTask extends AsyncTask<Void, Void, List<PlayersYea
 
     public interface OnLoadCompleteListener {
         public void onPlayersYearsServiceComplete(List<PlayersYearsViewModel.Year> result);
-        public void onPlayersYearsServiceFailure();
+        public void onPlayersYearsServiceFailure(Exception e);
     }
 }
 

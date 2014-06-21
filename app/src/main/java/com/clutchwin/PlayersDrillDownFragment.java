@@ -10,9 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.bugsense.trace.BugSenseHandler;
 import com.clutchwin.adapters.PlayersDrillDownAdapter;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
@@ -54,8 +54,7 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
     private ProgressDialog progressDialog;
 
     public static PlayersDrillDownFragment newInstance() {
-        PlayersDrillDownFragment fragment = new PlayersDrillDownFragment();
-        return fragment;
+        return new PlayersDrillDownFragment();
     }
 
     /**
@@ -125,7 +124,7 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
 
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
-        ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
+        mListView.setAdapter(mAdapter);
 
         TextView emptyText = (TextView) view.findViewById(android.R.id.empty);
 
@@ -186,7 +185,9 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
             View emptyView = mListView.getEmptyView();
 
             if (emptyText instanceof String) {
-                ((TextView) emptyView).setText(emptyText);
+                if (emptyView != null) {
+                    ((TextView) emptyView).setText(emptyText);
+                }
             }
         }
     }
@@ -219,7 +220,7 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
     }
 
     @Override
-    public void onPlayerDrillDownServiceFailure() {
+    public void onPlayerDrillDownServiceFailure(Exception e) {
         PlayersDrillDownAsyncTask task;
         task = (PlayersDrillDownAsyncTask) getApp().getTask(Config.PDD_SvcTaskKey);
         if (task != null) {
@@ -235,6 +236,7 @@ public class PlayersDrillDownFragment extends Fragment implements AbsListView.On
             // fragment is attached to one) that a failure has happened.
             mListener.onPlayersDrillDownInteractionFail("");
         }
+        BugSenseHandler.sendException(e);
     }
 
     public void onShowedFragment() {

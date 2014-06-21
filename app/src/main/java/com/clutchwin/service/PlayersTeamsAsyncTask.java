@@ -28,7 +28,8 @@ public class PlayersTeamsAsyncTask extends AsyncTask<Void, Void, List<PlayersTea
 
             //http://clutchwin.com/api/v1/teams.json?
             final String baseUrl = Config.Teams;
-            StringBuffer finalUrl = new StringBuffer(baseUrl);
+            StringBuilder finalUrl;
+            finalUrl = new StringBuilder(baseUrl);
             finalUrl.append(Config.AccessTokenKey).append(Config.AccessTokenValue)
                     .append(Config.SeasonIdKey)
                     .append(ClutchWinApplication.getPlayersContextViewModel().getYearId());
@@ -52,7 +53,7 @@ public class PlayersTeamsAsyncTask extends AsyncTask<Void, Void, List<PlayersTea
         } catch (Exception e) {
             Log.e("PlayersTeamsAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
-                onCompleteListener.onPlayersTeamsServiceFailure();
+                onCompleteListener.onPlayersTeamsServiceFailure(e);
             }
         }
         return list;
@@ -71,6 +72,6 @@ public class PlayersTeamsAsyncTask extends AsyncTask<Void, Void, List<PlayersTea
 
     public interface OnLoadCompleteListener {
         public void onPlayersTeamsServiceComplete(List<PlayersTeamsViewModel.Team> result);
-        public void onPlayersTeamsServiceFailure();
+        public void onPlayersTeamsServiceFailure(Exception e);
     }
 }

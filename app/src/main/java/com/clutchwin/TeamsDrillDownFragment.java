@@ -10,9 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.bugsense.trace.BugSenseHandler;
 import com.clutchwin.adapters.TeamsDrillDownAdapter;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
@@ -54,8 +54,7 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
      private ProgressDialog progressDialog;
 
      public static TeamsDrillDownFragment newInstance() {
-         TeamsDrillDownFragment fragment = new TeamsDrillDownFragment();
-         return fragment;
+         return new TeamsDrillDownFragment();
      }
 
      /**
@@ -125,7 +124,7 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
 
          // Set the adapter
          mListView = (AbsListView) view.findViewById(android.R.id.list);
-         ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
+         mListView.setAdapter(mAdapter);
 
          TextView emptyText = (TextView) view.findViewById(android.R.id.empty);
 
@@ -182,7 +181,9 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
              View emptyView = mListView.getEmptyView();
 
              if (emptyText instanceof String) {
-                 ((TextView) emptyView).setText(emptyText);
+                 if (emptyView != null) {
+                     ((TextView) emptyView).setText(emptyText);
+                 }
              }
          }
      }
@@ -214,7 +215,7 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
      }
 
      @Override
-     public void onTeamsDrillDownServiceFailure() {
+     public void onTeamsDrillDownServiceFailure(Exception e) {
          TeamsDrillDownAsyncTask task;
          task = (TeamsDrillDownAsyncTask) getApp().getTask(Config.TDD_SvcTaskKey);
          if (task != null) {
@@ -230,6 +231,7 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
              // fragment is attached to one) that a failure has happened.
              mListener.onTeamsDrillDownInteractionFail("");
          }
+         BugSenseHandler.sendException(e);
      }
 
      public void onShowedFragment(){

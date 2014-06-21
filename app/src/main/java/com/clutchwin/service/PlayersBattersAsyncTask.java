@@ -27,7 +27,8 @@ public class PlayersBattersAsyncTask extends AsyncTask<Void, Void, List<PlayersB
         try {
             //http://clutchwin.com/api/v1/players.json?
             final String baseUrl = Config.RosterSearch;
-            StringBuffer finalUrl = new StringBuffer(baseUrl);
+            StringBuilder finalUrl;
+            finalUrl = new StringBuilder(baseUrl);
             finalUrl.append(Config.AccessTokenKey).append(Config.AccessTokenValue)
                     .append(Config.TeamIdKey)
                     .append(ClutchWinApplication.getPlayersContextViewModel().getTeamId())
@@ -53,7 +54,7 @@ public class PlayersBattersAsyncTask extends AsyncTask<Void, Void, List<PlayersB
         } catch (Exception e) {
             Log.e("PlayersBattersAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
-                onCompleteListener.onPlayersBattersServiceFailure();
+                onCompleteListener.onPlayersBattersServiceFailure(e);
             }
         }
         return list;
@@ -73,7 +74,7 @@ public class PlayersBattersAsyncTask extends AsyncTask<Void, Void, List<PlayersB
 
     public interface OnLoadCompleteListener {
         public void onPlayersBattersServiceComplete(List<PlayersBattersViewModel.Batter> result);
-        public void onPlayersBattersServiceFailure();
+        public void onPlayersBattersServiceFailure(Exception e);
     }
 }
 

@@ -33,15 +33,17 @@ public class TeamsResultsAdapter extends BaseAdapter {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(layoutResourceId, parent, false);
             holder = new PerformanceViewElementHolder();
-            holder.elementOne = (TextView)convertView.findViewById(R.id.textYear);
-            holder.elementTwo = (TextView)convertView.findViewById(R.id.textGames);
-            holder.elementThree = (TextView)convertView.findViewById(R.id.textTeam);
-            holder.elementFour = (TextView)convertView.findViewById(R.id.textOpponent);
-            holder.elementFive = (TextView)convertView.findViewById(R.id.textWins);
-            holder.elementSix = (TextView)convertView.findViewById(R.id.textLosses);
-            holder.elementSeven = (TextView)convertView.findViewById(R.id.textRunsFor);
-            holder.elementEight = (TextView)convertView.findViewById(R.id.textRunsAgainst);
-            convertView.setTag(holder);
+            if (convertView != null) {
+                holder.elementOne = (TextView)convertView.findViewById(R.id.textYear);
+                holder.elementTwo = (TextView)convertView.findViewById(R.id.textGames);
+                holder.elementThree = (TextView)convertView.findViewById(R.id.textTeam);
+                holder.elementFour = (TextView)convertView.findViewById(R.id.textOpponent);
+                holder.elementFive = (TextView)convertView.findViewById(R.id.textWins);
+                holder.elementSix = (TextView)convertView.findViewById(R.id.textLosses);
+                holder.elementSeven = (TextView)convertView.findViewById(R.id.textRunsFor);
+                holder.elementEight = (TextView)convertView.findViewById(R.id.textRunsAgainst);
+                convertView.setTag(holder);
+            }
         }
         else
         {

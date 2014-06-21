@@ -33,9 +33,11 @@ public class TeamsFranchisesAdapter extends BaseAdapter {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(layoutResourceId, parent, false);
             holder = new PerformanceViewElementHolder();
-            holder.elementOne = (TextView)convertView.findViewById(R.id.txtFranchise);
-            holder.elementTwo = (TextView)convertView.findViewById(R.id.txtLeague);
-            convertView.setTag(holder);
+            if (convertView != null) {
+                holder.elementOne = (TextView)convertView.findViewById(R.id.txtFranchise);
+                holder.elementTwo = (TextView)convertView.findViewById(R.id.txtLeague);
+                convertView.setTag(holder);
+            }
         }
         else
         {

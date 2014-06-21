@@ -4,10 +4,6 @@ public class TeamsContextViewModel {
 
     public TeamsContextViewModel(){}
 
-    private transient boolean isHydratedObject = false;
-    public boolean getIsHydratedObject() { return isHydratedObject; }
-    public void setIsHydratedObject(boolean b) { isHydratedObject = b; }
-
     private String franchiseId;
     public String getFranchiseId() { return franchiseId; }
     public void setFranchiseId(String id) { franchiseId = id; }
@@ -27,11 +23,7 @@ public class TeamsContextViewModel {
         if(franchiseId == null) return false;
 
         boolean returnValue;
-        if(lastOpponentFilterFranchiseId == null || !lastOpponentFilterFranchiseId.equals(franchiseId)){
-            returnValue = true;
-        } else {
-            returnValue = false;
-        }
+        returnValue = lastOpponentFilterFranchiseId == null || !lastOpponentFilterFranchiseId.equals(franchiseId);
         if(update) {
             lastOpponentFilterFranchiseId = franchiseId;
         }
@@ -43,8 +35,7 @@ public class TeamsContextViewModel {
 
     public boolean teamResultsServiceCallAllowed(){
         //needed for team results svc call
-        if(franchiseId == null || opponentId == null) return false;
-        else return true;
+        return !(franchiseId == null || opponentId == null);
     }
 
     public boolean shouldExecuteTeamResultsSearch(boolean update){
@@ -52,12 +43,8 @@ public class TeamsContextViewModel {
         if(franchiseId == null || opponentId == null) return false;
 
         boolean returnValue;
-        if(lastSearchFranchiseId == null || lastSearchOpponentId == null ||
-                !lastSearchFranchiseId.equals(franchiseId) || !lastSearchOpponentId.equals(opponentId)){
-            returnValue = true;
-        } else {
-            returnValue = false;
-        }
+        returnValue = lastSearchFranchiseId == null || lastSearchOpponentId == null ||
+                !lastSearchFranchiseId.equals(franchiseId) || !lastSearchOpponentId.equals(opponentId);
         if(update) {
             lastSearchFranchiseId = franchiseId;
             lastSearchOpponentId = opponentId;
@@ -71,8 +58,7 @@ public class TeamsContextViewModel {
 
     public boolean teamDrillDownServiceCallAllowed(){
         //needed for team drill down svc call
-        if(franchiseId == null || opponentId == null || yearId == null) return false;
-        else return true;
+        return !(franchiseId == null || opponentId == null || yearId == null);
     }
 
     public boolean shouldExecuteTeamDrillDownSearch(boolean update){
@@ -80,14 +66,10 @@ public class TeamsContextViewModel {
         if(franchiseId == null || opponentId == null || yearId == null) return false;
 
         boolean returnValue;
-        if(lastDrillDownFranchiseId == null || lastDrillDownOpponentId == null ||
+        returnValue = lastDrillDownFranchiseId == null || lastDrillDownOpponentId == null ||
                 lastDrillDownYearId == null ||
                 !lastDrillDownFranchiseId.equals(franchiseId) || !lastDrillDownOpponentId.equals(opponentId) ||
-                !lastDrillDownYearId.equals(yearId)){
-            returnValue = true;
-        } else {
-            returnValue = false;
-        }
+                !lastDrillDownYearId.equals(yearId);
         if(update) {
             lastDrillDownFranchiseId = franchiseId;
             lastDrillDownOpponentId = opponentId;

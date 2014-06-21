@@ -1,5 +1,7 @@
 package com.clutchwin.viewmodels;
 
+import android.util.Log;
+
 import com.clutchwin.common.Config;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -34,7 +36,9 @@ public class PlayersBattersViewModel {
                     return o1.getFirstName().compareTo(o2.getFirstName());
                 }
             });
-        } catch (Exception e){}
+        } catch (Exception e){
+            Log.e("Sort error", e.getMessage(), e);
+        }
     }
 
     /**

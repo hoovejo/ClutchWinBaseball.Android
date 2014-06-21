@@ -10,9 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.bugsense.trace.BugSenseHandler;
 import com.clutchwin.adapters.PlayersResultsAdapter;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
@@ -54,8 +54,7 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
      private ProgressDialog progressDialog;
 
      public static PlayersResultsFragment newInstance() {
-         PlayersResultsFragment fragment = new PlayersResultsFragment();
-         return fragment;
+         return new PlayersResultsFragment();
      }
 
      /**
@@ -126,7 +125,7 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
 
          // Set the adapter
          mListView = (AbsListView) view.findViewById(android.R.id.list);
-         ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
+         mListView.setAdapter(mAdapter);
 
          // Set OnItemClickListener so we can be notified on item clicks
          mListView.setOnItemClickListener(this);
@@ -192,7 +191,9 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
              View emptyView = mListView.getEmptyView();
 
              if (emptyText instanceof String) {
-                 ((TextView) emptyView).setText(emptyText);
+                 if (emptyView != null) {
+                     ((TextView) emptyView).setText(emptyText);
+                 }
              }
          }
      }
@@ -224,7 +225,7 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
      }
 
      @Override
-     public void onPlayersResultsServiceFailure(){
+     public void onPlayersResultsServiceFailure(Exception e){
          PlayersResultsAsyncTask task;
          task = (PlayersResultsAsyncTask)getApp().getTask(Config.PR_SvcTaskKey);
          if(task != null){
@@ -240,6 +241,7 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
              // fragment is attached to one) that a failure has happened.
              mListener.onPlayersResultsInteractionFail("");
          }
+         BugSenseHandler.sendException(e);
      }
 
      public void onShowedFragment(){

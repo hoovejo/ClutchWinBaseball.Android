@@ -29,7 +29,8 @@ public class TeamsResultsAsyncTask extends AsyncTask<Void, Void, List<TeamsResul
             //http://clutchwin.com/api/v1/games/for_team/summary.json?
             //&access_token=joe&franchise_abbr=TOR&opp_franchise_abbr=BAL&group=season,team_abbr,opp_abbr&fieldset=basic
             final String baseUrl = Config.FranchiseSearch;
-            StringBuffer finalUrl = new StringBuffer(baseUrl);
+            StringBuilder finalUrl;
+            finalUrl = new StringBuilder(baseUrl);
             finalUrl.append(Config.AccessTokenKey).append(Config.AccessTokenValue)
                     .append(Config.FranchiseIdKey)
                     .append(ClutchWinApplication.getTeamsContextViewModel().getFranchiseId())
@@ -55,7 +56,7 @@ public class TeamsResultsAsyncTask extends AsyncTask<Void, Void, List<TeamsResul
         } catch (Exception e) {
             Log.e("TeamsResultsAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
-                onCompleteListener.onTeamsResultsServiceFailure();
+                onCompleteListener.onTeamsResultsServiceFailure(e);
             }
         }
         return list;
@@ -75,6 +76,6 @@ public class TeamsResultsAsyncTask extends AsyncTask<Void, Void, List<TeamsResul
 
     public interface OnLoadCompleteListener {
         public void onTeamsResultsServiceComplete(List<TeamsResultsViewModel.TeamsResult> result);
-        public void onTeamsResultsServiceFailure();
+        public void onTeamsResultsServiceFailure(Exception e);
     }
 }

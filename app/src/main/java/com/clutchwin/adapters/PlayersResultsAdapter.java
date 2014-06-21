@@ -34,18 +34,20 @@ public class PlayersResultsAdapter extends BaseAdapter {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(layoutResourceId, parent, false);
             holder = new PerformanceViewElementHolder();
-            holder.elementOne = (TextView)convertView.findViewById(R.id.textYear);
-            holder.elementTwo = (TextView)convertView.findViewById(R.id.textGames);
-            holder.elementThree = (TextView)convertView.findViewById(R.id.textAtBat);
-            holder.elementFour = (TextView)convertView.findViewById(R.id.textHit);
-            holder.elementFive = (TextView)convertView.findViewById(R.id.textWalk);
-            holder.elementSix = (TextView)convertView.findViewById(R.id.textStrikeOut);
-            holder.elementSeven = (TextView)convertView.findViewById(R.id.textSecondBase);
-            holder.elementEight = (TextView)convertView.findViewById(R.id.textThirdBase);
-            holder.elementNine = (TextView)convertView.findViewById(R.id.textHomeRun);
-            holder.elementTen = (TextView)convertView.findViewById(R.id.textRunBattedIn);
-            holder.elementEleven = (TextView)convertView.findViewById(R.id.textAverage);
-            convertView.setTag(holder);
+            if (convertView != null) {
+                holder.elementOne = (TextView)convertView.findViewById(R.id.textYear);
+                holder.elementTwo = (TextView)convertView.findViewById(R.id.textGames);
+                holder.elementThree = (TextView)convertView.findViewById(R.id.textAtBat);
+                holder.elementFour = (TextView)convertView.findViewById(R.id.textHit);
+                holder.elementFive = (TextView)convertView.findViewById(R.id.textWalk);
+                holder.elementSix = (TextView)convertView.findViewById(R.id.textStrikeOut);
+                holder.elementSeven = (TextView)convertView.findViewById(R.id.textSecondBase);
+                holder.elementEight = (TextView)convertView.findViewById(R.id.textThirdBase);
+                holder.elementNine = (TextView)convertView.findViewById(R.id.textHomeRun);
+                holder.elementTen = (TextView)convertView.findViewById(R.id.textRunBattedIn);
+                holder.elementEleven = (TextView)convertView.findViewById(R.id.textAverage);
+                convertView.setTag(holder);
+            }
         }
         else
         {

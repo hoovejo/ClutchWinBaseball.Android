@@ -10,9 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.bugsense.trace.BugSenseHandler;
 import com.clutchwin.adapters.TeamsFranchisesAdapter;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
@@ -52,8 +52,7 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
     private ProgressDialog progressDialog;
 
     public static TeamsFranchisesFragment newInstance() {
-        TeamsFranchisesFragment fragment = new TeamsFranchisesFragment();
-        return fragment;
+        return new TeamsFranchisesFragment();
     }
 
     /**
@@ -117,7 +116,7 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
 
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
-        ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
+        mListView.setAdapter(mAdapter);
 
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
@@ -175,7 +174,9 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
             View emptyView = mListView.getEmptyView();
 
             if (emptyText instanceof String) {
-                ((TextView) emptyView).setText(emptyText);
+                if (emptyView != null) {
+                    ((TextView) emptyView).setText(emptyText);
+                }
             }
         }
     }
@@ -210,7 +211,7 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
     }
 
     @Override
-    public void onTeamsFranchisesServiceFailure() {
+    public void onTeamsFranchisesServiceFailure(Exception e) {
         TeamsFranchisesAsyncTask task;
         task = (TeamsFranchisesAsyncTask) getApp().getTask(Config.TF_SvcTaskKey);
         if (task != null) {
@@ -226,6 +227,7 @@ public class TeamsFranchisesFragment extends Fragment implements AbsListView.OnI
             // fragment is attached to one) that a failure has happened.
             mListener.onTeamsFranchisesInteractionFail("");
         }
+        BugSenseHandler.sendException(e);
     }
 
     private ClutchWinApplication getApp(){

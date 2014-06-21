@@ -13,7 +13,7 @@ public class Config {
     public static final String TEAMS_SELECTED_NAVIGATION_ITEM = "teams_selected_nav";
     public static final String PLAYERS_SELECTED_NAVIGATION_ITEM = "players_selected_nav";
 
-    public static final String PC_CacheFileKey = "playersContextViewModel.json";
+    //public static final String PC_CacheFileKey = "playersContextViewModel.json";
     public static final String PY_CacheFileKey = "playersYears.json";
     public static final String PY_SvcTaskKey = "playersYears.svc";
     public static final String PT_CacheFileKey = "playersTeams.json";
@@ -27,10 +27,10 @@ public class Config {
     public static final String PDD_CacheFileKey = "playersDrillDown.json";
     public static final String PDD_SvcTaskKey = "playersDrillDown.svc";
 
-    public static final String TC_CacheFileKey = "teamsContextViewModel.json";
+    //public static final String TC_CacheFileKey = "teamsContextViewModel.json";
     public static final String TF_CacheFileKey = "franchises.json";
     public static final String TF_SvcTaskKey = "franchises.svc";
-    public static final String TO_CacheTaskKey = "opponents.svc";
+    //public static final String TO_CacheTaskKey = "opponents.svc";
     public static final String TR_CacheFileKey = "teamsResults.json";
     public static final String TR_SvcTaskKey = "teamsResults.svc";
     public static final String TDD_CacheFileKey = "teamsDrillDown.json";

@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.clutchwin.adapters.TeamsFranchisesAdapter;
@@ -51,8 +50,7 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
     private ProgressDialog progressDialog;
 
     public static TeamsOpponentsFragment newInstance() {
-        TeamsOpponentsFragment fragment = new TeamsOpponentsFragment();
-        return fragment;
+        return new TeamsOpponentsFragment();
     }
 
     /**
@@ -80,7 +78,7 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
 
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
-        ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
+        mListView.setAdapter(mAdapter);
 
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
@@ -114,10 +112,7 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
     public void onDetach() {
         super.onDetach();
         mListener = null;
-        // kill any progress dialogs if we are being destroyed
-        dismissProgressDialog();
     }
-
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -138,7 +133,9 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
             View emptyView = mListView.getEmptyView();
 
             if (emptyText instanceof String) {
-                ((TextView) emptyView).setText(emptyText);
+                if (emptyView != null) {
+                    ((TextView) emptyView).setText(emptyText);
+                }
             }
         }
     }
@@ -185,10 +182,6 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
         }
     }
 
-    private ClutchWinApplication getApp(){
-        return ClutchWinApplication.getInstance();
-    }
-
     private TeamsContextViewModel getContextViewModel(){
         return ClutchWinApplication.getTeamsContextViewModel();
     }
@@ -199,23 +192,5 @@ public class TeamsOpponentsFragment extends Fragment implements AbsListView.OnIt
 
     private TeamsOpponentsViewModel getOpponentsViewModel(){
         return ClutchWinApplication.getTeamsOpponentsViewModel();
-    }
-
-    private ProgressDialog getProgressDialog(){
-        if(progressDialog == null) {
-            progressDialog = new ProgressDialog(getActivity());
-            progressDialog.setMessage(getString(R.string.loading));
-            progressDialog.setIndeterminate(true);
-            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        }
-        return progressDialog;
-    }
-
-    private void dismissProgressDialog() {
-        if (progressDialog != null) {
-            if (progressDialog.isShowing()) {
-                progressDialog.dismiss();
-            }
-        }
     }
 }

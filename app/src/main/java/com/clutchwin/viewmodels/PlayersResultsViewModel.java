@@ -1,5 +1,7 @@
 package com.clutchwin.viewmodels;
 
+import android.util.Log;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,7 +35,9 @@ public class PlayersResultsViewModel {
                     return o2.getYear().compareTo(o1.getYear());
                 }
             });
-        } catch (Exception e){}
+        } catch (Exception e){
+            Log.e("Sort error", e.getMessage(), e);
+        }
     }
 
     /**

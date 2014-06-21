@@ -40,5 +40,12 @@
     <string name="main_welcome">Welcome!</string>
     <string name="main_title">ClutchWin baseball</string>
     <string name="select_season">select season first</string>
+    <string name="title_activity_credits">Credits</string>
+    <string name="retrosheet_credit"><![CDATA[The information used here was obtained free of charge from and is copyrighted by Retrosheet.
+        Interested parties may contact Retrosheet at http://www.retrosheet.org/]]></string>
+    <string name="retrosheet_name">Retrosheet</string>
+    <string name="credits_disclaimer">There is no guarantee of accuracy for the information supplied. ClutchWin shall not be held responsible for any consequences arising from the use the material presented here. All information is subject to corrections as additional data are received.</string>
+    <string name="credits_clutchwin">© ClutchWin baseball. All rights reserved.</string>
+    <string name="credits_clutchwin_url">http://ClutchWin.com/</string>
 
 </resources>

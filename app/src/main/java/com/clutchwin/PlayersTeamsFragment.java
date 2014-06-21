@@ -10,9 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.bugsense.trace.BugSenseHandler;
 import com.clutchwin.adapters.PlayersTeamsAdapter;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
@@ -52,8 +52,7 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
     private ProgressDialog progressDialog;
 
     public static PlayersTeamsFragment newInstance() {
-        PlayersTeamsFragment fragment = new PlayersTeamsFragment();
-        return fragment;
+        return new PlayersTeamsFragment();
     }
 
     /**
@@ -127,7 +126,7 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
 
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
-        ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
+        mListView.setAdapter(mAdapter);
 
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
@@ -191,7 +190,9 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
             View emptyView = mListView.getEmptyView();
 
             if (emptyText instanceof String) {
-                ((TextView) emptyView).setText(emptyText);
+                if (emptyView != null) {
+                    ((TextView) emptyView).setText(emptyText);
+                }
             }
         }
     }
@@ -225,7 +226,7 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
     }
 
     @Override
-    public void onPlayersTeamsServiceFailure() {
+    public void onPlayersTeamsServiceFailure(Exception e) {
         PlayersTeamsAsyncTask task;
         task = (PlayersTeamsAsyncTask) getApp().getTask(Config.PT_SvcTaskKey);
         if (task != null) {
@@ -241,6 +242,7 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
             // fragment is attached to one) that a failure has happened.
             mListener.onPlayersTeamsInteractionFail("");
         }
+        BugSenseHandler.sendException(e);
     }
 
     private ClutchWinApplication getApp(){

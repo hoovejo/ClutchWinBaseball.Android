@@ -29,7 +29,8 @@ public class TeamsDrillDownAsyncTask extends AsyncTask<Void, Void, List<TeamsDri
             //http://clutchwin.com/api/v1/games/for_team.json?
             //&access_token=abc&franchise_abbr=TOR&opp_franchise_abbr=BAL&season=2013&fieldset=basic
             final String baseUrl = Config.FranchiseYearSearch;
-            StringBuffer finalUrl = new StringBuffer(baseUrl);
+            StringBuilder finalUrl;
+            finalUrl = new StringBuilder(baseUrl);
             finalUrl.append(Config.AccessTokenKey).append(Config.AccessTokenValue)
                     .append(Config.FranchiseIdKey)
                     .append(ClutchWinApplication.getTeamsContextViewModel().getFranchiseId())
@@ -58,7 +59,7 @@ public class TeamsDrillDownAsyncTask extends AsyncTask<Void, Void, List<TeamsDri
         } catch (Exception e) {
             Log.e("TeamsDrillDownAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
-                onCompleteListener.onTeamsDrillDownServiceFailure();
+                onCompleteListener.onTeamsDrillDownServiceFailure(e);
             }
         }
         return list;
@@ -78,6 +79,6 @@ public class TeamsDrillDownAsyncTask extends AsyncTask<Void, Void, List<TeamsDri
 
     public interface OnLoadCompleteListener {
         public void onTeamsDrillDownServiceComplete(List<TeamsDrillDownViewModel.TeamsDrillDown> result);
-        public void onTeamsDrillDownServiceFailure();
+        public void onTeamsDrillDownServiceFailure(Exception e);
     }
 }

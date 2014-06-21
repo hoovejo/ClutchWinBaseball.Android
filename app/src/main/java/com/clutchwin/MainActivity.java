@@ -41,8 +41,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
-            //case R.id.action_settings:
-            //    return true;
+            case R.id.action_credits:
+                return showCredits();
             case R.id.action_team:
                 return navigateToTeams();
             case R.id.action_player:
@@ -50,6 +50,14 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private boolean showCredits(){
+        Intent i = new Intent(this, CreditsActivity.class);
+        startActivity(i);
+        this.finish();
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        return true;
     }
 
     private boolean navigateToTeams(){
@@ -100,8 +108,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     public static class PlaceholderFragment extends Fragment {
 
         public static PlaceholderFragment newInstance() {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            return fragment;
+            return new PlaceholderFragment();
         }
 
         public PlaceholderFragment() {
@@ -112,30 +119,32 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-            adView = (AdView)rootView.findViewById(R.id.adView);
-            adView.setAdListener(new AdListener() {
-                     /**
-                      * Called when an ad is clicked and about to return to the application.
-                      */
-                     @Override
-                     public void onAdClosed() {
-                     }
+            final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-                     /**
-                      * Called when an ad failed to load.
-                      */
-                     @Override
-                     public void onAdFailedToLoad(int error) {
-                     }
-                 });
+            if (rootView != null) {
+                adView = (AdView)rootView.findViewById(R.id.adView);
+                adView.setAdListener(new AdListener() {
+                    // hide ad block if none could be found
+                    @Override
+                    public void onAdFailedToLoad(int errorCode) {
+                        rootView.findViewById(R.id.adView).setVisibility(View.GONE);
+                        super.onAdFailedToLoad(errorCode);
+                    }
+                    // show ad block if one was found
+                    @Override
+                    public void onAdLoaded() {
+                        rootView.findViewById(R.id.adView).setVisibility(View.VISIBLE);
+                        super.onAdLoaded();
+                    }
+                });
 
-            AdRequest adRequest = new AdRequest.Builder()
-                    .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
-                    .addTestDevice("INSERT_YOUR_HASHED_DEVICE_ID_HERE")
-                    .build();
-            adView.loadAd(adRequest);
+                AdRequest adRequest = new AdRequest.Builder()
+                        .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                        .addTestDevice("INSERT_YOUR_HASHED_DEVICE_ID_HERE")
+                        .build();
+                adView.loadAd(adRequest);
+            }
             return rootView;
         }
 
@@ -147,8 +156,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
 
         @Override
         public void onResume() {
-            super.onResume();
             adView.resume();
+            super.onResume();
         }
 
         @Override

@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.bugsense.trace.BugSenseHandler;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.service.PlayersBattersAsyncTask;
@@ -51,8 +52,7 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
     private ProgressDialog progressDialog;
 
     public static PlayersBattersFragment newInstance() {
-        PlayersBattersFragment fragment = new PlayersBattersFragment();
-        return fragment;
+        return new PlayersBattersFragment();
     }
 
     /**
@@ -120,7 +120,7 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
 
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
-        ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
+        mListView.setAdapter(mAdapter);
 
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
@@ -210,7 +210,9 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
             View emptyView = mListView.getEmptyView();
 
             if (emptyText instanceof String) {
-                ((TextView) emptyView).setText(emptyText);
+                if (emptyView != null) {
+                    ((TextView) emptyView).setText(emptyText);
+                }
             }
         }
     }
@@ -244,7 +246,7 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
     }
 
     @Override
-    public void onPlayersBattersServiceFailure(){
+    public void onPlayersBattersServiceFailure(Exception e){
         PlayersBattersAsyncTask task;
         task = (PlayersBattersAsyncTask)getApp().getTask(Config.PB_SvcTaskKey);
         if(task != null){
@@ -260,6 +262,7 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
             // fragment is attached to one) that a failure has happened.
             mListener.onPlayersBattersInteractionFail("");
         }
+        BugSenseHandler.sendException(e);
     }
 
     private ClutchWinApplication getApp(){

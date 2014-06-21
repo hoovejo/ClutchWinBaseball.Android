@@ -29,7 +29,8 @@ public class PlayersDrillDownAsyncTask extends AsyncTask<Void, Void, List<Player
             //http://clutchwin.com/api/v1/events/summary.json?
             //&access_token=abc&bat_id=aybae001&pit_id=parkj001&season=2013&group=game_date
             final String baseUrl = Config.PlayerPlayerYearSearch;
-            StringBuffer finalUrl = new StringBuffer(baseUrl);
+            StringBuilder finalUrl;
+            finalUrl = new StringBuilder(baseUrl);
             finalUrl.append(Config.AccessTokenKey).append(Config.AccessTokenValue)
                     .append(Config.BatterIdKey)
                     .append(ClutchWinApplication.getPlayersContextViewModel().getBatterId())
@@ -58,7 +59,7 @@ public class PlayersDrillDownAsyncTask extends AsyncTask<Void, Void, List<Player
         } catch (Exception e) {
             Log.e("PlayersDrillDownCacheAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
-                onCompleteListener.onPlayerDrillDownServiceFailure();
+                onCompleteListener.onPlayerDrillDownServiceFailure(e);
             }
         }
         return list;
@@ -78,7 +79,7 @@ public class PlayersDrillDownAsyncTask extends AsyncTask<Void, Void, List<Player
 
     public interface OnLoadCompleteListener {
         public void onPlayerDrillDownServiceComplete(List<PlayersDrillDownViewModel.PlayersDrillDown> result);
-        public void onPlayerDrillDownServiceFailure();
+        public void onPlayerDrillDownServiceFailure(Exception e);
     }
 }
 

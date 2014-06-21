@@ -14,6 +14,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.bugsense.trace.BugSenseHandler;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
@@ -54,8 +55,7 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
     private ProgressDialog progressDialog;
 
     public static PlayersPitchersFragment newInstance() {
-        PlayersPitchersFragment fragment = new PlayersPitchersFragment();
-        return fragment;
+        return new PlayersPitchersFragment();
     }
 
     /**
@@ -126,7 +126,7 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
 
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
-        ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
+        mListView.setAdapter(mAdapter);
 
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
@@ -190,7 +190,9 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
             View emptyView = mListView.getEmptyView();
 
             if (emptyText instanceof String) {
-                ((TextView) emptyView).setText(emptyText);
+                if (emptyView != null) {
+                    ((TextView) emptyView).setText(emptyText);
+                }
             }
         }
     }
@@ -222,7 +224,7 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
     }
 
     @Override
-    public void onPlayersPitcherServiceFailure(){
+    public void onPlayersPitcherServiceFailure(Exception e){
         PlayersPitchersAsyncTask task;
         task = (PlayersPitchersAsyncTask)getApp().getTask(Config.PP_SvcTaskKey);
         if(task != null){
@@ -238,6 +240,7 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
             // fragment is attached to one) that a failure has happened.
             mListener.onPlayersPitchersInteractionFail("");
         }
+        BugSenseHandler.sendException(e);
     }
 
     public void onShowedFragment(){

@@ -32,7 +32,7 @@ public class Helpers {
 
     public static Object readObjectFromInternalStorage(String filename) throws IOException, ClassNotFoundException{
         Context appContext = ClutchWinApplication.getInstance().getApplicationContext();
-        FileInputStream fileInputStream = appContext.openFileInput(filename);
+        FileInputStream fileInputStream = appContext != null ? appContext.openFileInput(filename) : null;
         return new ObjectInputStream(fileInputStream).readObject();
     }
 

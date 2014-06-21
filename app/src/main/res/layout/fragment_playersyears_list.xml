@@ -5,11 +5,12 @@
     android:layout_height="match_parent"
     tools:context="com.versus.baseball.app.PlayersYearsFragment">
 
-    <ListView
+    <GridView
         android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginLeft="10dp" />
+        android:layout_marginLeft="10dp"
+        android:numColumns="2" />
 
     <TextView
         android:id="@android:id/empty"

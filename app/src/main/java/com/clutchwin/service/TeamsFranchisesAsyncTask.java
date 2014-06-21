@@ -27,7 +27,8 @@ public class TeamsFranchisesAsyncTask extends AsyncTask<Void, Void, List<TeamsFr
 
             //http://clutchwin.com/api/v1/franchises.json?
             final String baseUrl = Config.Franchise;
-            StringBuffer finalUrl = new StringBuffer(baseUrl);
+            StringBuilder finalUrl;
+            finalUrl = new StringBuilder(baseUrl);
             finalUrl.append(Config.AccessTokenKey).append(Config.AccessTokenValue);
 
             RestTemplate restTemplate = new RestTemplate();
@@ -49,7 +50,7 @@ public class TeamsFranchisesAsyncTask extends AsyncTask<Void, Void, List<TeamsFr
         } catch (Exception e) {
             Log.e("TeamsFranchisesAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
-                onCompleteListener.onTeamsFranchisesServiceFailure();
+                onCompleteListener.onTeamsFranchisesServiceFailure(e);
             }
         }
         return list;
@@ -69,6 +70,6 @@ public class TeamsFranchisesAsyncTask extends AsyncTask<Void, Void, List<TeamsFr
 
     public interface OnLoadCompleteListener {
         public void onTeamsFranchisesServiceComplete(List<TeamsFranchisesViewModel.Franchise> result);
-        public void onTeamsFranchisesServiceFailure();
+        public void onTeamsFranchisesServiceFailure(Exception e);
     }
 }

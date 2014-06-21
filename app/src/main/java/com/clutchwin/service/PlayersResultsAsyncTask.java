@@ -29,7 +29,8 @@ public class PlayersResultsAsyncTask extends AsyncTask<Void, Void, List<PlayersR
             //http://clutchwin.com/api/v1/events/summary.json?
             //&access_token=abc&bat_id=aybae001&pit_id=parkj001&group=season
             final String baseUrl = Config.PlayerPlayerSearch;
-            StringBuffer finalUrl = new StringBuffer(baseUrl);
+            StringBuilder finalUrl;
+            finalUrl = new StringBuilder(baseUrl);
             finalUrl.append(Config.AccessTokenKey).append(Config.AccessTokenValue)
                     .append(Config.BatterIdKey)
                     .append(ClutchWinApplication.getPlayersContextViewModel().getBatterId())
@@ -56,7 +57,7 @@ public class PlayersResultsAsyncTask extends AsyncTask<Void, Void, List<PlayersR
         } catch (Exception e) {
             Log.e("PlayersResultsAsyncTask::doInBackground", e.getMessage(), e);
             if(onCompleteListener != null){
-                onCompleteListener.onPlayersResultsServiceFailure();
+                onCompleteListener.onPlayersResultsServiceFailure(e);
             }
         }
         return list;
@@ -76,6 +77,6 @@ public class PlayersResultsAsyncTask extends AsyncTask<Void, Void, List<PlayersR
 
     public interface OnLoadCompleteListener {
         public void onPlayersResultsServiceComplete(List<PlayersResultsViewModel.PlayersResult> result);
-        public void onPlayersResultsServiceFailure();
+        public void onPlayersResultsServiceFailure(Exception e);
     }
 }

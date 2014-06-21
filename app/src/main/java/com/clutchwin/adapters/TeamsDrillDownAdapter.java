@@ -33,14 +33,16 @@ public class TeamsDrillDownAdapter extends BaseAdapter {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(layoutResourceId, parent, false);
             holder = new PerformanceViewElementHolder();
-            holder.elementOne = (TextView)convertView.findViewById(R.id.textGameDate);
-            holder.elementTwo = (TextView)convertView.findViewById(R.id.textTeam);
-            holder.elementThree = (TextView)convertView.findViewById(R.id.textOpponent);
-            holder.elementFour = (TextView)convertView.findViewById(R.id.textWin);
-            holder.elementFive = (TextView)convertView.findViewById(R.id.textLoss);
-            holder.elementSix = (TextView)convertView.findViewById(R.id.textRunsFor);
-            holder.elementSeven = (TextView)convertView.findViewById(R.id.textRunsAgainst);
-            convertView.setTag(holder);
+            if (convertView != null) {
+                holder.elementOne = (TextView)convertView.findViewById(R.id.textGameDate);
+                holder.elementTwo = (TextView)convertView.findViewById(R.id.textTeam);
+                holder.elementThree = (TextView)convertView.findViewById(R.id.textOpponent);
+                holder.elementFour = (TextView)convertView.findViewById(R.id.textWin);
+                holder.elementFive = (TextView)convertView.findViewById(R.id.textLoss);
+                holder.elementSix = (TextView)convertView.findViewById(R.id.textRunsFor);
+                holder.elementSeven = (TextView)convertView.findViewById(R.id.textRunsAgainst);
+                convertView.setTag(holder);
+            }
         }
         else
         {

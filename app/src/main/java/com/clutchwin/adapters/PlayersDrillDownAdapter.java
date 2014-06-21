@@ -34,18 +34,20 @@ public class PlayersDrillDownAdapter extends BaseAdapter {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(layoutResourceId, parent, false);
             holder = new PerformanceViewElementHolder();
-            holder.elementOne = (TextView)convertView.findViewById(R.id.textGameDate);
-            holder.elementTwo = (TextView)convertView.findViewById(R.id.textAtBat);
-            holder.elementThree = (TextView)convertView.findViewById(R.id.textHit);
-            holder.elementFour = (TextView)convertView.findViewById(R.id.textWalk);
-            holder.elementFive = (TextView)convertView.findViewById(R.id.textStrikeOut);
-            holder.elementSix = (TextView)convertView.findViewById(R.id.textSecondBase);
-            holder.elementSeven = (TextView)convertView.findViewById(R.id.textThirdBase);
-            holder.elementEight = (TextView)convertView.findViewById(R.id.textHomeRun);
-            holder.elementNine = (TextView)convertView.findViewById(R.id.textRunBattedIn);
-            holder.elementTen = (TextView)convertView.findViewById(R.id.textAverage);
+            if (convertView != null) {
+                holder.elementOne = (TextView)convertView.findViewById(R.id.textGameDate);
+                holder.elementTwo = (TextView)convertView.findViewById(R.id.textAtBat);
+                holder.elementThree = (TextView)convertView.findViewById(R.id.textHit);
+                holder.elementFour = (TextView)convertView.findViewById(R.id.textWalk);
+                holder.elementFive = (TextView)convertView.findViewById(R.id.textStrikeOut);
+                holder.elementSix = (TextView)convertView.findViewById(R.id.textSecondBase);
+                holder.elementSeven = (TextView)convertView.findViewById(R.id.textThirdBase);
+                holder.elementEight = (TextView)convertView.findViewById(R.id.textHomeRun);
+                holder.elementNine = (TextView)convertView.findViewById(R.id.textRunBattedIn);
+                holder.elementTen = (TextView)convertView.findViewById(R.id.textAverage);
 
-            convertView.setTag(holder);
+                convertView.setTag(holder);
+            }
         }
         else
         {
