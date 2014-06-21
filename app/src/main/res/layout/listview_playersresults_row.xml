@@ -81,7 +81,7 @@
     </TableRow>
 
     <TableRow>
-        <TextView android:text="Second base hits"
+        <TextView android:text="Doubles"
             android:padding="5dp"
             android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
@@ -94,7 +94,7 @@
     </TableRow>
 
     <TableRow>
-        <TextView android:text="Third base hits"
+        <TextView android:text="Triples"
             android:padding="5dp"
             android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
