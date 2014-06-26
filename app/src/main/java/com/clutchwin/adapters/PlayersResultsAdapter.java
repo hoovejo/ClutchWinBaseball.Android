@@ -71,7 +71,7 @@ public class PlayersResultsAdapter extends BaseAdapter {
         numberFormat.setMinimumFractionDigits(3);
         String averageAsString = numberFormat.format(resultRow.getAverage().doubleValue());
 
-        holder.elementEleven.setText(averageAsString);
+        holder.elementEleven.setText(averageAsString.replaceFirst("^0+(?!$)", ""));
 
         return convertView;
     }

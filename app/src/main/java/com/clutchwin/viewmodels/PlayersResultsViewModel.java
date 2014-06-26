@@ -100,7 +100,7 @@ public class PlayersResultsViewModel {
 
         public Number getRunBattedIn() { return this.runBattedIn; }
 
-        public Number getAverage() { return (this.hit.floatValue() / this.atBat.floatValue());  }
+        public Number getAverage() { return (this.hit.floatValue() <= 0.00) ? 0.00 : (this.hit.floatValue() / this.atBat.floatValue());  }
 
     }
 }

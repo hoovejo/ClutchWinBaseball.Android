@@ -44,7 +44,7 @@ public class Config {
     public static final String FranchiseIdKey = "&franchise_abbr=";
     public static final String OpponentIdKey = "&opp_franchise_abbr=";
     public static final String TeamIdKey = "&team_abbr=";
-    public static final String FranchiseSearchKeyValue = "&group=season,team_abbr,opp_abbr&fieldset=basic";
+    public static final String FranchiseSearchKeyValue = "&group=season,team_abbr,opp_abbr&fieldset=basic&max_entries=200";
     public static final String SeasonIdKey = "&season=";
     public static final String FieldSetBasicKeyValue = "&fieldset=basic";
 
