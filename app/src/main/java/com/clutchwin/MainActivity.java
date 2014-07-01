@@ -141,7 +141,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
 
                 AdRequest adRequest = new AdRequest.Builder()
                         .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
-                        .addTestDevice("INSERT_YOUR_HASHED_DEVICE_ID_HERE")
+                        .addTestDevice("7131D30965CD130CF2B191C5F971E83C") //nexus 5
+                        .addTestDevice("6E5BC0EE5F0BAC66ED402756B91B18D5") //nexus 7
                         .build();
                 adView.loadAd(adRequest);
             }

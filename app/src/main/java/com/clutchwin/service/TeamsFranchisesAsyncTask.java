@@ -3,6 +3,7 @@ package com.clutchwin.service;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.bugsense.trace.BugSenseHandler;
 import com.clutchwin.common.Config;
 import com.clutchwin.viewmodels.TeamsFranchisesViewModel;
 
@@ -52,6 +53,8 @@ public class TeamsFranchisesAsyncTask extends AsyncTask<Void, Void, List<TeamsFr
             if(onCompleteListener != null){
                 onCompleteListener.onTeamsFranchisesServiceFailure(e);
             }
+
+            BugSenseHandler.sendException(e);
         }
         return list;
     }

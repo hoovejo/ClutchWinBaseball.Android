@@ -3,6 +3,7 @@ package com.clutchwin.service;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.bugsense.trace.BugSenseHandler;
 import com.clutchwin.ClutchWinApplication;
 import com.clutchwin.common.Config;
 import com.clutchwin.viewmodels.PlayersDrillDownViewModel;
@@ -61,6 +62,8 @@ public class PlayersDrillDownAsyncTask extends AsyncTask<Void, Void, List<Player
             if(onCompleteListener != null){
                 onCompleteListener.onPlayerDrillDownServiceFailure(e);
             }
+
+            BugSenseHandler.sendException(e);
         }
         return list;
     }
