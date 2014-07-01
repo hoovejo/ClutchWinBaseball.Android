@@ -40,7 +40,7 @@
     <string name="main_welcome">Welcome!</string>
     <string name="main_title">ClutchWin baseball</string>
     <string name="select_season">select season first</string>
-    <string name="title_activity_credits">Credits</string>
+    <string name="title_activity_credits">Information</string>
     <string name="retrosheet_credit"><![CDATA[The information used here was obtained free of charge from and is copyrighted by Retrosheet.
         Interested parties may contact Retrosheet at http://www.retrosheet.org/]]></string>
     <string name="retrosheet_name">Retrosheet</string>

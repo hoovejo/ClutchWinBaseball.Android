@@ -16,11 +16,8 @@
 #   public *;
 #}
 
--keep class com.bugsense.** { *; }
--libraryjars libs/bugsense-3.6.jar
-
 -dontobfuscate
--optimizationpasses 25
+-optimizationpasses 5
 -dontusemixedcaseclassnames
 -dontskipnonpubliclibraryclasses
 -dontpreverify
@@ -28,8 +25,27 @@
 -optimizations !code/simplification/arithmetic,!field/*,!class/merging/*,!code/allocation/variable
 -printmapping out.map
 -renamesourcefileattribute SourceFile
--keepattributes SourceFile,LineNumberTable
+-keepattributes SourceFile,LineNumberTable,*Annotation*,EnclosingMethod
+
+-keepnames class org.codehaus.** { *; }
+-keepnames class org.springframework.** { *; }
+-keepnames class com.fasterxml.** { *; }
+
+-dontwarn javax.xml.**
+-dontwarn javax.xml.stream.events.**
+-dontwarn org.codehaus.jackson.**
+-dontwarn org.springframework.**
+-dontwarn com.fasterxml.**
+
 -keep class com.bugsense.** { *; }
+-keep class com.google.** { *; }
+-keep class com.fasterxml.** { *; }
+-keep class org.springframework.** { *; }
+-keep class android.support.** { *; }
+-keep class com.clutchwin.** { *; }
+-keep class org.codehaus.** { *; }
+-keep class com.google.** { *; }
+
 -keep public class * extends android.app.Activity
 -keep public class * extends android.app.Application
 -keep public class * extends android.app.Service
@@ -62,4 +78,13 @@
 
 -keep class * implements android.os.Parcelable {
   public static final android.os.Parcelable$Creator *;
-  }
+}
+
+-keepnames class com.fasterxml.jackson.** {
+    *;
+}
+
+-keep public class MyClass.** {
+  public void set*(***);
+  public *** get*();
+}
