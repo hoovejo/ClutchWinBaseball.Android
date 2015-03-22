@@ -18,7 +18,7 @@ public class PlayersBattersViewModel {
     public boolean getIsBusy() { return _isBusy; }
     public void setIsBusy(boolean b) { _isBusy = b; }
 
-    public List<PlayersBattersViewModel.Batter> ITEMS = new ArrayList<PlayersBattersViewModel.Batter>();
+    public final List<PlayersBattersViewModel.Batter> ITEMS = new ArrayList<PlayersBattersViewModel.Batter>();
 
     private void addItem(PlayersBattersViewModel.Batter item) {
         ITEMS.add(item);

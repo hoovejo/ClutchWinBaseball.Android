@@ -50,7 +50,7 @@ public class PlayersYearsAsyncTask extends AsyncTask<Void, Void, List<PlayersYea
             */
 
         } catch (Exception e) {
-            Log.e("PlayersYearsAsyncTask::doInBackground", e.getMessage(), e);
+            Log.e("PlayersYearsAsyncTask", e.getMessage(), e);
             if(onCompleteListener != null){
                 onCompleteListener.onPlayersYearsServiceFailure(e);
             }

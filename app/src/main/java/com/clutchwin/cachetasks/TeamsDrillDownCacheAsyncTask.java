@@ -36,7 +36,7 @@ public class TeamsDrillDownCacheAsyncTask extends AsyncTask<Void, Void, List<Tea
             list = gson.fromJson(jsonArray.toString(), listType);
 
         } catch (Exception e) {
-            Log.e("TeamsDrillDownCacheAsyncTask::doInBackground", e.getMessage(), e);
+            Log.e("TeamsDrillDownCache", e.getMessage(), e);
             if(onCompleteListener != null){
                 onCompleteListener.onTeamsDrillDownCacheFailure();
             }

@@ -55,7 +55,7 @@ public class TeamsResultsAsyncTask extends AsyncTask<Void, Void, List<TeamsResul
             */
 
         } catch (Exception e) {
-            Log.e("TeamsResultsAsyncTask::doInBackground", e.getMessage(), e);
+            Log.e("TeamsResultsAsyncTask", e.getMessage(), e);
             if(onCompleteListener != null){
                 onCompleteListener.onTeamsResultsServiceFailure(e);
             }

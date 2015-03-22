@@ -58,7 +58,7 @@ public class PlayersDrillDownAsyncTask extends AsyncTask<Void, Void, List<Player
             */
 
         } catch (Exception e) {
-            Log.e("PlayersDrillDownCacheAsyncTask::doInBackground", e.getMessage(), e);
+            Log.e("PlayersDrillDownCache", e.getMessage(), e);
             if(onCompleteListener != null){
                 onCompleteListener.onPlayerDrillDownServiceFailure(e);
             }

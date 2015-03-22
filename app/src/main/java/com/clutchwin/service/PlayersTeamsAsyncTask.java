@@ -52,7 +52,7 @@ public class PlayersTeamsAsyncTask extends AsyncTask<Void, Void, List<PlayersTea
             */
 
         } catch (Exception e) {
-            Log.e("PlayersTeamsAsyncTask::doInBackground", e.getMessage(), e);
+            Log.e("PlayersTeamsAsyncTask", e.getMessage(), e);
             if(onCompleteListener != null){
                 onCompleteListener.onPlayersTeamsServiceFailure(e);
             }

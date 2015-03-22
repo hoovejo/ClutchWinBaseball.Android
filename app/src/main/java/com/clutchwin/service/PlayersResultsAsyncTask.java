@@ -56,7 +56,7 @@ public class PlayersResultsAsyncTask extends AsyncTask<Void, Void, List<PlayersR
             */
 
         } catch (Exception e) {
-            Log.e("PlayersResultsAsyncTask::doInBackground", e.getMessage(), e);
+            Log.e("PlayersResultsAsyncTask", e.getMessage(), e);
             if(onCompleteListener != null){
                 onCompleteListener.onPlayersResultsServiceFailure(e);
             }

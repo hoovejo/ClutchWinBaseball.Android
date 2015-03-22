@@ -36,7 +36,7 @@ public class PlayersYearsCacheAsyncTask extends AsyncTask<Void, Void, List<Playe
             list = gson.fromJson(jsonArray.toString(), listType);
 
         } catch (Exception e) {
-            Log.e("PlayersYearsCacheAsyncTask::doInBackground", e.getMessage(), e);
+            Log.e("PlayersYearsCache", e.getMessage(), e);
             if(onCompleteListener != null){
                 onCompleteListener.onPlayersYearsCacheFailure();
             }

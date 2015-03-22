@@ -53,7 +53,7 @@ public class ClutchWinApplication extends Application {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(Config.TEAMS_SELECTED_NAVIGATION_ITEM, String.valueOf(999));
         editor.putString(Config.PLAYERS_SELECTED_NAVIGATION_ITEM, String.valueOf(999));
-        editor.commit();
+        editor.apply();
     }
 
     private HashMap<String, AsyncTask<?,?,?>> tasks = null;

@@ -50,7 +50,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
         SharedPreferences.Editor editor = preferences.edit();
         int navIndex = getSupportActionBar().getSelectedNavigationIndex();
         editor.putString(Config.PLAYERS_SELECTED_NAVIGATION_ITEM, Integer.toString(navIndex));
-        editor.commit();
+        editor.apply();
     }
 
     @Override
@@ -140,7 +140,7 @@ public class PlayersFeatureActivity extends ActionBarActivity implements ActionB
 
             SharedPreferences.Editor editor = preferences.edit();
             editor.putString(Config.PLAYERS_SELECTED_NAVIGATION_ITEM, String.valueOf(999));
-            editor.commit();
+            editor.apply();
 
             if(position > 0 && position < 999){
                 isRestartingActivity = true;

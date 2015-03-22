@@ -54,7 +54,7 @@ public class PlayersPitchersAsyncTask extends AsyncTask<Void, Void, List<Players
             */
 
         } catch (Exception e) {
-            Log.e("PlayersPitchersAsyncTask::doInBackground", e.getMessage(), e);
+            Log.e("PlayersPitchersCache", e.getMessage(), e);
             if(onCompleteListener != null){
                 onCompleteListener.onPlayersPitcherServiceFailure(e);
             }

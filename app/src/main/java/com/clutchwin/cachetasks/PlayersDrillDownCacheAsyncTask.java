@@ -34,7 +34,7 @@ public class PlayersDrillDownCacheAsyncTask extends AsyncTask<Void, Void, List<P
             Type listType = new TypeToken<List<PlayersDrillDownViewModel.PlayersDrillDown>>(){}.getType();
             list = gson.fromJson(jsonArray.toString(), listType);
         } catch (Exception e) {
-            Log.e("PlayersDrillDownCacheAsyncTask::doInBackground", e.getMessage(), e);
+            Log.e("PlayersDrillDownCache", e.getMessage(), e);
             if(onCompleteListener != null){
                 onCompleteListener.onPlayersDrillDownCacheFailure();
             }

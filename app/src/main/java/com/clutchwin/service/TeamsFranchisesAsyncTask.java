@@ -49,7 +49,7 @@ public class TeamsFranchisesAsyncTask extends AsyncTask<Void, Void, List<TeamsFr
             */
 
         } catch (Exception e) {
-            Log.e("TeamsFranchisesAsyncTask::doInBackground", e.getMessage(), e);
+            Log.e("TeamsFranchises", e.getMessage(), e);
             if(onCompleteListener != null){
                 onCompleteListener.onTeamsFranchisesServiceFailure(e);
             }

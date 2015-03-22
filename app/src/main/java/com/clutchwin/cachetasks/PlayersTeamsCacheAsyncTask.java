@@ -36,7 +36,7 @@ public class PlayersTeamsCacheAsyncTask extends AsyncTask<Void, Void, List<Playe
             list = gson.fromJson(jsonArray.toString(), listType);
 
         } catch (Exception e) {
-            Log.e("PlayersTeamsCacheAsyncTask::doInBackground", e.getMessage(), e);
+            Log.e("PlayersTeamsCache", e.getMessage(), e);
             if(onCompleteListener != null){
                 onCompleteListener.onPlayersTeamsCacheFailure();
             }

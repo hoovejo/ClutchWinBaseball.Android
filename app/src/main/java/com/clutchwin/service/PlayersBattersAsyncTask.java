@@ -53,7 +53,7 @@ public class PlayersBattersAsyncTask extends AsyncTask<Void, Void, List<PlayersB
             */
 
         } catch (Exception e) {
-            Log.e("PlayersBattersAsyncTask::doInBackground", e.getMessage(), e);
+            Log.e("PlayersBattersAsyncTask", e.getMessage(), e);
             if(onCompleteListener != null){
                 onCompleteListener.onPlayersBattersServiceFailure(e);
             }

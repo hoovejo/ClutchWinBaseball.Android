@@ -58,7 +58,7 @@ public class TeamsDrillDownAsyncTask extends AsyncTask<Void, Void, List<TeamsDri
             */
 
         } catch (Exception e) {
-            Log.e("TeamsDrillDownAsyncTask::doInBackground", e.getMessage(), e);
+            Log.e("TeamsDrillDownAsyncTask", e.getMessage(), e);
             if(onCompleteListener != null){
                 onCompleteListener.onTeamsDrillDownServiceFailure(e);
             }
