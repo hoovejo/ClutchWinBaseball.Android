@@ -12,7 +12,6 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
-import com.bugsense.trace.BugSenseHandler;
 import com.clutchwin.adapters.TeamsDrillDownAdapter;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
@@ -20,6 +19,7 @@ import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.service.TeamsDrillDownAsyncTask;
 import com.clutchwin.viewmodels.TeamsContextViewModel;
 import com.clutchwin.viewmodels.TeamsDrillDownViewModel;
+import com.crittercism.app.Crittercism;
 
 import java.util.List;
 
@@ -231,7 +231,7 @@ public class TeamsDrillDownFragment extends Fragment implements AbsListView.OnIt
              // fragment is attached to one) that a failure has happened.
              mListener.onTeamsDrillDownInteractionFail("");
          }
-         BugSenseHandler.sendException(e);
+         Crittercism.logHandledException(e);
      }
 
      public void onShowedFragment(){

@@ -14,13 +14,13 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-import com.bugsense.trace.BugSenseHandler;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.service.PlayersPitchersAsyncTask;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
 import com.clutchwin.viewmodels.PlayersPitchersViewModel;
+import com.crittercism.app.Crittercism;
 
 import java.util.List;
 
@@ -240,7 +240,7 @@ public class PlayersPitchersFragment extends Fragment implements AbsListView.OnI
             // fragment is attached to one) that a failure has happened.
             mListener.onPlayersPitchersInteractionFail("");
         }
-        BugSenseHandler.sendException(e);
+        Crittercism.logHandledException(e);
     }
 
     public void onShowedFragment(){

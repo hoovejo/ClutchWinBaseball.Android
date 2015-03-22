@@ -14,11 +14,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-import com.bugsense.trace.BugSenseHandler;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.service.PlayersYearsAsyncTask;
 import com.clutchwin.viewmodels.PlayersYearsViewModel;
+import com.crittercism.app.Crittercism;
 
 import java.util.List;
 
@@ -227,7 +227,7 @@ public class PlayersYearsFragment extends Fragment implements AbsListView.OnItem
              // fragment is attached to one) that a failure has happened.
              mListener.onPlayersYearsInteractionFail("");
          }
-         BugSenseHandler.sendException(e);
+         Crittercism.logHandledException(e);
      }
 
      private ClutchWinApplication getApp(){

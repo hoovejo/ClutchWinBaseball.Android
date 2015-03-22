@@ -3,10 +3,10 @@ package com.clutchwin.service;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.bugsense.trace.BugSenseHandler;
 import com.clutchwin.ClutchWinApplication;
 import com.clutchwin.common.Config;
 import com.clutchwin.viewmodels.PlayersPitchersViewModel;
+import com.crittercism.app.Crittercism;
 
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
@@ -59,7 +59,7 @@ public class PlayersPitchersAsyncTask extends AsyncTask<Void, Void, List<Players
                 onCompleteListener.onPlayersPitcherServiceFailure(e);
             }
 
-            BugSenseHandler.sendException(e);
+            Crittercism.logHandledException(e);
         }
         return list;
     }

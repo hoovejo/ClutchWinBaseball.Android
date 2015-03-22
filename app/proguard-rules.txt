@@ -37,7 +37,7 @@
 -dontwarn org.springframework.**
 -dontwarn com.fasterxml.**
 
--keep class com.bugsense.** { *; }
+-keep class com.crittercism.** { *; }
 -keep class com.google.** { *; }
 -keep class com.fasterxml.** { *; }
 -keep class org.springframework.** { *; }

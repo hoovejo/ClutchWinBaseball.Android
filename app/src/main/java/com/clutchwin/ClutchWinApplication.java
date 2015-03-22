@@ -4,7 +4,7 @@ import android.app.Application;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 
-import com.bugsense.trace.BugSenseHandler;
+import com.crittercism.app.Crittercism;
 import com.clutchwin.common.Config;
 import com.clutchwin.viewmodels.PlayersBattersViewModel;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
@@ -34,8 +34,7 @@ public class ClutchWinApplication extends Application {
         super.onCreate();
         singleton = this;
 
-        BugSenseHandler.initAndStartSession(this, Config.BugSenseTokenValue);
-
+        Crittercism.initialize(getApplicationContext(), Config.AnalyticsTokenValue);
         /*
         final Thread.UncaughtExceptionHandler subclass = Thread.currentThread().getUncaughtExceptionHandler();
         Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {

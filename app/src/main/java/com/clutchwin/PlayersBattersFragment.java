@@ -15,12 +15,12 @@ import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-import com.bugsense.trace.BugSenseHandler;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.service.PlayersBattersAsyncTask;
 import com.clutchwin.viewmodels.PlayersBattersViewModel;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
+import com.crittercism.app.Crittercism;
 
 import java.util.List;
 
@@ -262,7 +262,7 @@ public class PlayersBattersFragment extends Fragment implements AbsListView.OnIt
             // fragment is attached to one) that a failure has happened.
             mListener.onPlayersBattersInteractionFail("");
         }
-        BugSenseHandler.sendException(e);
+        Crittercism.logHandledException(e);
     }
 
     private ClutchWinApplication getApp(){

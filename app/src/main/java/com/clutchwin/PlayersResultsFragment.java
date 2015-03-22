@@ -12,7 +12,6 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
-import com.bugsense.trace.BugSenseHandler;
 import com.clutchwin.adapters.PlayersResultsAdapter;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
@@ -20,6 +19,7 @@ import com.clutchwin.interfaces.IOnShowFragment;
 import com.clutchwin.service.PlayersResultsAsyncTask;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
 import com.clutchwin.viewmodels.PlayersResultsViewModel;
+import com.crittercism.app.Crittercism;
 
 import java.util.List;
 
@@ -241,7 +241,7 @@ public class PlayersResultsFragment extends Fragment implements AbsListView.OnIt
              // fragment is attached to one) that a failure has happened.
              mListener.onPlayersResultsInteractionFail("");
          }
-         BugSenseHandler.sendException(e);
+         Crittercism.logHandledException(e);
      }
 
      public void onShowedFragment(){

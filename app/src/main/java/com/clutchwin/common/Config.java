@@ -39,7 +39,7 @@ public class Config {
 
     public static final String AccessTokenKey = "&access_token=";
     public static final String AccessTokenValue = "bf0a9b612fcdba499d98ed720a02c3da";
-    public static final String BugSenseTokenValue = "d1b1bd96";
+    public static final String AnalyticsTokenValue = "550f03dfe0697fa449637a5a";
 
     public static final String FranchiseIdKey = "&franchise_abbr=";
     public static final String OpponentIdKey = "&opp_franchise_abbr=";

@@ -12,13 +12,13 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
-import com.bugsense.trace.BugSenseHandler;
 import com.clutchwin.adapters.PlayersTeamsAdapter;
 import com.clutchwin.common.Config;
 import com.clutchwin.common.Helpers;
 import com.clutchwin.service.PlayersTeamsAsyncTask;
 import com.clutchwin.viewmodels.PlayersContextViewModel;
 import com.clutchwin.viewmodels.PlayersTeamsViewModel;
+import com.crittercism.app.Crittercism;
 
 import java.util.List;
 
@@ -242,7 +242,7 @@ public class PlayersTeamsFragment extends Fragment implements AbsListView.OnItem
             // fragment is attached to one) that a failure has happened.
             mListener.onPlayersTeamsInteractionFail("");
         }
-        BugSenseHandler.sendException(e);
+        Crittercism.logHandledException(e);
     }
 
     private ClutchWinApplication getApp(){
